@@ -37,6 +37,13 @@ namespace dotNetDiskImager
         const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
         const int DBT_DEVTYP_VOLUME = 0x02;
 
+        const int windowHeight = 220;
+        const int infoMessageHeight = 40;
+        const int infoMessageMargin = 10;
+        const int progressPartHeight = 220;
+        const int applicationPartHeight = 180;
+        const int windowInnerOffset = 10;
+
         Disk disk;
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
 
@@ -301,8 +308,8 @@ namespace dotNetDiskImager
                         break;
                 }
 
-                DoubleAnimation windowAnimation = new DoubleAnimation(260, TimeSpan.FromMilliseconds(250));
-                DoubleAnimation containerAnimation = new DoubleAnimation(30, TimeSpan.FromMilliseconds(250));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight + infoMessageHeight, TimeSpan.FromMilliseconds(250));
+                DoubleAnimation containerAnimation = new DoubleAnimation(infoMessageHeight - infoMessageMargin, TimeSpan.FromMilliseconds(250));
                 windowAnimation.Completed += (s, e) =>
                 {
                     closeInfoButton.Visibility = Visibility.Visible;
@@ -315,14 +322,14 @@ namespace dotNetDiskImager
             {
                 if (noAnimation)
                 {
-                    Height = 220;
+                    Height = windowHeight;
                     infoContainer.Visibility = Visibility.Collapsed;
                     closeInfoButton.Visibility = Visibility.Collapsed;
                     return;
                 }
                 else
                 {
-                    DoubleAnimation windowAnimation = new DoubleAnimation(220, TimeSpan.FromMilliseconds(250));
+                    DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight, TimeSpan.FromMilliseconds(250));
                     DoubleAnimation containerAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(250));
                     windowAnimation.Completed += (s, e) =>
                     {
@@ -621,19 +628,19 @@ namespace dotNetDiskImager
         {
             if (display)
             {
-                DoubleAnimation windowAnimation = new DoubleAnimation(430, TimeSpan.FromMilliseconds(500));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight + progressPartHeight - windowInnerOffset, TimeSpan.FromMilliseconds(500));
                 BeginAnimation(HeightProperty, windowAnimation);
                 progressPartGrid.Visibility = Visibility.Visible;
-                progressPartRow.Height = new GridLength(220, GridUnitType.Pixel);
-                applicationPartRow.Height = new GridLength(180, GridUnitType.Pixel);
+                progressPartRow.Height = new GridLength(progressPartHeight, GridUnitType.Pixel);
+                applicationPartRow.Height = new GridLength(applicationPartHeight, GridUnitType.Pixel);
             }
             else
             {
-                DoubleAnimation windowAnimation = new DoubleAnimation(220, TimeSpan.FromMilliseconds(500));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight, TimeSpan.FromMilliseconds(500));
                 BeginAnimation(HeightProperty, windowAnimation);
                 progressPartGrid.Visibility = Visibility.Collapsed;
                 progressPartRow.Height = new GridLength(0, GridUnitType.Pixel);
-                applicationPartRow.Height = new GridLength(190, GridUnitType.Pixel);
+                applicationPartRow.Height = new GridLength(applicationPartHeight + windowInnerOffset, GridUnitType.Pixel);
             }
         }
 
