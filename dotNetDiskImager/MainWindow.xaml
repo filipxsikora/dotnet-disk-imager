@@ -1,0 +1,67 @@
+﻿<Window x:Class="dotNetDiskImager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:dotNetDiskImager"
+        xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
+        mc:Ignorable="d"
+        x:Name="window"
+        Title="dotNet Disk Imager" Height="220" Width="525" ResizeMode="CanMinimize" Icon="icon.ico">
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo x:Name="programTaskbar" Description="dotNet Disk Imager" ProgressState="Normal"/>
+    </Window.TaskbarItemInfo>
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="infoPartRow" Height="Auto"/>
+            <RowDefinition x:Name="applicationPartRow" Height="190"/>
+            <RowDefinition x:Name="progressPartRow" Height="0"/>
+        </Grid.RowDefinitions>
+        <Button TabIndex="5" x:Name="readButton" HorizontalAlignment="Left" Margin="10,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="readButton_Click" Height="23" Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{StaticResource readImageIcon}" Padding="0,0,3,0"></Label>
+                <TextBlock Text="Read from Device"/>
+            </StackPanel>
+        </Button>
+        <ComboBox TabIndex="2" x:Name="driveSelectComboBox" Margin="10,74,55,0" VerticalAlignment="Top" Height="23" Grid.Row="1"/>
+        <TextBox TabIndex="0" x:Name="imagePathTextBox" Height="23" Margin="10,26,55,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1"/>
+        <Button TabIndex="1" x:Name="fileSelectDialogButton" ToolTip="Open dialog to select image file" Content="{StaticResource openImageIcon}" HorizontalAlignment="Right" Margin="0,26,10,0" VerticalAlignment="Top" Width="40" Click="fileSelectDialogButton_Click" Height="23" Grid.Row="1"/>
+        <Label Content="Image file:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <Grid x:Name="progressPartGrid" Grid.Row="2" Visibility="Collapsed">
+            <Rectangle Height="1" Margin="10,1" VerticalAlignment="Top" Stroke="#FFBBBBBB"/>
+            <oxy:PlotView x:Name="speedGraph" DataContext="{Binding ElementName=window}" Margin="20,36,20,66" Model="{Binding GraphModel.Model}" DefaultTrackerTemplate="{x:Null}" BorderThickness="1" BorderBrush="#bbbbbb"/>
+            <Label x:Name="progressText" Content="" HorizontalAlignment="Left" Margin="20,5,0,0" FontSize="16" Height="31" VerticalAlignment="Top"/>
+            <Label x:Name="transferredText" Content="" HorizontalAlignment="Left" Margin="20,0,0,40" Height="26" VerticalAlignment="Bottom"/>
+            <Label x:Name="stepText" Content="" Margin="0,0,20,184" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+            <Label x:Name="timeRemainingText" Content="" HorizontalAlignment="Left" Margin="20,0,0,17" Height="26" VerticalAlignment="Bottom"/>
+        </Grid>
+        <Button TabIndex="8" x:Name="cancelButton" HorizontalAlignment="Left" Margin="359,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{StaticResource cancelIcon}" Padding="0,0,3,0"/>
+                <TextBlock Text="Cancel"/>
+            </StackPanel>
+        </Button>
+        <Label Content="Device:" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <CheckBox TabIndex="3" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" HorizontalAlignment="Left" Margin="10,111,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <Button TabIndex="6" x:Name="writeButton" HorizontalAlignment="Left" Margin="140,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{StaticResource writeImageIcon}" Padding="0,0,3,0"/>
+                <TextBlock Text="Write to Device"/>
+            </StackPanel>
+        </Button>
+        <Border x:Name="infoContainer" Style="{StaticResource InfoContainerError}" Height="30" VerticalAlignment="Top" Visibility="Collapsed">
+            <Grid>
+                <Label x:Name="infoText" Content="Operation finished successfully" Margin="30,0" Padding="0" Foreground="#FF800505" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
+                <Button x:Name="closeInfoButton" Style="{StaticResource CloseInfoButtonError}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="30" BorderThickness="0" Click="closeInfoButton_Click" />
+                <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            </Grid>
+        </Border>
+        <Button TabIndex="7" x:Name="verifyImageButton" HorizontalAlignment="Left" Margin="257,142,0,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="verifyImageButton_Click">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{StaticResource verifyImageIcon}" Padding="0,0,3,0"/>
+                <TextBlock Text="Verify image"/>
+            </StackPanel>
+        </Button>
+        <CheckBox TabIndex="4" x:Name="verifyCheckBox" Content="Verify data when finished" Margin="271,111,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
+    </Grid>
+</Window>

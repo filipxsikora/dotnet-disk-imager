@@ -1,0 +1,176 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Viewbox x:Shared="false" x:Key="openImageIcon" SnapsToDevicePixels="True" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF5F5F5" Geometry="F1M1.9998,7L1.9998,10 0.3818,10 3.3818,16 15.9998,16 11.4998,10 5.0008,10 5.0008,7z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M14,4L8,4 8,2.311 5.963,0 1.999,0C1.029,0,0,0.701,0,2L0,7C0,8.299,1,9,2,9L2,10 0.381,10 3.381,16 14,16C14.969,16,16,15.299,16,14L16,6C16,4.701,14.969,4,14,4" />
+                                <GeometryDrawing Brush="#FF414141" Geometry="F1M6,5L6,5 6,7 2,7 2,2 5,2 5,3 6,3z M5.312,1L1.963,1C1.963,1,1,1,1,2L1,7C1,8,1.964,8,1.964,8L5.964,8C6.964,8,7,7,7,7L7,3.137z" />
+                                <GeometryDrawing Brush="#FFDCB679" Geometry="F1M4,11L4,9 3,9 3,11 1.996,11 3.996,15 13.996,15 10.996,11z" />
+                                <GeometryDrawing Brush="#FFDCB679" Geometry="F1M13.9961,5L8.0001,5 8.0001,6 14.0001,6 14.0001,15C14.0001,15,15.0001,15,15.0001,14L15.0001,6C15.0001,5,13.9961,5,13.9961,5" />
+                                <GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M4,11L4,8 8,8 9,6 14,6 14,14.969 11,11z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Canvas x:Shared="false" x:Key="readImageIcon" SnapsToDevicePixels="True" HorizontalAlignment="Left" Height="16" UseLayoutRounding="False" VerticalAlignment="Top" Width="16">
+        <Canvas Height="16" Canvas.Left="0" Canvas.Top="0" Width="16">
+            <Path Data="F1M16,16L0,16 0,0 16,0z" Fill="#FFF6F6F6" Height="16" Canvas.Left="0" Opacity="0" Canvas.Top="0" Width="16"/>
+        </Canvas>
+        <Canvas Height="14" Canvas.Left="2" Canvas.Top="1" Width="12">
+            <Path Data="F1M2,14C1.03,14,0,13.299,0,12L0,2C0,0.701,1.03,0,2,0L8.061,0 12,3.556 12,12C12,12.97,11.299,14,10,14z" Fill="#FFF6F6F6" Height="14" Canvas.Left="0" Canvas.Top="0" Width="12"/>
+        </Canvas>
+        <Canvas Height="12" Canvas.Left="3" Canvas.Top="2" Width="10">
+            <Path Data="F1M6.486,6.035L7,6.035 7,10 6.153,10 6.153,6.999C6.107,7.04 6.051,7.08 5.988,7.115 5.924,7.152 5.857,7.185 5.785,7.217 5.747,7.232 5.706,7.243 5.666,7.256L5.666,6.484C5.762,6.444 5.866,6.415 5.957,6.367 6.152,6.267 6.329,6.156 6.486,6.035 M3.506,9.336C3.119,9.336 2.925,8.9 2.925,8.031 2.925,7.109 3.123,6.648 3.517,6.648 3.886,6.648 4.071,7.096 4.071,7.992 4.071,8.887 3.882,9.336 3.506,9.336 M3.557,6C3.051,6 2.666,6.176 2.399,6.525 2.132,6.876 2,7.385 2,8.053 2,9.34 2.492,9.986 3.476,9.986 3.966,9.986 4.343,9.812 4.605,9.465 4.869,9.117 5,8.617 5,7.965 5,6.654 4.519,6 3.557,6 M9,11L1,11 1,1 6,1 6,4 9,4z M6.64,0L0.964,0C0.964,0,0,0,0,1L0,11C0,12,0.965,12,0.965,12L8.964,12C9.964,12,10,11,10,11L10,3z" Fill="#FF424242" Height="12" Canvas.Left="0" Canvas.Top="0" Width="10"/>
+        </Canvas>
+        <Canvas Height="10" Canvas.Left="4" Canvas.Top="3" Width="8">
+            <Path Data="F1M6,5.035L5.486,5.035C5.329,5.156 5.152,5.267 4.957,5.367 4.866,5.415 4.763,5.444 4.666,5.484L4.666,6.256C4.706,6.243 4.747,6.232 4.785,6.217 4.857,6.185 4.924,6.152 4.988,6.115 5.052,6.08 5.107,6.04 5.153,5.999L5.153,9 6,9z M4,6.965C4,5.654 3.52,5 2.558,5 2.052,5 1.666,5.176 1.399,5.525 1.133,5.876 1,6.385 1,7.053 1,8.34 1.492,8.986 2.477,8.986 2.967,8.986 3.344,8.812 3.605,8.465 3.869,8.117 4,7.617 4,6.965 M8,3L8,10 0,10 0,0 5,0 5,3z M3.071,6.992C3.071,7.887 2.883,8.336 2.506,8.336 2.119,8.336 1.926,7.9 1.926,7.031 1.926,6.109 2.123,5.648 2.518,5.648 2.887,5.648 3.071,6.096 3.071,6.992" Fill="#FFF0EFF1" Height="10" Canvas.Left="0" Canvas.Top="0" Width="8"/>
+        </Canvas>
+        <Canvas Height="9.414" Canvas.Left="0" Canvas.Top="0.985" Width="9.414" RenderTransformOrigin="0.5,0.5">
+            <Canvas.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleY="1" ScaleX="-1"/>
+                </TransformGroup>
+            </Canvas.RenderTransform>
+            <Path Data="F1M7,9.414L4.449,6.863C4.139,6.954 3.822,7 3.5,7 1.57,7 0,5.43 0,3.5 0,1.57 1.57,0 3.5,0 5.43,0 7,1.57 7,3.5 7,3.822 6.954,4.139 6.863,4.449L9.414,7z" Fill="#FFF6F6F6" Height="9.414" Canvas.Left="0" Canvas.Top="0" Width="9.414"/>
+        </Canvas>
+        <Canvas Height="7" Canvas.Left="4" Canvas.Top="4" Width="7">
+            <Path Data="F1M2.5,4C1.672,4 1,3.328 1,2.5 1,1.672 1.672,1 2.5,1 3.328,1 4,1.672 4,2.5 4,3.328 3.328,4 2.5,4 M4.688,3.687C4.881,3.333 5,2.932 5,2.5 5,1.119 3.881,0 2.5,0 1.119,0 0,1.119 0,2.5 0,3.881 1.119,5 2.5,5 2.932,5 3.332,4.881 3.688,4.688L6,7 7,6z" Fill="#FF00529C" Height="7" Canvas.Left="-3.007" Canvas.Top="-2.015" Width="7" RenderTransformOrigin="0.5,0.5">
+                <Path.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform ScaleY="1" ScaleX="-1"/>
+                    </TransformGroup>
+                </Path.RenderTransform>
+            </Path>
+        </Canvas>
+    </Canvas>
+    
+    <Canvas x:Shared="false" x:Key="writeImageIcon" SnapsToDevicePixels="True" HorizontalAlignment="Left" Height="16" UseLayoutRounding="False" VerticalAlignment="Top" Width="16">
+        <Canvas Height="16" Canvas.Left="0" Canvas.Top="0" Width="16">
+            <Path Data="F1M16,16L0,16 0,0 16,0z" Fill="#FFF6F6F6" Height="16" Canvas.Left="0" Opacity="0" Canvas.Top="0" Width="16"/>
+        </Canvas>
+        <Canvas Height="14" Canvas.Left="2" Canvas.Top="1" Width="12">
+            <Path Data="F1M2,14C1.03,14,0,13.299,0,12L0,2C0,0.701,1.03,0,2,0L8.061,0 12,3.556 12,12C12,12.97,11.299,14,10,14z" Fill="#FFF6F6F6" Height="14" Canvas.Left="0" Canvas.Top="0" Width="12"/>
+        </Canvas>
+        <Canvas Height="12" Canvas.Left="3" Canvas.Top="2" Width="10">
+            <Path Data="F1M6.486,6.035L7,6.035 7,10 6.153,10 6.153,6.999C6.107,7.04 6.051,7.08 5.988,7.115 5.924,7.152 5.857,7.185 5.785,7.217 5.747,7.232 5.706,7.243 5.666,7.256L5.666,6.484C5.762,6.444 5.866,6.415 5.957,6.367 6.152,6.267 6.329,6.156 6.486,6.035 M3.506,9.336C3.119,9.336 2.925,8.9 2.925,8.031 2.925,7.109 3.123,6.648 3.517,6.648 3.886,6.648 4.071,7.096 4.071,7.992 4.071,8.887 3.882,9.336 3.506,9.336 M3.557,6C3.051,6 2.666,6.176 2.399,6.525 2.132,6.876 2,7.385 2,8.053 2,9.34 2.492,9.986 3.476,9.986 3.966,9.986 4.343,9.812 4.605,9.465 4.869,9.117 5,8.617 5,7.965 5,6.654 4.519,6 3.557,6 M9,11L1,11 1,1 6,1 6,4 9,4z M6.64,0L0.964,0C0.964,0,0,0,0,1L0,11C0,12,0.965,12,0.965,12L8.964,12C9.964,12,10,11,10,11L10,3z" Fill="#FF424242" Height="12" Canvas.Left="0" Canvas.Top="0" Width="10"/>
+        </Canvas>
+        <Canvas Height="10" Canvas.Left="4" Canvas.Top="3" Width="8">
+            <Path Data="F1M6,5.035L5.486,5.035C5.329,5.156 5.152,5.267 4.957,5.367 4.866,5.415 4.763,5.444 4.666,5.484L4.666,6.256C4.706,6.243 4.747,6.232 4.785,6.217 4.857,6.185 4.924,6.152 4.988,6.115 5.052,6.08 5.107,6.04 5.153,5.999L5.153,9 6,9z M4,6.965C4,5.654 3.52,5 2.558,5 2.052,5 1.666,5.176 1.399,5.525 1.133,5.876 1,6.385 1,7.053 1,8.34 1.492,8.986 2.477,8.986 2.967,8.986 3.344,8.812 3.605,8.465 3.869,8.117 4,7.617 4,6.965 M8,3L8,10 0,10 0,0 5,0 5,3z M3.071,6.992C3.071,7.887 2.883,8.336 2.506,8.336 2.119,8.336 1.926,7.9 1.926,7.031 1.926,6.109 2.123,5.648 2.518,5.648 2.887,5.648 3.071,6.096 3.071,6.992" Fill="#FFF0EFF1" Height="10" Canvas.Left="0" Canvas.Top="0" Width="8"/>
+        </Canvas>
+        <Canvas Height="15" Canvas.Left="-0.105" Canvas.Top="0.252" Width="14.001">
+            <Path Data="F1M2.586,0L0,2.586 0,3.414 7.61,11 11,11 11,7.417 3.423,0z" Fill="#FFF6F6F6" Height="8.5" Canvas.Left="0.966" Canvas.Top="0.21" Width="8.5" Stretch="Fill"/>
+        </Canvas>
+        <Canvas Height="9" Canvas.Left="1.861" Canvas.Top="1.462" Width="9">
+            <Path Data="F1M2,0L0,2 4,5.999 6,3.999z" Fill="#FF00529C" Height="4.5" Canvas.Left="1.5" Canvas.Top="1.5" Width="4.5" Stretch="Fill"/>
+            <Path Data="F1M3,1L1,3 0,2 2,0z" Fill="#FF00529C" Height="2.25" Canvas.Left="0" Canvas.Top="0" Width="2.25" Stretch="Fill"/>
+            <Path Data="F1M2,0L2,1.999 0,2" Fill="#FF00529C" Height="1.5" Canvas.Left="5.25" Canvas.Top="5.25" Width="1.5" Stretch="Fill"/>
+        </Canvas>
+    </Canvas>
+
+    <Canvas x:Shared="false" x:Key="verifyImageIcon" SnapsToDevicePixels="True" HorizontalAlignment="Left" Height="16" UseLayoutRounding="False" VerticalAlignment="Top" Width="16">
+        <Canvas Height="16" Canvas.Left="0" Canvas.Top="0" Width="16">
+            <Path Data="F1M16,16L0,16 0,0 16,0z" Fill="#FFF6F6F6" Height="16" Canvas.Left="0" Opacity="0" Canvas.Top="0" Width="16"/>
+        </Canvas>
+        <Canvas Height="14" Canvas.Left="2" Canvas.Top="1" Width="12">
+            <Path Data="F1M2,14C1.03,14,0,13.299,0,12L0,2C0,0.701,1.03,0,2,0L8.061,0 12,3.556 12,12C12,12.97,11.299,14,10,14z" Fill="#FFF6F6F6" Height="14" Canvas.Left="0" Canvas.Top="0" Width="12"/>
+        </Canvas>
+        <Canvas Height="12" Canvas.Left="3" Canvas.Top="2" Width="10">
+            <Path Data="F1M6.486,6.035L7,6.035 7,10 6.153,10 6.153,6.999C6.107,7.04 6.051,7.08 5.988,7.115 5.924,7.152 5.857,7.185 5.785,7.217 5.747,7.232 5.706,7.243 5.666,7.256L5.666,6.484C5.762,6.444 5.866,6.415 5.957,6.367 6.152,6.267 6.329,6.156 6.486,6.035 M3.506,9.336C3.119,9.336 2.925,8.9 2.925,8.031 2.925,7.109 3.123,6.648 3.517,6.648 3.886,6.648 4.071,7.096 4.071,7.992 4.071,8.887 3.882,9.336 3.506,9.336 M3.557,6C3.051,6 2.666,6.176 2.399,6.525 2.132,6.876 2,7.385 2,8.053 2,9.34 2.492,9.986 3.476,9.986 3.966,9.986 4.343,9.812 4.605,9.465 4.869,9.117 5,8.617 5,7.965 5,6.654 4.519,6 3.557,6 M9,11L1,11 1,1 6,1 6,4 9,4z M6.64,0L0.964,0C0.964,0,0,0,0,1L0,11C0,12,0.965,12,0.965,12L8.964,12C9.964,12,10,11,10,11L10,3z" Fill="#FF424242" Height="12" Canvas.Left="0" Canvas.Top="0" Width="10"/>
+        </Canvas>
+        <Canvas Height="10" Canvas.Left="4" Canvas.Top="3" Width="8">
+            <Path Data="F1M6,5.035L5.486,5.035C5.329,5.156 5.152,5.267 4.957,5.367 4.866,5.415 4.763,5.444 4.666,5.484L4.666,6.256C4.706,6.243 4.747,6.232 4.785,6.217 4.857,6.185 4.924,6.152 4.988,6.115 5.052,6.08 5.107,6.04 5.153,5.999L5.153,9 6,9z M4,6.965C4,5.654 3.52,5 2.558,5 2.052,5 1.666,5.176 1.399,5.525 1.133,5.876 1,6.385 1,7.053 1,8.34 1.492,8.986 2.477,8.986 2.967,8.986 3.344,8.812 3.605,8.465 3.869,8.117 4,7.617 4,6.965 M8,3L8,10 0,10 0,0 5,0 5,3z M3.071,6.992C3.071,7.887 2.883,8.336 2.506,8.336 2.119,8.336 1.926,7.9 1.926,7.031 1.926,6.109 2.123,5.648 2.518,5.648 2.887,5.648 3.071,6.096 3.071,6.992" Fill="#FFF0EFF1" Height="10" Canvas.Left="0" Canvas.Top="0" Width="8"/>
+        </Canvas>
+        <Path Data="F1M3,10L0,4 4.236,4 4.618,4.764 7,0 11.236,0 6.236,10z" Fill="#FFF6F6F6" Height="10" Canvas.Left="0" Canvas.Top="0" Width="11.236"/>
+        <Path Data="F1M8,-0.001L4,8 2,8 0,4 2,4 3,6 6,-0.001z" Fill="#FF00529C" Height="8" Canvas.Left="1.612" Canvas.Top="0.899" Width="8"/>
+    </Canvas>
+
+    <Canvas x:Shared="false" x:Key="closeIcon" SnapsToDevicePixels="True" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="30">
+        <Path Data="M3.6460876,5.6163797 L7.1812439,9.1613016 L10.726013,5.6163797 L12.34375,7.2290812 L8.7988281,10.783311 L12.34375,14.308854 L10.726166,15.919114 L7.1812439,12.383958 L3.6459351,15.919114 L2.03125,14.308854 L5.5761719,10.783311 L2.03125,7.2290812 z" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}" HorizontalAlignment="Left" Height="10.303" RenderTransformOrigin="0.5,0.5" Stretch="Fill" VerticalAlignment="Top" Width="10.313" Canvas.Left="9.687" Canvas.Top="9.697">
+        </Path>
+    </Canvas>
+
+    <Viewbox x:Shared="false" x:Key="checkIcon" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M4.3818,15L0.3818,7 5.6178,7 6.4998,8.764 10.3818,1 15.6178,1 8.6178,15z" />
+                                <GeometryDrawing Brush="#FF004600" Geometry="F1M11,2L6.5,11 5,8 2,8 5,14 8,14 14,2z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="cancelIcon" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M7.5254,10.8418L3.6074,15.1658C3.1354,15.6428 2.5314,15.8908 1.8744,15.8848 0.688400000000001,15.8748 0.000399999999999956,14.4528 0.000399999999999956,14.4528L0.000399999999999956,11.9998 4.4144,7.9568 2.1594,5.7018C1.1424,4.6728 1.3394,3.1068 2.1594,2.2878 2.5784,1.8658 3.2314,1.6118 3.9034,1.6118 4.5894,1.6118 5.2144,1.8758 5.6184,2.3358L7.5004,4.9998 12.5414,1.4948 15.5004,1.4998 10.1744,8.0418 16.0004,15.9998 14.0004,15.9998z" />
+                                <GeometryDrawing Brush="#FFA1260D" Geometry="F1M14.4629,14.9883L13.9629,14.9953 7.5359,9.4473 2.9629,14.4953C2.4249,15.0353 1.4629,14.9953 0.962899999999999,14.4953 0.462899999999999,13.9953 0.4239,13.0373 0.962899999999999,12.4953L5.9629,7.9953 2.9629,4.9953C2.3789,4.4033 2.4759,3.4823 2.9629,2.9953 3.4339,2.5203 4.4829,2.4483 4.9629,2.9953L7.4629,6.4953 12.4999,2.5003 13.4999,2.5003 8.9629,7.9953z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="warningIcon" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M7.0002,-0.000199999999999534L0.000200000000000422,13.9998 2.0002,15.9998 14.0002,15.9998 16.0002,13.9998 9.0002,-0.000199999999999534z" />
+                                <GeometryDrawing Brush="#FFFFCC00" Geometry="F1M9,10L7,10 7,5 9,5z M9,13L7,13 7,11 9,11z M8.382,1L7.618,1 1.217,13.803 2.5,15 13.5,15 14.783,13.803z" />
+                                <GeometryDrawing Brush="#FF000000" Geometry="F1M9,11L7,11 7,13 9,13z M9,10L7,10 7,5 9,5z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="errorIcon" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M16,8C16,12.418 12.418,16 8,16 3.582,16 0,12.418 0,8 0,3.582 3.582,0 8,0 12.418,0 16,3.582 16,8" />
+                                <GeometryDrawing Brush="#FFE41400" Geometry="F1M12.4141,11L11.0001,12.414 8.0001,9.414 5.0001,12.414 3.5861,11 6.5861,8 3.5861,5 5.0001,3.586 8.0001,6.586 11.0001,3.586 12.4141,5 9.4141,8z M8.0001,1C4.1341,1 1.0001,4.135 1.0001,8 1.0001,11.865 4.1341,15 8.0001,15 11.8651,15 15.0001,11.865 15.0001,8 15.0001,4.135 11.8651,1 8.0001,1" />
+                                <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1M9.4141,8L12.4141,11 11.0001,12.414 8.0001,9.414 5.0001,12.414 3.5861,11 6.5861,8 3.5861,5 5.0001,3.586 8.0001,6.586 11.0001,3.586 12.4141,5z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+</ResourceDictionary>
