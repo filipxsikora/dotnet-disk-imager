@@ -59,10 +59,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OxyPlot">
-      <HintPath>..\libs\OxyPlot.dll</HintPath>
+      <HintPath>.\OxyPlot.dll</HintPath>
     </Reference>
     <Reference Include="OxyPlot.Wpf">
-      <HintPath>..\libs\OxyPlot.Wpf.dll</HintPath>
+      <HintPath>.\OxyPlot.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
