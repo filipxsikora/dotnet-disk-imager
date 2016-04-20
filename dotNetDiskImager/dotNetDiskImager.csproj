@@ -91,6 +91,9 @@
     </Compile>
     <Compile Include="DiskAccess\DiskOperation.cs" />
     <Compile Include="DiskAccess\OperationFinishedState.cs" />
+    <Compile Include="SettingsWindow.xaml.cs">
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\FlashWindow.cs" />
     <Compile Include="UI\OverlayImageConverter.cs" />
     <Page Include="AboutWindow.xaml">
@@ -124,6 +127,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
