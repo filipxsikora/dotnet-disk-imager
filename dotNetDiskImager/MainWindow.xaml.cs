@@ -48,7 +48,6 @@ namespace dotNetDiskImager
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
 
         public SpeedGraphModel GraphModel { get; } = new SpeedGraphModel();
-        HwndSourceHook messageHook;
         bool verifyingAfterOperation = false;
 
         public MainWindow()
@@ -61,12 +60,10 @@ namespace dotNetDiskImager
                 driveSelectComboBox.Items.Add(new ComboBoxDeviceItem(drive));
             }
 
-            messageHook = new HwndSourceHook(WndProc);
-
             Loaded += (s, e) =>
             {
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
-                source.AddHook(messageHook);
+                source.AddHook(WndProc);
             };
 
             Closing += (s, e) =>
@@ -82,7 +79,7 @@ namespace dotNetDiskImager
                     disk.CancelOperation();
                 }
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
-                source.RemoveHook(messageHook);
+                source.RemoveHook(WndProc);
             };
         }
 
@@ -364,7 +361,7 @@ namespace dotNetDiskImager
                 {
                     DisplayInfoPart(false);
                     if (MessageBox.Show(string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length))
-                        , "File already exist", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                        , "File already exists", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     {
                         return;
                     }
@@ -450,7 +447,7 @@ namespace dotNetDiskImager
             if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter)))
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format(@"Device [{0}:\] is read only. Aborting.", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter)
+                MessageBox.Show(string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
                         , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
