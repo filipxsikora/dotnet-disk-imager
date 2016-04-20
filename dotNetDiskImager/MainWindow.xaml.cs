@@ -32,10 +32,29 @@ namespace dotNetDiskImager
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Win32 API Stuff
+
+        // Define the Win32 API methods we are going to use
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+
+        [DllImport("user32.dll")]
+        private static extern bool InsertMenu(IntPtr hMenu, int wPosition, int wFlags, int wIDNewItem, string lpNewItem);
+
+        /// Define our Constants we will use
+        const int WM_SYSCOMMAND = 0x112;
+        const int MF_SEPARATOR = 0x800;
+        const int MF_BYPOSITION = 0x400;
+        const int MF_STRING = 0x0;
+
+        const int WM_SYSTEMMENU = 0xa4;
+        const int WP_SYSTEMMENU = 0x02;
+
         const int WM_DEVICECHANGE = 0x219;
         const int DBT_DEVICEARRIVAL = 0x8000;
         const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
         const int DBT_DEVTYP_VOLUME = 0x02;
+        #endregion
 
         const int windowHeight = 220;
         const int infoMessageHeight = 40;
@@ -43,6 +62,17 @@ namespace dotNetDiskImager
         const int progressPartHeight = 220;
         const int applicationPartHeight = 180;
         const int windowInnerOffset = 10;
+
+        const int _settingsCommand = 0x100;
+        const int _aboutCommand = 0x200;
+
+        public IntPtr Handle
+        {
+            get
+            {
+                return new WindowInteropHelper(this).Handle;
+            }
+        }
 
         Disk disk;
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
@@ -62,7 +92,13 @@ namespace dotNetDiskImager
 
             Loaded += (s, e) =>
             {
-                HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+                IntPtr systemMenuHandle = GetSystemMenu(Handle, false);
+
+                InsertMenu(systemMenuHandle, 5, MF_BYPOSITION | MF_SEPARATOR, 0, string.Empty);
+                InsertMenu(systemMenuHandle, 6, MF_BYPOSITION, _settingsCommand, "Settings");
+                InsertMenu(systemMenuHandle, 7, MF_BYPOSITION, _aboutCommand, "About");
+
+                HwndSource source = HwndSource.FromHwnd(Handle);
                 source.AddHook(WndProc);
             };
 
@@ -119,6 +155,21 @@ namespace dotNetDiskImager
                                 }
                             }
                         }
+                        break;
+                }
+            }
+
+            if (msg == WM_SYSCOMMAND)
+            {
+                switch (wParam.ToInt32())
+                {
+                    case _settingsCommand:
+                        MessageBox.Show("\"Settings\" was clicked");
+                        handled = true;
+                        break;
+                    case _aboutCommand:
+                        MessageBox.Show("\"About\" was clicked");
+                        handled = true;
                         break;
                 }
             }
