@@ -96,8 +96,8 @@ namespace dotNetDiskImager
                 IntPtr systemMenuHandle = GetSystemMenu(Handle, false);
 
                 InsertMenu(systemMenuHandle, 5, MF_BYPOSITION | MF_SEPARATOR, 0, string.Empty);
-                InsertMenu(systemMenuHandle, 6, MF_BYPOSITION, _settingsCommand, "Settings");
-                InsertMenu(systemMenuHandle, 7, MF_BYPOSITION, _aboutCommand, "About");
+                InsertMenu(systemMenuHandle, 6, MF_BYPOSITION, _settingsCommand, "Settings\tCtrl+O");
+                InsertMenu(systemMenuHandle, 7, MF_BYPOSITION, _aboutCommand, "About\tF1");
 
                 HwndSource source = HwndSource.FromHwnd(Handle);
                 source.AddHook(WndProc);
@@ -165,21 +165,32 @@ namespace dotNetDiskImager
                 switch (wParam.ToInt32())
                 {
                     case _settingsCommand:
-                        MessageBox.Show("\"Settings\" was clicked");
+                        ShowSettingsWindow();
                         handled = true;
                         break;
                     case _aboutCommand:
-                        if(aboutWindow == null)
-                        {
-                            aboutWindow = new AboutWindow();
-                            aboutWindow.Closed += (s, e) => aboutWindow = null;
-                        }
-                        aboutWindow.Show();
+                        ShowAboutWindow();
                         handled = true;
                         break;
                 }
             }
             return IntPtr.Zero;
+        }
+
+        private void ShowSettingsWindow()
+        {
+            MessageBox.Show("\"Settings\" was clicked");
+        }
+
+        private void ShowAboutWindow()
+        {
+            if (aboutWindow == null)
+            {
+                aboutWindow = new AboutWindow();
+                aboutWindow.Closed += (s, e) => aboutWindow = null;
+            }
+            aboutWindow.Show();
+            aboutWindow.Activate();
         }
 
         private void readButton_Click(object sender, RoutedEventArgs e)
@@ -748,6 +759,20 @@ namespace dotNetDiskImager
             }
 
             return message;
+        }
+
+        private void window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.F1 && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                ShowAboutWindow();
+                e.Handled = true;
+            }
+            if(e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                ShowSettingsWindow();
+                e.Handled = true;
+            }
         }
     }
 }
