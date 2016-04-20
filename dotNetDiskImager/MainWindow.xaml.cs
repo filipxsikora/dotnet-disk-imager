@@ -77,6 +77,7 @@ namespace dotNetDiskImager
         Disk disk;
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
         AboutWindow aboutWindow = null;
+        SettingsWindow settingsWindow = null;
 
         public SpeedGraphModel GraphModel { get; } = new SpeedGraphModel();
         bool verifyingAfterOperation = false;
@@ -179,7 +180,13 @@ namespace dotNetDiskImager
 
         private void ShowSettingsWindow()
         {
-            MessageBox.Show("\"Settings\" was clicked");
+            if (settingsWindow == null)
+            {
+                settingsWindow = new SettingsWindow();
+                settingsWindow.Closed += (s, e) => settingsWindow = null;
+            }
+            settingsWindow.Show();
+            settingsWindow.Activate();
         }
 
         private void ShowAboutWindow()
@@ -536,7 +543,12 @@ namespace dotNetDiskImager
 
             if (result.Result)
             {
-                DisplayInfoPart(false, true);
+                DisplayInfoPart(false);
+                if (MessageBox.Show(this, string.Format("Writing to the [{0}:\\ - {1}] can corrupt the device.\nMake sure you have selected correct device and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
+                        , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                {
+                    return;
+                }
                 disk.OperationProgressChanged += Disk_OperationProgressChanged;
                 disk.OperationProgressReport += Disk_OperationProgressReport;
                 disk.OperationFinished += Disk_OperationFinished;
@@ -559,6 +571,11 @@ namespace dotNetDiskImager
                     Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), result.DataFound ? "DOES" : "does not"),
                     "Not enough capacity", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
+                    if (MessageBox.Show(this, string.Format("Writing to the [{0}:\\ - {1}] can corrupt the device.\nMake sure you have selected correct device and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
+                        , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    {
+                        return;
+                    }
                     disk.OperationProgressChanged += Disk_OperationProgressChanged;
                     disk.OperationProgressReport += Disk_OperationProgressReport;
                     disk.OperationFinished += Disk_OperationFinished;
