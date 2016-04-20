@@ -76,6 +76,7 @@ namespace dotNetDiskImager
 
         Disk disk;
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
+        AboutWindow aboutWindow = null;
 
         public SpeedGraphModel GraphModel { get; } = new SpeedGraphModel();
         bool verifyingAfterOperation = false;
@@ -168,7 +169,12 @@ namespace dotNetDiskImager
                         handled = true;
                         break;
                     case _aboutCommand:
-                        MessageBox.Show(this, "\"About\" was clicked");
+                        if(aboutWindow == null)
+                        {
+                            aboutWindow = new AboutWindow();
+                            aboutWindow.Closed += (s, e) => aboutWindow = null;
+                        }
+                        aboutWindow.Show();
                         handled = true;
                         break;
                 }
