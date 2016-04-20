@@ -153,5 +153,8 @@ namespace dotNetDiskImager.DiskAccess
 
             return ptr;
         }
+
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern int memcmp(byte[] b1, byte[] b2, long count);
     }
 }

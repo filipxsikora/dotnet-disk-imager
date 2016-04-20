@@ -630,14 +630,9 @@ namespace dotNetDiskImager.DiskAccess
 
                 fileData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
                 deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                if (fileData.Length != deviceData.Length)
-                    return false;
 
-                for (int x = 0; x < fileData.Length; x++)
-                {
-                    if (fileData[x] != deviceData[x])
-                        return false;
-                }
+                if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData))
+                    return false;
 
                 totalBytesVerified += (ulong)fileData.Length;
                 bytesVerified += (ulong)fileData.Length;

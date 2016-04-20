@@ -379,5 +379,12 @@ namespace dotNetDiskImager.DiskAccess
         {
             return NativeDisk.GetLogicalDrives();
         }
+
+        internal static bool ByteArrayCompare(byte[] b1, byte[] b2)
+        {
+            // Validate buffers are the same length.
+            // This also ensures that the count does not exceed the length of either buffer.  
+            return b1.Length == b2.Length && NativeDisk.memcmp(b1, b2, b1.Length) == 0;
+        }
     }
 }
