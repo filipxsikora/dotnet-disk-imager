@@ -17,7 +17,7 @@
             <RowDefinition x:Name="applicationPartRow" Height="190"/>
             <RowDefinition x:Name="progressPartRow" Height="0"/>
         </Grid.RowDefinitions>
-        <Button TabIndex="5" x:Name="readButton" HorizontalAlignment="Left" Margin="10,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="readButton_Click" Height="23" Grid.Row="1">
+        <Button TabIndex="5" x:Name="readButton" ToolTip="Read data from device to image file" HorizontalAlignment="Left" Margin="10,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="readButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource readImageIcon}" Padding="0,0,3,0"></Label>
                 <TextBlock Text="Read from Device"/>
@@ -35,7 +35,7 @@
             <Label x:Name="stepText" Content="" Margin="0,0,20,184" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
             <Label x:Name="timeRemainingText" Content="" HorizontalAlignment="Left" Margin="20,0,0,17" Height="26" VerticalAlignment="Bottom"/>
         </Grid>
-        <Button TabIndex="8" x:Name="cancelButton" HorizontalAlignment="Left" Margin="359,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Grid.Row="1">
+        <Button TabIndex="8" x:Name="cancelButton" ToolTip="Cancel current operation" HorizontalAlignment="Left" Margin="359,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource cancelIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Cancel"/>
@@ -43,7 +43,7 @@
         </Button>
         <Label Content="Device:" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <CheckBox TabIndex="3" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" HorizontalAlignment="Left" Margin="10,111,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <Button TabIndex="6" x:Name="writeButton" HorizontalAlignment="Left" Margin="140,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
+        <Button TabIndex="6" x:Name="writeButton" ToolTip="Write data from image to device" HorizontalAlignment="Left" Margin="140,142,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource writeImageIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Write to Device"/>
@@ -56,12 +56,12 @@
                 <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             </Grid>
         </Border>
-        <Button TabIndex="7" x:Name="verifyImageButton" HorizontalAlignment="Left" Margin="257,142,0,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="verifyImageButton_Click">
+        <Button TabIndex="7" x:Name="verifyImageButton" ToolTip="Verify image data against data at device" HorizontalAlignment="Left" Margin="257,142,0,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="verifyImageButton_Click">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource verifyImageIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Verify image"/>
             </StackPanel>
         </Button>
-        <CheckBox TabIndex="4" x:Name="verifyCheckBox" Content="Verify data when finished" Margin="271,111,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
+        <CheckBox TabIndex="4" x:Name="verifyCheckBox" ToolTip="Verify procedure will be started automatically when read or write finishes" Content="Verify data when finished" Margin="271,111,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
     </Grid>
 </Window>
