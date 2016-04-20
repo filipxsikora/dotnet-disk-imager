@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,12 +24,23 @@ namespace dotNetDiskImager
         public AboutWindow()
         {
             InitializeComponent();
+            var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            versionLabel.Content = string.Format("version {0}.{1} (b{2}.{3})", appVersion.Major, appVersion.Minor, appVersion.Build, appVersion.Revision);
         }
 
         private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.Escape)
+            {
+                Close();
+                e.Handled = true;
+            }
         }
     }
 }
