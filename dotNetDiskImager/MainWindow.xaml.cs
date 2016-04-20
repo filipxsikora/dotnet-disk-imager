@@ -106,7 +106,7 @@ namespace dotNetDiskImager
             {
                 if (disk != null)
                 {
-                    if (MessageBox.Show("Exiting now will result in corruption at the target.\nDo you really want to exit application ?",
+                    if (MessageBox.Show(this, "Exiting now will result in corruption at the target.\nDo you really want to exit application ?",
                     "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     {
                         e.Cancel = true;
@@ -168,7 +168,7 @@ namespace dotNetDiskImager
                         handled = true;
                         break;
                     case _aboutCommand:
-                        MessageBox.Show("\"About\" was clicked");
+                        MessageBox.Show(this, "\"About\" was clicked");
                         handled = true;
                         break;
                 }
@@ -185,7 +185,7 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Unknown error");
+                MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
 
@@ -198,7 +198,7 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Unknown error");
+                MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
 
@@ -211,7 +211,7 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Unknown error");
+                MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
 
@@ -314,7 +314,7 @@ namespace dotNetDiskImager
         {
             if (disk != null)
             {
-                if (MessageBox.Show("Canceling current operation will result in corruption at the target.\nDo you really want to cancel current operation ?",
+                if (MessageBox.Show(this, "Canceling current operation will result in corruption at the target.\nDo you really want to cancel current operation ?",
                     "Confirm Cancel", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
                     disk.CancelOperation();
@@ -401,7 +401,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -411,7 +411,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length > 0)
                 {
                     DisplayInfoPart(false);
-                    if (MessageBox.Show(string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length))
+                    if (MessageBox.Show(this, string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length))
                         , "File already exists", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     {
                         return;
@@ -426,7 +426,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -452,7 +452,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format("There is not enough free space on target device [{0}:\\].\nFree space availible {1}\nFree space required {2}",
+                MessageBox.Show(this, string.Format("There is not enough free space on target device [{0}:\\].\nFree space availible {1}\nFree space required {2}",
                     imagePathTextBox.Text[0], Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace)),
                     "Not enough free space", MessageBoxButton.OK, MessageBoxImage.Warning
                     );
@@ -472,7 +472,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -482,7 +482,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
+                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -490,7 +490,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
+                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -498,7 +498,7 @@ namespace dotNetDiskImager
             if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter)))
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
+                MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
                         , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -511,7 +511,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -537,7 +537,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(string.Format("Target device [{0}:\\] hasn't got enough capacity.\nSpace availible {1}\nSpace required {2}\n" +
+                if (MessageBox.Show(this, string.Format("Target device [{0}:\\] hasn't got enough capacity.\nSpace availible {1}\nSpace required {2}\n" +
                     "The extra space {3} appears to contain any data.\nWould you like to continue anyway ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter,
                     Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), result.DataFound ? "DOES" : "does not"),
                     "Not enough capacity", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
@@ -575,7 +575,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -585,7 +585,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
+                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -593,7 +593,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
+                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -606,7 +606,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -632,7 +632,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(string.Format("Image and device size does not match.\nImage size: {0}\nDevice size: {1}\nWould you like to verify data up to {2} size?",
+                if (MessageBox.Show(this, string.Format("Image and device size does not match.\nImage size: {0}\nDevice size: {1}\nWould you like to verify data up to {2} size?",
                     Helpers.BytesToXbytes(result.ImageSize), Helpers.BytesToXbytes(result.DeviceSize), (result.DeviceSize > result.ImageSize ? "image" : "device")),
                     "Size does not match", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
