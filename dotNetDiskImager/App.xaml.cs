@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dotNetDiskImager.Models;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -27,11 +28,8 @@ namespace dotNetDiskImager
                     return Assembly.Load(assemblyData);
                 }
             };
-        }
 
-        private void Application_Startup(object sender, StartupEventArgs e)
-        {
-
+            AppSettings.LoadSettings();
         }
     }
 }
