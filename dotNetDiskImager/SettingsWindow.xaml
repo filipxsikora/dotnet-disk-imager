@@ -5,16 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:dotNetDiskImager"
         mc:Ignorable="d"
-        Title="Settings - dotNet Disk Imager" Height="350" Width="400" ResizeMode="NoResize" Icon="icon.ico">
+        Title="Settings - dotNet Disk Imager" Height="350" Width="400" ResizeMode="NoResize" Icon="icon.ico" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <GroupBox Header="General" Margin="10,10,10,0" VerticalAlignment="Top" Height="131">
             <Grid>
                 <CheckBox x:Name="displayPreWriteWarnings" IsChecked="True" Content="Display warnings before write" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
                 <TextBlock HorizontalAlignment="Left" Margin="10,35,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="Default folder"/><Run Text=":"/></TextBlock>
-                <RadioButton x:Name="defaultFolder_lastUsed" Content="Last used" HorizontalAlignment="Left" Margin="10,56,0,0" VerticalAlignment="Top" GroupName="defaultFolder" IsChecked="True"/>
-                <RadioButton x:Name="defaultFolder_userSpecify" Content="User specified" HorizontalAlignment="Left" Margin="101,56,0,0" VerticalAlignment="Top" GroupName="defaultFolder"/>
+                <RadioButton x:Name="defaultFolder_lastUsed" Content="Last used" HorizontalAlignment="Left" Margin="10,56,0,0" VerticalAlignment="Top" GroupName="defaultFolder" IsChecked="True" Click="defaultFolder_lastUsed_Click"/>
+                <RadioButton x:Name="defaultFolder_userSpecify" Content="User specified" HorizontalAlignment="Left" Margin="101,56,0,0" VerticalAlignment="Top" GroupName="defaultFolder" Click="defaultFolder_userSpecify_Click"/>
                 <TextBox x:Name="defaultFolder_userSpecifyValue" Margin="10,76,55,0" TextWrapping="NoWrap" Height="23" VerticalAlignment="Top" IsEnabled="False"/>
-                <Button x:Name="defaultFolderDialogButton" ToolTip="Open dialog to select default folder" Content="{StaticResource openFolderIcon}" HorizontalAlignment="Right" Margin="0,76,10,0" VerticalAlignment="Top" Width="40" Height="23" IsEnabled="False"/>
+                <Button x:Name="defaultFolderDialogButton" ToolTip="Open dialog to select default folder" Content="{StaticResource openFolderIcon}" HorizontalAlignment="Right" Margin="0,76,10,0" VerticalAlignment="Top" Width="40" Height="23" IsEnabled="False" Click="defaultFolderDialogButton_Click"/>
             </Grid>
         </GroupBox>
         <GroupBox Header="Power" Margin="10,146,10,0" VerticalAlignment="Top" Height="60">
@@ -36,11 +36,13 @@
                         <ComboBoxItem Content="Percent"/>
                         <ComboBoxItem Content="Current speed"/>
                         <ComboBoxItem Content="Remaining time"/>
+                        <ComboBoxItem Content="Active device"/>
+                        <ComboBoxItem Content="Image file name"/>
                     </ComboBox.Items>
                 </ComboBox>
             </Grid>
         </GroupBox>
-        <Button x:Name="button" Margin="0,278,10,0" HorizontalAlignment="Right" Padding="5,0" Height="23" VerticalAlignment="Top">
+        <Button x:Name="saveButton" Margin="0,278,10,0" HorizontalAlignment="Right" Padding="5,0" Height="23" VerticalAlignment="Top" Click="saveButton_Click">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource saveIcon}" Padding="0,0,3,0"></Label>
                 <TextBlock Text="Save"/>
