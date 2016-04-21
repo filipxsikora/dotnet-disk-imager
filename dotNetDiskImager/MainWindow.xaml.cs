@@ -260,6 +260,8 @@ namespace dotNetDiskImager
                         disk = null;
 
                         DisplayInfoPart(true, false, eventArgs.OperationState, CreateInfoMessage(eventArgs));
+
+                        Title = "dotNet Disk Imager";
                     });
                 }
                 else
@@ -285,14 +287,24 @@ namespace dotNetDiskImager
         private void Disk_OperationProgressReport(object sender, OperationProgressReportEventArgs eventArgs)
         {
             GraphModel.UpdateSpeedLineValue(eventArgs.AverageBps);
+            remainingTimeEstimator.Add(eventArgs.RemainingBytes / eventArgs.AverageBps);
+                
             Dispatcher.Invoke(() =>
             {
-                remainingTimeEstimator.Add(eventArgs.RemainingBytes / eventArgs.AverageBps);
                 if (remainingTimeEstimator.IsReady)
                 {
-                    timeRemainingText.Content = string.Format("Remaining time: {0}", Helpers.SecondsToEstimate(remainingTimeEstimator.Average()));
+                    ulong averageSeconds = remainingTimeEstimator.Average();
+                    timeRemainingText.Content = string.Format("Remaining time: {0}", Helpers.SecondsToEstimate(averageSeconds));
+                    if (AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.RemainingTime)
+                    {
+                        Title = string.Format(@"[{0}] - dotNet Disk Imager", Helpers.SecondsToEstimate(averageSeconds, true));
+                    }
                 }
                 transferredText.Content = string.Format("Transferred: {0} of {1}", Helpers.BytesToXbytes(eventArgs.TotalBytesProcessed), Helpers.BytesToXbytes(eventArgs.TotalBytesProcessed + eventArgs.RemainingBytes));
+                if (AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.CurrentSpeed)
+                {
+                    Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(eventArgs.AverageBps));
+                }
             });
         }
 
@@ -318,6 +330,16 @@ namespace dotNetDiskImager
                     programTaskbar.ProgressValue = eventArgs.Progress / 100.0;
                 }
                 progressText.Content = string.Format("{0}% Complete", eventArgs.Progress);
+
+                switch(AppSettings.Settings.TaskbarExtraInfo)
+                {
+                    case TaskbarExtraInfo.Percent:
+                        Title = string.Format("[{0}%] - dotNet Disk Imager", (int)(programTaskbar.ProgressValue * 100));
+                        break;
+                    case TaskbarExtraInfo.CurrentSpeed:
+                        Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(eventArgs.AverageBps));
+                        break;
+                }
             });
 
         }
@@ -489,6 +511,19 @@ namespace dotNetDiskImager
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                 programTaskbar.Overlay = Properties.Resources.read.ToBitmapImage();
+
+                switch (AppSettings.Settings.TaskbarExtraInfo)
+                {
+                    case TaskbarExtraInfo.ActiveDevice:
+                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        break;
+                    case TaskbarExtraInfo.ImageFileName:
+                        Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                        break;
+                    case TaskbarExtraInfo.RemainingTime:
+                        Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                        break;
+                }
             }
             else
             {
@@ -581,6 +616,19 @@ namespace dotNetDiskImager
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                 programTaskbar.Overlay = Properties.Resources.write.ToBitmapImage();
+
+                switch (AppSettings.Settings.TaskbarExtraInfo)
+                {
+                    case TaskbarExtraInfo.ActiveDevice:
+                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        break;
+                    case TaskbarExtraInfo.ImageFileName:
+                        Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                        break;
+                    case TaskbarExtraInfo.RemainingTime:
+                        Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                        break;
+                }
             }
             else
             {
@@ -610,6 +658,19 @@ namespace dotNetDiskImager
                     SetUIState(false);
                     programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                     programTaskbar.Overlay = Properties.Resources.write.ToBitmapImage();
+
+                    switch (AppSettings.Settings.TaskbarExtraInfo)
+                    {
+                        case TaskbarExtraInfo.ActiveDevice:
+                            Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                            break;
+                        case TaskbarExtraInfo.ImageFileName:
+                            Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                            break;
+                        case TaskbarExtraInfo.RemainingTime:
+                            Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                            break;
+                    }
                 }
                 else
                 {
@@ -683,6 +744,19 @@ namespace dotNetDiskImager
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                 programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
+
+                switch (AppSettings.Settings.TaskbarExtraInfo)
+                {
+                    case TaskbarExtraInfo.ActiveDevice:
+                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        break;
+                    case TaskbarExtraInfo.ImageFileName:
+                        Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                        break;
+                    case TaskbarExtraInfo.RemainingTime:
+                        Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                        break;
+                }
             }
             else
             {
@@ -705,6 +779,19 @@ namespace dotNetDiskImager
                     SetUIState(false);
                     programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                     programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
+
+                    switch (AppSettings.Settings.TaskbarExtraInfo)
+                    {
+                        case TaskbarExtraInfo.ActiveDevice:
+                            Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                            break;
+                        case TaskbarExtraInfo.ImageFileName:
+                            Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                            break;
+                        case TaskbarExtraInfo.RemainingTime:
+                            Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                            break;
+                    }
                 }
                 else
                 {
@@ -815,6 +902,8 @@ namespace dotNetDiskImager
 
         private void program_Drop(object sender, DragEventArgs e)
         {
+            if (disk != null)
+                return;
             try
             {
                 if (e.Data.GetDataPresent(DataFormats.FileDrop))
