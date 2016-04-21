@@ -118,6 +118,7 @@ namespace dotNetDiskImager
                 }
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
+                AppSettings.SaveSettings();
             };
         }
 
@@ -319,6 +320,7 @@ namespace dotNetDiskImager
 
         private void fileSelectDialogButton_Click(object sender, RoutedEventArgs e)
         {
+            bool result = false;
             SaveFileDialog dlg = new SaveFileDialog()
             {
                 CheckFileExists = false,
@@ -326,10 +328,22 @@ namespace dotNetDiskImager
                 OverwritePrompt = false,
                 Title = "Select a disk image file",
                 Filter = "Disk image file (*.img)|*.img|Any file|*.*",
+                InitialDirectory = AppSettings.Settings.DefaultFolderPath
             };
-
-            if (dlg.ShowDialog().Value)
+            try
             {
+                result = dlg.ShowDialog().Value;
+            }
+            catch
+            {
+                dlg.InitialDirectory = "";
+                result = dlg.ShowDialog().Value;
+            }
+
+            if(result)
+            {
+                if (AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed)
+                    AppSettings.Settings.DefaultFolderPath = new FileInfo(dlg.FileName).DirectoryName;
                 imagePathTextBox.Text = dlg.FileName;
             }
         }
