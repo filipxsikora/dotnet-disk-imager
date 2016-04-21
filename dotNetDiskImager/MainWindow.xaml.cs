@@ -242,40 +242,44 @@ namespace dotNetDiskImager
 
         private void Disk_OperationFinished(object sender, OperationFinishedEventArgs eventArgs)
         {
-            if (eventArgs.Done)
+            try
             {
-                verifyingAfterOperation = false;
-                Dispatcher.Invoke(() =>
+                if (eventArgs.Done)
                 {
-                    this.FlashWindow();
-                    SetUIState(true);
-                    GraphModel.ResetToNormal();
-                    programTaskbar.ProgressValue = 0;
-                    programTaskbar.ProgressState = TaskbarItemProgressState.None;
-                    programTaskbar.Overlay = null;
-                    remainingTimeEstimator.Reset();
-                    disk.Dispose();
-                    disk = null;
-
-                    DisplayInfoPart(true, false, eventArgs.OperationState, CreateInfoMessage(eventArgs));
-                });
-            }
-            else
-            {
-                if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
-                {
-                    verifyingAfterOperation = true;
+                    verifyingAfterOperation = false;
                     Dispatcher.Invoke(() =>
                     {
-                        programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
-                        stepText.Content = "Verifying...";
-                        GraphModel.ResetToVerify();
+                        this.FlashWindow();
+                        SetUIState(true);
+                        GraphModel.ResetToNormal();
+                        programTaskbar.ProgressValue = 0;
+                        programTaskbar.ProgressState = TaskbarItemProgressState.None;
+                        programTaskbar.Overlay = null;
                         remainingTimeEstimator.Reset();
-                        timeRemainingText.Content = "Remaining time: Calculating...";
-                        progressText.Content = "0% Complete";
+                        disk.Dispose();
+                        disk = null;
+
+                        DisplayInfoPart(true, false, eventArgs.OperationState, CreateInfoMessage(eventArgs));
                     });
                 }
+                else
+                {
+                    if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
+                    {
+                        verifyingAfterOperation = true;
+                        Dispatcher.Invoke(() =>
+                        {
+                            programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
+                            stepText.Content = "Verifying...";
+                            GraphModel.ResetToVerify();
+                            remainingTimeEstimator.Reset();
+                            timeRemainingText.Content = "Remaining time: Calculating...";
+                            progressText.Content = "0% Complete";
+                        });
+                    }
+                }
             }
+            catch { }
         }
 
         private void Disk_OperationProgressReport(object sender, OperationProgressReportEventArgs eventArgs)
@@ -328,7 +332,7 @@ namespace dotNetDiskImager
                 OverwritePrompt = false,
                 Title = "Select a disk image file",
                 Filter = "Disk image file (*.img)|*.img|Any file|*.*",
-                InitialDirectory = AppSettings.Settings.DefaultFolderPath
+                InitialDirectory = AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed ? AppSettings.Settings.LastFolderPath : AppSettings.Settings.UserSpecifiedFolder
             };
             try
             {
@@ -342,8 +346,7 @@ namespace dotNetDiskImager
 
             if(result)
             {
-                if (AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed)
-                    AppSettings.Settings.DefaultFolderPath = new FileInfo(dlg.FileName).DirectoryName;
+                AppSettings.Settings.LastFolderPath = new FileInfo(dlg.FileName).DirectoryName;
                 imagePathTextBox.Text = dlg.FileName;
             }
         }
@@ -394,8 +397,8 @@ namespace dotNetDiskImager
                         break;
                 }
 
-                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight + infoMessageHeight, TimeSpan.FromMilliseconds(250));
-                DoubleAnimation containerAnimation = new DoubleAnimation(infoMessageHeight - infoMessageMargin, TimeSpan.FromMilliseconds(250));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight + infoMessageHeight, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
+                DoubleAnimation containerAnimation = new DoubleAnimation(infoMessageHeight - infoMessageMargin, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
                 windowAnimation.Completed += (s, e) =>
                 {
                     closeInfoButton.Visibility = Visibility.Visible;
@@ -415,8 +418,8 @@ namespace dotNetDiskImager
                 }
                 else
                 {
-                    DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight, TimeSpan.FromMilliseconds(250));
-                    DoubleAnimation containerAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(250));
+                    DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
+                    DoubleAnimation containerAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
                     windowAnimation.Completed += (s, e) =>
                     {
                         infoContainer.Visibility = Visibility.Collapsed;
@@ -728,7 +731,7 @@ namespace dotNetDiskImager
         {
             if (display)
             {
-                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight + progressPartHeight - windowInnerOffset, TimeSpan.FromMilliseconds(500));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight + progressPartHeight - windowInnerOffset, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 500 : 0));
                 BeginAnimation(HeightProperty, windowAnimation);
                 progressPartGrid.Visibility = Visibility.Visible;
                 progressPartRow.Height = new GridLength(progressPartHeight, GridUnitType.Pixel);
@@ -736,7 +739,7 @@ namespace dotNetDiskImager
             }
             else
             {
-                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight, TimeSpan.FromMilliseconds(500));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 500 : 0));
                 BeginAnimation(HeightProperty, windowAnimation);
                 progressPartGrid.Visibility = Visibility.Collapsed;
                 progressPartRow.Height = new GridLength(0, GridUnitType.Pixel);

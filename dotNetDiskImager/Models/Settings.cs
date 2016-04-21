@@ -9,7 +9,6 @@ using System.Xml.Serialization;
 namespace dotNetDiskImager.Models
 {
     public enum DefaultFolder { LastUsed, UserDefined }
-    public enum Animations { AlwaysOn, OnlyOnAcPower, Never }
     public enum TaskbarExtraInfo { Nothing, Percent, CurrentSpeed, RemainingTime, ActiveDevice, ImageFileName }
 
     public static class AppSettings
@@ -45,20 +44,24 @@ namespace dotNetDiskImager.Models
     {
         public bool DisplayWriteWarnings { get; set; }
         public DefaultFolder DefaultFolder { get; set; }
-        public string DefaultFolderPath { get; set; }
-        public Animations AnimationsSettings { get; set; }
+        public string LastFolderPath { get; set; }
+        public string UserSpecifiedFolder { get; set; }
+        public bool EnableAnimations { get; set; }
         public TaskbarExtraInfo TaskbarExtraInfo { get; set; }
+        public bool CheckForUpdatesOnStartup { get; set; }
 
         public static SettingsInternal Default
         {   get
             {
                 return new SettingsInternal()
                 {
-                    AnimationsSettings = Animations.AlwaysOn,
+                    EnableAnimations = true,
                     DefaultFolder = DefaultFolder.LastUsed,
-                    DefaultFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    LastFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    UserSpecifiedFolder = "",
                     DisplayWriteWarnings = true,
-                    TaskbarExtraInfo = TaskbarExtraInfo.Nothing
+                    TaskbarExtraInfo = TaskbarExtraInfo.Nothing,
+                    CheckForUpdatesOnStartup = true
                 };
             }
         } 

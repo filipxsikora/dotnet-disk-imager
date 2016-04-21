@@ -7,7 +7,7 @@
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
         x:Name="window"
-        Title="dotNet Disk Imager" Height="220" Width="525" ResizeMode="CanMinimize" Icon="icon.ico" WindowStartupLocation="CenterOwner" PreviewKeyDown="window_PreviewKeyDown">
+        Title="dotNet Disk Imager" Height="220" Width="525" ResizeMode="CanMinimize" Background="White" Icon="icon.ico" WindowStartupLocation="CenterOwner" PreviewKeyDown="window_PreviewKeyDown">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="programTaskbar" Description="dotNet Disk Imager" ProgressState="Normal"/>
     </Window.TaskbarItemInfo>

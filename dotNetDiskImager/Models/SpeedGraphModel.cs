@@ -21,6 +21,7 @@ namespace dotNetDiskImager.Models
         LinearAxis yAxis;
         LinearAxis xAxis;
         AreaSeries speedSeries;
+        bool firsCall = true;
 
         public void UpdateSpeedLineValue(ulong value)
         {
@@ -33,11 +34,18 @@ namespace dotNetDiskImager.Models
 
             speedLine.Dispatcher.Invoke(() =>
             {
-                double oldValue = speedLine.Y;
                 speedLine.Text = string.Format("Speed: {0}/s", Helpers.BytesToXbytes(value));
-                DoubleAnimation anim = new DoubleAnimation(oldValue, value, TimeSpan.FromMilliseconds(500));
-                anim.SetCurrentValue(Timeline.DesiredFrameRateProperty, 30);
-                speedLine.BeginAnimation(OxyPlot.Wpf.LineAnnotation.YProperty, anim);
+                if (!firsCall)
+                {
+                    DoubleAnimation anim = new DoubleAnimation(value, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 500 : 0));
+                    anim.SetCurrentValue(Timeline.DesiredFrameRateProperty, 30);
+                    speedLine.BeginAnimation(OxyPlot.Wpf.LineAnnotation.YProperty, anim);
+                }
+                else
+                {
+                    firsCall = false;
+                    speedLine.Y = value;
+                }
             });
         }
 
@@ -70,6 +78,7 @@ namespace dotNetDiskImager.Models
             xAxis.MajorGridlineColor = OxyColor.FromRgb(205, 239, 211);
             yAxis.MajorGridlineColor = OxyColor.FromRgb(205, 239, 211);
             Model.InvalidatePlot(true);
+            firsCall = true;
         }
 
         public void ResetToVerify()
@@ -87,6 +96,7 @@ namespace dotNetDiskImager.Models
             xAxis.MajorGridlineColor = OxyColor.FromRgb(239, 234, 204);
             yAxis.MajorGridlineColor = OxyColor.FromRgb(239, 234, 204);
             Model.InvalidatePlot(true);
+            firsCall = true;
         }
 
         /// <summary>

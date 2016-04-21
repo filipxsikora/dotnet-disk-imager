@@ -386,6 +386,7 @@ namespace dotNetDiskImager.DiskAccess
         public void CancelOperation()
         {
             cancelPending = true;
+            workingThread = null;
         }
 
         public void Dispose()

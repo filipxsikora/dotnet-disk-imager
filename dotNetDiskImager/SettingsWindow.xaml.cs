@@ -44,21 +44,13 @@ namespace dotNetDiskImager
                 defaultFolder_userSpecify.IsChecked = true;
                 defaultFolderDialogButton.IsEnabled = true;
                 defaultFolder_userSpecifyValue.IsEnabled = true;
-                defaultFolder_userSpecifyValue.Text = AppSettings.Settings.DefaultFolderPath;
+                defaultFolder_userSpecifyValue.Text = AppSettings.Settings.LastFolderPath;
             }
 
-            switch (AppSettings.Settings.AnimationsSettings)
-            {
-                case Animations.AlwaysOn:
-                    animationsOptions.SelectedIndex = 0;
-                    break;
-                case Animations.OnlyOnAcPower:
-                    animationsOptions.SelectedIndex = 1;
-                    break;
-                case Animations.Never:
-                    animationsOptions.SelectedIndex = 2;
-                    break;
-            }
+            defaultFolder_userSpecifyValue.Text = AppSettings.Settings.UserSpecifiedFolder;
+
+            enableAnimationsCheckBox.IsChecked = AppSettings.Settings.EnableAnimations;
+            checkForUpdatesCheckBox.IsChecked = AppSettings.Settings.CheckForUpdatesOnStartup;
 
             switch (AppSettings.Settings.TaskbarExtraInfo)
             {
@@ -106,21 +98,13 @@ namespace dotNetDiskImager
             else
             {
                 AppSettings.Settings.DefaultFolder = DefaultFolder.UserDefined;
-                AppSettings.Settings.DefaultFolderPath = defaultFolder_userSpecifyValue.Text;
+                AppSettings.Settings.LastFolderPath = defaultFolder_userSpecifyValue.Text;
             }
 
-            switch (animationsOptions.SelectedIndex)
-            {
-                case 0:
-                    AppSettings.Settings.AnimationsSettings = Animations.AlwaysOn;
-                    break;
-                case 1:
-                    AppSettings.Settings.AnimationsSettings = Animations.OnlyOnAcPower;
-                    break;
-                case 2:
-                    AppSettings.Settings.AnimationsSettings = Animations.Never;
-                    break;
-            }
+            AppSettings.Settings.UserSpecifiedFolder = defaultFolder_userSpecifyValue.Text;
+
+            AppSettings.Settings.EnableAnimations = enableAnimationsCheckBox.IsChecked.Value;
+            AppSettings.Settings.CheckForUpdatesOnStartup = enableAnimationsCheckBox.IsChecked.Value;
 
             switch (showMoreOptions.SelectedIndex)
             {
@@ -160,7 +144,7 @@ namespace dotNetDiskImager
         {
             System.Windows.Forms.DialogResult result = System.Windows.Forms.DialogResult.None;
             var dlg = new System.Windows.Forms.FolderBrowserDialog();
-            dlg.SelectedPath = string.IsNullOrEmpty(defaultFolder_userSpecifyValue.Text) ? AppSettings.Settings.DefaultFolderPath : defaultFolder_userSpecifyValue.Text;
+            dlg.SelectedPath = string.IsNullOrEmpty(defaultFolder_userSpecifyValue.Text) ? AppSettings.Settings.LastFolderPath : defaultFolder_userSpecifyValue.Text;
 
             try
             {
