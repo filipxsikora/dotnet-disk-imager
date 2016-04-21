@@ -344,7 +344,7 @@ namespace dotNetDiskImager
                 result = dlg.ShowDialog().Value;
             }
 
-            if(result)
+            if (result)
             {
                 AppSettings.Settings.LastFolderPath = new FileInfo(dlg.FileName).DirectoryName;
                 imagePathTextBox.Text = dlg.FileName;
@@ -801,16 +801,55 @@ namespace dotNetDiskImager
 
         private void window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key == Key.F1 && Keyboard.Modifiers == ModifierKeys.None)
+            if (e.Key == Key.F1 && Keyboard.Modifiers == ModifierKeys.None)
             {
                 ShowAboutWindow();
                 e.Handled = true;
             }
-            if(e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control)
+            if (e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 ShowSettingsWindow();
                 e.Handled = true;
             }
+        }
+
+        private void program_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                    if (files != null && files.Length > 0)
+                    {
+                        var file = files[0];
+                        if (file.Length <= 3)
+                        {
+                            if (file[1] == ':' && file[2] == '\\')
+                            {
+                                foreach (ComboBoxDeviceItem device in driveSelectComboBox.Items)
+                                {
+                                    if (device.DriveLetter == file[0])
+                                    {
+                                        driveSelectComboBox.SelectedIndex = driveSelectComboBox.Items.IndexOf(device);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            imagePathTextBox.Text = file;
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void imagePathTextBox_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }
