@@ -934,11 +934,33 @@ namespace dotNetDiskImager
                 }
             }
             catch { }
+            windowOverlay.Visibility = Visibility.Collapsed;
+            Activate();
         }
 
         private void imagePathTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
+        }
+
+        private void program_DragEnter(object sender, DragEventArgs e)
+        {
+            if (disk != null)
+                return;
+
+            try
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    windowOverlay.Visibility = Visibility.Visible;
+                }
+            }
+            catch { }
+        }
+
+        private void program_DragLeave(object sender, DragEventArgs e)
+        {
+            windowOverlay.Visibility = Visibility.Collapsed;
         }
     }
 }
