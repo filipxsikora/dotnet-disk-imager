@@ -236,6 +236,8 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
+                disk?.Dispose();
+                disk = null;
                 MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
@@ -249,6 +251,8 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
+                disk?.Dispose();
+                disk = null;
                 MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
@@ -262,6 +266,8 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
+                disk?.Dispose();
+                disk = null;
                 MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
@@ -999,13 +1005,13 @@ namespace dotNetDiskImager
             if (show)
             {
                 windowOverlay.Visibility = Visibility.Visible;
-                DoubleAnimation opacityAnim = new DoubleAnimation(0.7, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
+                DoubleAnimation opacityAnim = new DoubleAnimation(0, 0.7, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
                 windowOverlay.BeginAnimation(OpacityProperty, opacityAnim);
             }
             else
             {
-                windowOverlay.Visibility = Visibility.Collapsed;
                 windowOverlay.Opacity = 0;
+                windowOverlay.Visibility = Visibility.Collapsed;
             }
         }
 

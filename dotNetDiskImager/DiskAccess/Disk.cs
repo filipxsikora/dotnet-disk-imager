@@ -393,7 +393,11 @@ namespace dotNetDiskImager.DiskAccess
         {
             if (volumeHandle != IntPtr.Zero)
             {
-                NativeDiskWrapper.RemoveLockOnVolume(volumeHandle);
+                try
+                {
+                    NativeDiskWrapper.RemoveLockOnVolume(volumeHandle);
+                }
+                catch { }
                 NativeDisk.CloseHandle(volumeHandle);
                 volumeHandle = IntPtr.Zero;
             }
