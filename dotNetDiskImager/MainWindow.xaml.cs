@@ -65,6 +65,7 @@ namespace dotNetDiskImager
 
         const int _settingsCommand = 0x100;
         const int _aboutCommand = 0x200;
+        const int _enableLinkedConn = 0x300;
 
         public IntPtr Handle
         {
@@ -98,7 +99,15 @@ namespace dotNetDiskImager
 
                 InsertMenu(systemMenuHandle, 5, MF_BYPOSITION | MF_SEPARATOR, 0, string.Empty);
                 InsertMenu(systemMenuHandle, 6, MF_BYPOSITION, _settingsCommand, "Settings\tCtrl+O");
-                InsertMenu(systemMenuHandle, 7, MF_BYPOSITION, _aboutCommand, "About\tF1");
+                if (!Utils.CheckMappedDrivesEnable())
+                {
+                    InsertMenu(systemMenuHandle, 7, MF_BYPOSITION, _enableLinkedConn, "Enable mapped drives");
+                    InsertMenu(systemMenuHandle, 8, MF_BYPOSITION, _aboutCommand, "About\tF1");
+                }
+                else
+                {
+                    InsertMenu(systemMenuHandle, 7, MF_BYPOSITION, _aboutCommand, "About\tF1");
+                }
 
                 HwndSource source = HwndSource.FromHwnd(Handle);
                 source.AddHook(WndProc);
@@ -173,6 +182,23 @@ namespace dotNetDiskImager
                     case _aboutCommand:
                         ShowAboutWindow();
                         handled = true;
+                        break;
+                    case _enableLinkedConn:
+                        if(!Utils.CheckMappedDrivesEnable())
+                        {
+                            if(Utils.SetMappedDrivesEnable())
+                            {
+                                MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else
+                            {
+                                MessageBox.Show(this, "Enabling mapped drives was not successful.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
                         break;
                 }
             }
