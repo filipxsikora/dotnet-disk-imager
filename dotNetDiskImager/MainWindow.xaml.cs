@@ -288,7 +288,7 @@ namespace dotNetDiskImager
         {
             GraphModel.UpdateSpeedLineValue(eventArgs.AverageBps);
             remainingTimeEstimator.Add(eventArgs.RemainingBytes / eventArgs.AverageBps);
-                
+
             Dispatcher.Invoke(() =>
             {
                 if (remainingTimeEstimator.IsReady)
@@ -331,7 +331,7 @@ namespace dotNetDiskImager
                 }
                 progressText.Content = string.Format("{0}% Complete", eventArgs.Progress);
 
-                switch(AppSettings.Settings.TaskbarExtraInfo)
+                switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
                     case TaskbarExtraInfo.Percent:
                         Title = string.Format("[{0}%] - dotNet Disk Imager", (int)(programTaskbar.ProgressValue * 100));
@@ -934,7 +934,7 @@ namespace dotNetDiskImager
                 }
             }
             catch { }
-            windowOverlay.Visibility = Visibility.Collapsed;
+            HideShowWindowOverlay(false);
             Activate();
         }
 
@@ -952,7 +952,8 @@ namespace dotNetDiskImager
             {
                 if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
-                    windowOverlay.Visibility = Visibility.Visible;
+                    HideShowWindowOverlay(true);
+                    e.Handled = true;
                 }
             }
             catch { }
@@ -960,7 +961,36 @@ namespace dotNetDiskImager
 
         private void program_DragLeave(object sender, DragEventArgs e)
         {
-            windowOverlay.Visibility = Visibility.Collapsed;
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                HideShowWindowOverlay(false);
+                e.Handled = true;
+            }
+        }
+
+        public void HideShowWindowOverlay(bool show)
+        {
+            if (show)
+            {
+                windowOverlay.Visibility = Visibility.Visible;
+                DoubleAnimation opacityAnim = new DoubleAnimation(0.7, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
+                windowOverlay.BeginAnimation(OpacityProperty, opacityAnim);
+            }
+            else
+            {
+                windowOverlay.Visibility = Visibility.Collapsed;
+                windowOverlay.Opacity = 0;
+            }
+        }
+
+        private void windowOverlay_PreviewDragEnter(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void windowOverlay_PreviewDragLeave(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }
