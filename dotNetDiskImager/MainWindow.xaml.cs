@@ -82,6 +82,7 @@ namespace dotNetDiskImager
 
         public SpeedGraphModel GraphModel { get; } = new SpeedGraphModel();
         bool verifyingAfterOperation = false;
+        bool closed = false;
 
         public MainWindow()
         {
@@ -125,10 +126,16 @@ namespace dotNetDiskImager
                     }
                     disk.CancelOperation();
                 }
+                closed = true;
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
                 AppSettings.SaveSettings();
             };
+
+            if(AppSettings.Settings.CheckForUpdatesOnStartup)
+            {
+                CheckUpdates();
+            }
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -1023,6 +1030,27 @@ namespace dotNetDiskImager
         private void windowOverlay_PreviewDragLeave(object sender, DragEventArgs e)
         {
             e.Handled = true;
+        }
+
+        void CheckUpdates()
+        {
+            new Thread(() =>
+            {
+                if(Updater.IsUpdateAvailible())
+                {
+                    if(!closed)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to download it now ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                            {
+                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
+                            }
+                        });
+                    }
+                }
+            })
+            { IsBackground = true }.Start();
         }
     }
 }
