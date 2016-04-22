@@ -52,7 +52,7 @@
         <Border x:Name="infoContainer" Style="{StaticResource InfoContainerError}" Height="30" VerticalAlignment="Top" Visibility="Collapsed">
             <Grid>
                 <Label x:Name="infoText" Content="Operation finished successfully" Margin="30,0" Padding="0" Foreground="#FF800505" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
-                <Button x:Name="closeInfoButton" Style="{StaticResource CloseInfoButtonError}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="30" BorderThickness="0" Click="closeInfoButton_Click" />
+                <Button x:Name="closeInfoButton" Style="{StaticResource CloseInfoButton}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="30" BorderThickness="0" Click="closeInfoButton_Click" />
                 <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             </Grid>
         </Border>

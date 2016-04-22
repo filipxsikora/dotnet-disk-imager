@@ -106,6 +106,7 @@
     </Compile>
     <Compile Include="UI\FlashWindow.cs" />
     <Compile Include="UI\OverlayImageConverter.cs" />
+    <Compile Include="UI\WindowContextMenu.cs" />
     <Page Include="AboutWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -33,23 +33,6 @@ namespace dotNetDiskImager
     public partial class MainWindow : Window
     {
         #region Win32 API Stuff
-
-        // Define the Win32 API methods we are going to use
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
-
-        [DllImport("user32.dll")]
-        private static extern bool InsertMenu(IntPtr hMenu, int wPosition, int wFlags, int wIDNewItem, string lpNewItem);
-
-        /// Define our Constants we will use
-        const int WM_SYSCOMMAND = 0x112;
-        const int MF_SEPARATOR = 0x800;
-        const int MF_BYPOSITION = 0x400;
-        const int MF_STRING = 0x0;
-
-        const int WM_SYSTEMMENU = 0xa4;
-        const int WP_SYSTEMMENU = 0x02;
-
         const int WM_DEVICECHANGE = 0x219;
         const int DBT_DEVICEARRIVAL = 0x8000;
         const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
@@ -62,10 +45,6 @@ namespace dotNetDiskImager
         const int progressPartHeight = 220;
         const int applicationPartHeight = 180;
         const int windowInnerOffset = 10;
-
-        const int _settingsCommand = 0x100;
-        const int _aboutCommand = 0x200;
-        const int _enableLinkedConn = 0x300;
 
         public IntPtr Handle
         {
@@ -96,20 +75,7 @@ namespace dotNetDiskImager
 
             Loaded += (s, e) =>
             {
-                IntPtr systemMenuHandle = GetSystemMenu(Handle, false);
-
-                InsertMenu(systemMenuHandle, 5, MF_BYPOSITION | MF_SEPARATOR, 0, string.Empty);
-                InsertMenu(systemMenuHandle, 6, MF_BYPOSITION, _settingsCommand, "Settings\tCtrl+O");
-                if (!Utils.CheckMappedDrivesEnable())
-                {
-                    InsertMenu(systemMenuHandle, 7, MF_BYPOSITION, _enableLinkedConn, "Enable mapped drives");
-                    InsertMenu(systemMenuHandle, 8, MF_BYPOSITION, _aboutCommand, "About\tF1");
-                }
-                else
-                {
-                    InsertMenu(systemMenuHandle, 7, MF_BYPOSITION, _aboutCommand, "About\tF1");
-                }
-
+                WindowContextMenu.CreateWindowMenu(Handle);
                 HwndSource source = HwndSource.FromHwnd(Handle);
                 source.AddHook(WndProc);
             };
@@ -178,19 +144,19 @@ namespace dotNetDiskImager
                 }
             }
 
-            if (msg == WM_SYSCOMMAND)
+            if (msg == WindowContextMenu.WM_SYSCOMMAND)
             {
                 switch (wParam.ToInt32())
                 {
-                    case _settingsCommand:
+                    case WindowContextMenu.SettingsCommand:
                         ShowSettingsWindow();
                         handled = true;
                         break;
-                    case _aboutCommand:
+                    case WindowContextMenu.AboutCommand:
                         ShowAboutWindow();
                         handled = true;
                         break;
-                    case _enableLinkedConn:
+                    case WindowContextMenu.EnableLinkedConn:
                         if(!Utils.CheckMappedDrivesEnable())
                         {
                             if(Utils.SetMappedDrivesEnable())
@@ -315,6 +281,10 @@ namespace dotNetDiskImager
                             GraphModel.ResetToVerify();
                             remainingTimeEstimator.Reset();
                             timeRemainingText.Content = "Remaining time: Calculating...";
+                            if(AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.RemainingTime)
+                            {
+                                Title = "[Calculating...] - dotNet Disk Imager";
+                            }
                             progressText.Content = "0% Complete";
                         });
                     }
@@ -439,21 +409,18 @@ namespace dotNetDiskImager
                         infoContainer.Style = FindResource("InfoContainerSuccess") as Style;
                         infoText.Content = message;
                         infoText.Foreground = new SolidColorBrush(Color.FromRgb(0, 70, 0));
-                        closeInfoButton.Style = FindResource("CloseInfoButton") as Style;
                         infoSymbol.Content = FindResource("checkIcon");
                         break;
                     case OperationFinishedState.Canceled:
                         infoContainer.Style = FindResource("InfoContainerWarning") as Style;
                         infoText.Content = message;
                         infoText.Foreground = new SolidColorBrush(Color.FromRgb(116, 86, 25));
-                        closeInfoButton.Style = FindResource("CloseInfoButton") as Style;
                         infoSymbol.Content = FindResource("warningIcon");
                         break;
                     case OperationFinishedState.Error:
                         infoContainer.Style = FindResource("InfoContainerError") as Style;
                         infoText.Content = message;
                         infoText.Foreground = new SolidColorBrush(Color.FromRgb(128, 5, 5));
-                        closeInfoButton.Style = FindResource("CloseInfoButton") as Style;
                         infoSymbol.Content = FindResource("warningIcon");
                         break;
                 }
@@ -560,7 +527,7 @@ namespace dotNetDiskImager
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
                         break;
                     case TaskbarExtraInfo.RemainingTime:
-                        Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                        Title = "[Calculating...] - dotNet Disk Imager";
                         break;
                 }
             }
@@ -665,7 +632,7 @@ namespace dotNetDiskImager
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
                         break;
                     case TaskbarExtraInfo.RemainingTime:
-                        Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                        Title = "[Calculating...] - dotNet Disk Imager";
                         break;
                 }
             }
@@ -707,7 +674,7 @@ namespace dotNetDiskImager
                             Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
                             break;
                         case TaskbarExtraInfo.RemainingTime:
-                            Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                            Title = "[Calculating...] - dotNet Disk Imager";
                             break;
                     }
                 }
@@ -793,7 +760,7 @@ namespace dotNetDiskImager
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
                         break;
                     case TaskbarExtraInfo.RemainingTime:
-                        Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                        Title = "[Calculating...] - dotNet Disk Imager";
                         break;
                 }
             }
@@ -828,7 +795,7 @@ namespace dotNetDiskImager
                             Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
                             break;
                         case TaskbarExtraInfo.RemainingTime:
-                            Title = string.Format(@"[Calculating...] - dotNet Disk Imager");
+                            Title = "[Calculating...] - dotNet Disk Imager";
                             break;
                     }
                 }
