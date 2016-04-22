@@ -8,16 +8,17 @@
         Title="About - dotNet Disk Imager" Height="260" Width="450" Icon="icon.ico" ResizeMode="NoResize" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <Image HorizontalAlignment="Left" Height="96" Margin="10,0,0,0" VerticalAlignment="Top" Width="96" Source="icon.ico"/>
-        <Label Content="dotNet Disk Imager © FxS" Margin="121,5,10,0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="18"/>
+        <Label Content="dotNet Disk Imager" Margin="121,5,10,0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="18" FontWeight="Medium"/>
         <Label x:Name="versionLabel" Margin="121,35,10,0" Content="version 0.1.0.0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0"/>
-        <Border Margin="10,0,10,10" VerticalAlignment="Bottom" Height="90" BorderBrush="#bbbbbb" BorderThickness="1">
+        <Border Margin="10,0,10,30" VerticalAlignment="Bottom" Height="90" BorderBrush="#bbbbbb" BorderThickness="1">
             <ScrollViewer Padding="5">
-                <TextBlock TextWrapping="Wrap" ><Run Text="Copyright "/><Run Text="©"/><Run Text=" 2014 OxyPlot contributors"/><LineBreak/><Run/><LineBreak/><Run Text="Permission is hereby granted, free of charge, to any person obtaining a"/><LineBreak/><Run Text="copy of this software and associated documentation files (the"/><LineBreak/><Run Text="&quot;Software&quot;), to deal in the Software without restriction, including"/><LineBreak/><Run Text="without limitation the rights to use, copy, modify, merge, publish,"/><LineBreak/><Run Text="distribute, sublicense, and/or sell copies of the Software, and to"/><LineBreak/><Run Text="permit persons to whom the Software is furnished to do so, subject to"/><LineBreak/><Run Text="the following conditions:"/><LineBreak/><Run/><LineBreak/><Run Text="The above copyright notice and this permission notice shall be included"/><LineBreak/><Run Text="in all copies or substantial portions of the Software."/><LineBreak/><Run/><LineBreak/><Run Text="THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS"/><Run Text=" "/><Run Text="OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF"/><Run Text=" "/><Run Text="MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT."/><Run Text=" "/><Run Text="IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY"/><Run Text=" "/><Run Text="CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,"/><Run Text=" "/><Run Text="TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE"/><Run Text=" "/><Run Text="SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."/></TextBlock>
+                <TextBlock TextWrapping="Wrap"><Run Text="THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."/></TextBlock>
             </ScrollViewer>
         </Border>
-        <TextBlock Margin="10,101,10,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="Open source l"/><Run Text="ibrary used: "/><Hyperlink NavigateUri="http://oxyplot.org/" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="OxyPlot"/></Hyperlink></TextBlock>
-        <TextBlock Margin="145,70,10,0" TextWrapping="Wrap" VerticalAlignment="Top">
-            <Run Text="This is a free software. You can get it for free "/><Hyperlink NavigateUri="http://google.com/" RequestNavigate="Hyperlink_RequestNavigate">HERE</Hyperlink>
+        <TextBlock Margin="10,0,10,10" TextWrapping="Wrap" VerticalAlignment="Bottom"><Run Text="Graph library used: " FontWeight="Medium"/><Hyperlink NavigateUri="http://oxyplot.org/" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="OxyPlot"/></Hyperlink> (MIT License)</TextBlock>
+        <TextBlock Margin="145,80,10,0" TextWrapping="Wrap" VerticalAlignment="Top">
+            <Run Text="This is a free software. You can get it for free "/><Hyperlink NavigateUri="http://google.com/" RequestNavigate="Hyperlink_RequestNavigate">HERE</Hyperlink>.
         </TextBlock>
+        <Label x:Name="versionLabel_Copy" Margin="121,51,10,0" Content="© FxS 2016" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0"/>
     </Grid>
 </Window>
