@@ -337,11 +337,9 @@ namespace dotNetDiskImager
         private void fileSelectDialogButton_Click(object sender, RoutedEventArgs e)
         {
             bool result = false;
-            SaveFileDialog dlg = new SaveFileDialog()
+            OpenFileDialog dlg = new OpenFileDialog()
             {
                 CheckFileExists = false,
-                CreatePrompt = false,
-                OverwritePrompt = false,
                 Title = "Select a disk image file",
                 Filter = "Disk image file (*.img)|*.img|Any file|*.*",
                 InitialDirectory = AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed ? AppSettings.Settings.LastFolderPath : AppSettings.Settings.UserSpecifiedFolder
