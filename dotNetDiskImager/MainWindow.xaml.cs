@@ -173,6 +173,9 @@ namespace dotNetDiskImager
                             MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                         break;
+                    case WindowContextMenu.CheckUpdatesCommand:
+                        CheckUpdates(true);
+                        break;
                 }
             }
             return IntPtr.Zero;
@@ -972,11 +975,12 @@ namespace dotNetDiskImager
             }
         }
 
-        void CheckUpdates()
+        void CheckUpdates(bool displayNoUpdatesAvailible = false)
         {
             new Thread(() =>
             {
-                if(Updater.IsUpdateAvailible())
+                var result = Updater.IsUpdateAvailible();
+                if (result != null && result.Value)
                 {
                     if(!closed)
                     {
@@ -987,6 +991,26 @@ namespace dotNetDiskImager
                                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
                             }
                         });
+                    }
+                }
+                else
+                {
+                    if(displayNoUpdatesAvailible)
+                    {
+                        if(result == null)
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                MessageBox.Show(this, "Unable to query update server.\nPlease try again later.", "Unable to query update server", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            });
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                MessageBox.Show(this, "You are using latest version", "No Update Availible", MessageBoxButton.OK, MessageBoxImage.Information);
+                            });
+                        }
                     }
                 }
             })

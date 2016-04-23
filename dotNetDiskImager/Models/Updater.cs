@@ -10,7 +10,7 @@ namespace dotNetDiskImager.Models
 {
     public class Updater
     {
-        public static bool IsUpdateAvailible()
+        public static bool? IsUpdateAvailible()
         {
             string contents;
             var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
@@ -27,7 +27,7 @@ namespace dotNetDiskImager.Models
                     }
                 }
             }
-            catch { }
+            catch { return null; }
 
             return false;
         }
