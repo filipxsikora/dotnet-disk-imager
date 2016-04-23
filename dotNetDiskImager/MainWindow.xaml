@@ -63,6 +63,6 @@
             </StackPanel>
         </Button>
         <CheckBox TabIndex="4" x:Name="verifyCheckBox" ToolTip="Verify procedure will be started automatically when read or write finishes" Content="Verify data when finished" Margin="271,111,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
-        <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0">Drop File or Drive here</Label>
+        <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0" AllowDrop="True">Drop File or Drive here</Label>
     </Grid>
 </Window>

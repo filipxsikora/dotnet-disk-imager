@@ -178,28 +178,6 @@ namespace dotNetDiskImager
             return IntPtr.Zero;
         }
 
-        private void ShowSettingsWindow()
-        {
-            if (settingsWindow == null)
-            {
-                settingsWindow = new SettingsWindow();
-                settingsWindow.Closed += (s, e) => settingsWindow = null;
-            }
-            settingsWindow.Show();
-            settingsWindow.Activate();
-        }
-
-        private void ShowAboutWindow()
-        {
-            if (aboutWindow == null)
-            {
-                aboutWindow = new AboutWindow();
-                aboutWindow.Closed += (s, e) => aboutWindow = null;
-            }
-            aboutWindow.Show();
-            aboutWindow.Activate();
-        }
-
         private void readButton_Click(object sender, RoutedEventArgs e)
         {
             verifyingAfterOperation = false;
@@ -397,6 +375,55 @@ namespace dotNetDiskImager
         private void closeInfoButton_Click(object sender, RoutedEventArgs e)
         {
             DisplayInfoPart(false);
+        }
+
+        private void window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F1 && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                ShowAboutWindow();
+                e.Handled = true;
+            }
+            if (e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                ShowSettingsWindow();
+                e.Handled = true;
+            }
+        }
+
+        private void program_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e);
+        }
+
+        private void imagePathTextBox_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void program_DragEnter(object sender, DragEventArgs e)
+        {
+            if (disk != null)
+                return;
+
+            try
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    HideShowWindowOverlay(true);
+                    e.Handled = true;
+                }
+            }
+            catch { }
+        }
+
+        private void program_DragLeave(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                HideShowWindowOverlay(false);
+                e.Handled = true;
+            }
         }
 
         private void DisplayInfoPart(bool display, bool noAnimation = false, OperationFinishedState state = OperationFinishedState.Error, string message = "")
@@ -892,21 +919,7 @@ namespace dotNetDiskImager
             return message;
         }
 
-        private void window_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.F1 && Keyboard.Modifiers == ModifierKeys.None)
-            {
-                ShowAboutWindow();
-                e.Handled = true;
-            }
-            if (e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control)
-            {
-                ShowSettingsWindow();
-                e.Handled = true;
-            }
-        }
-
-        private void program_Drop(object sender, DragEventArgs e)
+        private void HandleDrop(DragEventArgs e)
         {
             if (disk != null)
                 return;
@@ -944,36 +957,6 @@ namespace dotNetDiskImager
             Activate();
         }
 
-        private void imagePathTextBox_PreviewDragOver(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void program_DragEnter(object sender, DragEventArgs e)
-        {
-            if (disk != null)
-                return;
-
-            try
-            {
-                if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                {
-                    HideShowWindowOverlay(true);
-                    e.Handled = true;
-                }
-            }
-            catch { }
-        }
-
-        private void program_DragLeave(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                HideShowWindowOverlay(false);
-                e.Handled = true;
-            }
-        }
-
         public void HideShowWindowOverlay(bool show)
         {
             if (show)
@@ -989,16 +972,6 @@ namespace dotNetDiskImager
             }
         }
 
-        private void windowOverlay_PreviewDragEnter(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void windowOverlay_PreviewDragLeave(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-        }
-
         void CheckUpdates()
         {
             new Thread(() =>
@@ -1009,7 +982,7 @@ namespace dotNetDiskImager
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to download it now ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
                             {
                                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
                             }
@@ -1018,6 +991,28 @@ namespace dotNetDiskImager
                 }
             })
             { IsBackground = true }.Start();
+        }
+
+        private void ShowSettingsWindow()
+        {
+            if (settingsWindow == null)
+            {
+                settingsWindow = new SettingsWindow();
+                settingsWindow.Closed += (s, e) => settingsWindow = null;
+            }
+            settingsWindow.Show();
+            settingsWindow.Activate();
+        }
+
+        private void ShowAboutWindow()
+        {
+            if (aboutWindow == null)
+            {
+                aboutWindow = new AboutWindow();
+                aboutWindow.Closed += (s, e) => aboutWindow = null;
+            }
+            aboutWindow.Show();
+            aboutWindow.Activate();
         }
     }
 }
