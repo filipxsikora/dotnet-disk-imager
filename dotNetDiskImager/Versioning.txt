@@ -1,0 +1,5 @@
+﻿x.y.b.r
+x - major
+y - minor
+b - number of days since 20.3.2016 to minor/major increment (today's date included (+1))
+r - number of commits in current branch

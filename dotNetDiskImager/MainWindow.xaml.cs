@@ -32,17 +32,36 @@ namespace dotNetDiskImager
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Win32 API Stuff
         const int WM_DEVICECHANGE = 0x219;
         const int DBT_DEVICEARRIVAL = 0x8000;
         const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
         const int DBT_DEVTYP_VOLUME = 0x02;
+        #endregion
+
+        const int windowHeight = 220;
+        const int infoMessageHeight = 40;
+        const int infoMessageMargin = 10;
+        const int progressPartHeight = 220;
+        const int applicationPartHeight = 180;
+        const int windowInnerOffset = 10;
+
+        public IntPtr Handle
+        {
+            get
+            {
+                return new WindowInteropHelper(this).Handle;
+            }
+        }
 
         Disk disk;
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
+        AboutWindow aboutWindow = null;
+        SettingsWindow settingsWindow = null;
 
         public SpeedGraphModel GraphModel { get; } = new SpeedGraphModel();
-        HwndSourceHook messageHook;
         bool verifyingAfterOperation = false;
+        bool closed = false;
 
         public MainWindow()
         {
@@ -54,19 +73,18 @@ namespace dotNetDiskImager
                 driveSelectComboBox.Items.Add(new ComboBoxDeviceItem(drive));
             }
 
-            messageHook = new HwndSourceHook(WndProc);
-
             Loaded += (s, e) =>
             {
-                HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
-                source.AddHook(messageHook);
+                WindowContextMenu.CreateWindowMenu(Handle);
+                HwndSource source = HwndSource.FromHwnd(Handle);
+                source.AddHook(WndProc);
             };
 
             Closing += (s, e) =>
             {
                 if (disk != null)
                 {
-                    if (MessageBox.Show("Exiting now will result in corruption at the target.\nDo you really want to exit application ?",
+                    if (MessageBox.Show(this, "Exiting now will result in corruption at the target.\nDo you really want to exit application ?",
                     "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     {
                         e.Cancel = true;
@@ -74,9 +92,16 @@ namespace dotNetDiskImager
                     }
                     disk.CancelOperation();
                 }
+                closed = true;
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
-                source.RemoveHook(messageHook);
+                source.RemoveHook(WndProc);
+                AppSettings.SaveSettings();
             };
+
+            if(AppSettings.Settings.CheckForUpdatesOnStartup)
+            {
+                CheckUpdates();
+            }
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -118,6 +143,41 @@ namespace dotNetDiskImager
                         break;
                 }
             }
+
+            if (msg == WindowContextMenu.WM_SYSCOMMAND)
+            {
+                switch (wParam.ToInt32())
+                {
+                    case WindowContextMenu.SettingsCommand:
+                        ShowSettingsWindow();
+                        handled = true;
+                        break;
+                    case WindowContextMenu.AboutCommand:
+                        ShowAboutWindow();
+                        handled = true;
+                        break;
+                    case WindowContextMenu.EnableLinkedConn:
+                        if(!Utils.CheckMappedDrivesEnable())
+                        {
+                            if(Utils.SetMappedDrivesEnable())
+                            {
+                                MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else
+                            {
+                                MessageBox.Show(this, "Enabling mapped drives was not successful.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        break;
+                    case WindowContextMenu.CheckUpdatesCommand:
+                        CheckUpdates(true);
+                        break;
+                }
+            }
             return IntPtr.Zero;
         }
 
@@ -130,7 +190,9 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Unknown error");
+                disk?.Dispose();
+                disk = null;
+                MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
 
@@ -143,7 +205,9 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Unknown error");
+                disk?.Dispose();
+                disk = null;
+                MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
 
@@ -156,59 +220,81 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Unknown error");
+                disk?.Dispose();
+                disk = null;
+                MessageBox.Show(this, ex.Message, "Unknown error");
             }
         }
 
         private void Disk_OperationFinished(object sender, OperationFinishedEventArgs eventArgs)
         {
-            if (eventArgs.Done)
+            try
             {
-                verifyingAfterOperation = false;
-                Dispatcher.Invoke(() =>
+                if (eventArgs.Done)
                 {
-                    this.FlashWindow();
-                    SetUIState(true);
-                    GraphModel.ResetToNormal();
-                    programTaskbar.ProgressValue = 0;
-                    programTaskbar.ProgressState = TaskbarItemProgressState.None;
-                    programTaskbar.Overlay = null;
-                    remainingTimeEstimator.Reset();
-                    disk.Dispose();
-                    disk = null;
-
-                    DisplayInfoPart(true, false, eventArgs.OperationState, CreateInfoMessage(eventArgs));
-                });
-            }
-            else
-            {
-                if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
-                {
-                    verifyingAfterOperation = true;
+                    verifyingAfterOperation = false;
                     Dispatcher.Invoke(() =>
                     {
-                        programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
-                        stepText.Content = "Verifying...";
-                        GraphModel.ResetToVerify();
+                        this.FlashWindow();
+                        SetUIState(true);
+                        GraphModel.ResetToNormal();
+                        programTaskbar.ProgressValue = 0;
+                        programTaskbar.ProgressState = TaskbarItemProgressState.None;
+                        programTaskbar.Overlay = null;
                         remainingTimeEstimator.Reset();
-                        timeRemainingText.Content = "Remaining time: Calculating...";
-                        progressText.Content = "0% Complete";
+                        disk.Dispose();
+                        disk = null;
+
+                        DisplayInfoPart(true, false, eventArgs.OperationState, CreateInfoMessage(eventArgs));
+
+                        Title = "dotNet Disk Imager";
                     });
                 }
+                else
+                {
+                    if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
+                    {
+                        verifyingAfterOperation = true;
+                        Dispatcher.Invoke(() =>
+                        {
+                            programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
+                            stepText.Content = "Verifying...";
+                            GraphModel.ResetToVerify();
+                            remainingTimeEstimator.Reset();
+                            timeRemainingText.Content = "Remaining time: Calculating...";
+                            if(AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.RemainingTime)
+                            {
+                                Title = "[Calculating...] - dotNet Disk Imager";
+                            }
+                            progressText.Content = "0% Complete";
+                        });
+                    }
+                }
             }
+            catch { }
         }
 
         private void Disk_OperationProgressReport(object sender, OperationProgressReportEventArgs eventArgs)
         {
             GraphModel.UpdateSpeedLineValue(eventArgs.AverageBps);
+            remainingTimeEstimator.Add(eventArgs.RemainingBytes / eventArgs.AverageBps);
+
             Dispatcher.Invoke(() =>
             {
-                remainingTimeEstimator.Add(eventArgs.RemainingBytes / eventArgs.AverageBps);
                 if (remainingTimeEstimator.IsReady)
                 {
-                    timeRemainingText.Content = string.Format("Remaining time: {0}", Helpers.SecondsToEstimate(remainingTimeEstimator.Average()));
+                    ulong averageSeconds = remainingTimeEstimator.Average();
+                    timeRemainingText.Content = string.Format("Remaining time: {0}", Helpers.SecondsToEstimate(averageSeconds));
+                    if (AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.RemainingTime)
+                    {
+                        Title = string.Format(@"[{0}] - dotNet Disk Imager", Helpers.SecondsToEstimate(averageSeconds, true));
+                    }
                 }
                 transferredText.Content = string.Format("Transferred: {0} of {1}", Helpers.BytesToXbytes(eventArgs.TotalBytesProcessed), Helpers.BytesToXbytes(eventArgs.TotalBytesProcessed + eventArgs.RemainingBytes));
+                if (AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.CurrentSpeed)
+                {
+                    Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(eventArgs.AverageBps));
+                }
             });
         }
 
@@ -234,23 +320,43 @@ namespace dotNetDiskImager
                     programTaskbar.ProgressValue = eventArgs.Progress / 100.0;
                 }
                 progressText.Content = string.Format("{0}% Complete", eventArgs.Progress);
+
+                switch (AppSettings.Settings.TaskbarExtraInfo)
+                {
+                    case TaskbarExtraInfo.Percent:
+                        Title = string.Format("[{0}%] - dotNet Disk Imager", (int)(programTaskbar.ProgressValue * 100));
+                        break;
+                    case TaskbarExtraInfo.CurrentSpeed:
+                        Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(eventArgs.AverageBps));
+                        break;
+                }
             });
 
         }
 
         private void fileSelectDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog dlg = new SaveFileDialog()
+            bool result = false;
+            OpenFileDialog dlg = new OpenFileDialog()
             {
                 CheckFileExists = false,
-                CreatePrompt = false,
-                OverwritePrompt = false,
                 Title = "Select a disk image file",
                 Filter = "Disk image file (*.img)|*.img|Any file|*.*",
+                InitialDirectory = AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed ? AppSettings.Settings.LastFolderPath : AppSettings.Settings.UserSpecifiedFolder
             };
-
-            if (dlg.ShowDialog().Value)
+            try
             {
+                result = dlg.ShowDialog().Value;
+            }
+            catch
+            {
+                dlg.InitialDirectory = "";
+                result = dlg.ShowDialog().Value;
+            }
+
+            if (result)
+            {
+                AppSettings.Settings.LastFolderPath = new FileInfo(dlg.FileName).DirectoryName;
                 imagePathTextBox.Text = dlg.FileName;
             }
         }
@@ -259,7 +365,7 @@ namespace dotNetDiskImager
         {
             if (disk != null)
             {
-                if (MessageBox.Show("Canceling current operation will result in corruption at the target.\nDo you really want to cancel current operation ?",
+                if (MessageBox.Show(this, "Canceling current operation will result in corruption at the target.\nDo you really want to cancel current operation ?",
                     "Confirm Cancel", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
                     disk.CancelOperation();
@@ -272,6 +378,55 @@ namespace dotNetDiskImager
             DisplayInfoPart(false);
         }
 
+        private void window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F1 && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                ShowAboutWindow();
+                e.Handled = true;
+            }
+            if (e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                ShowSettingsWindow();
+                e.Handled = true;
+            }
+        }
+
+        private void program_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e);
+        }
+
+        private void imagePathTextBox_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void program_DragEnter(object sender, DragEventArgs e)
+        {
+            if (disk != null)
+                return;
+
+            try
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    HideShowWindowOverlay(true);
+                    e.Handled = true;
+                }
+            }
+            catch { }
+        }
+
+        private void program_DragLeave(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                HideShowWindowOverlay(false);
+                e.Handled = true;
+            }
+        }
+
         private void DisplayInfoPart(bool display, bool noAnimation = false, OperationFinishedState state = OperationFinishedState.Error, string message = "")
         {
             if (display)
@@ -282,27 +437,24 @@ namespace dotNetDiskImager
                         infoContainer.Style = FindResource("InfoContainerSuccess") as Style;
                         infoText.Content = message;
                         infoText.Foreground = new SolidColorBrush(Color.FromRgb(0, 70, 0));
-                        closeInfoButton.Style = FindResource("CloseInfoButton") as Style;
                         infoSymbol.Content = FindResource("checkIcon");
                         break;
                     case OperationFinishedState.Canceled:
                         infoContainer.Style = FindResource("InfoContainerWarning") as Style;
                         infoText.Content = message;
                         infoText.Foreground = new SolidColorBrush(Color.FromRgb(116, 86, 25));
-                        closeInfoButton.Style = FindResource("CloseInfoButton") as Style;
                         infoSymbol.Content = FindResource("warningIcon");
                         break;
                     case OperationFinishedState.Error:
                         infoContainer.Style = FindResource("InfoContainerError") as Style;
                         infoText.Content = message;
                         infoText.Foreground = new SolidColorBrush(Color.FromRgb(128, 5, 5));
-                        closeInfoButton.Style = FindResource("CloseInfoButton") as Style;
                         infoSymbol.Content = FindResource("warningIcon");
                         break;
                 }
 
-                DoubleAnimation windowAnimation = new DoubleAnimation(260, TimeSpan.FromMilliseconds(250));
-                DoubleAnimation containerAnimation = new DoubleAnimation(30, TimeSpan.FromMilliseconds(250));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight + infoMessageHeight, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
+                DoubleAnimation containerAnimation = new DoubleAnimation(infoMessageHeight - infoMessageMargin, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
                 windowAnimation.Completed += (s, e) =>
                 {
                     closeInfoButton.Visibility = Visibility.Visible;
@@ -315,15 +467,15 @@ namespace dotNetDiskImager
             {
                 if (noAnimation)
                 {
-                    Height = 220;
+                    Height = windowHeight;
                     infoContainer.Visibility = Visibility.Collapsed;
                     closeInfoButton.Visibility = Visibility.Collapsed;
                     return;
                 }
                 else
                 {
-                    DoubleAnimation windowAnimation = new DoubleAnimation(220, TimeSpan.FromMilliseconds(250));
-                    DoubleAnimation containerAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(250));
+                    DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
+                    DoubleAnimation containerAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
                     windowAnimation.Completed += (s, e) =>
                     {
                         infoContainer.Visibility = Visibility.Collapsed;
@@ -346,7 +498,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -356,8 +508,8 @@ namespace dotNetDiskImager
                 if (fileInfo.Length > 0)
                 {
                     DisplayInfoPart(false);
-                    if (MessageBox.Show(string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length))
-                        , "File already exist", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                    if (MessageBox.Show(this, string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length))
+                        , "File already exists", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     {
                         return;
                     }
@@ -371,7 +523,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -393,11 +545,24 @@ namespace dotNetDiskImager
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                 programTaskbar.Overlay = Properties.Resources.read.ToBitmapImage();
+
+                switch (AppSettings.Settings.TaskbarExtraInfo)
+                {
+                    case TaskbarExtraInfo.ActiveDevice:
+                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        break;
+                    case TaskbarExtraInfo.ImageFileName:
+                        Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                        break;
+                    case TaskbarExtraInfo.RemainingTime:
+                        Title = "[Calculating...] - dotNet Disk Imager";
+                        break;
+                }
             }
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format("There is not enough free space on target device [{0}:\\].\nFree space availible {1}\nFree space required {2}",
+                MessageBox.Show(this, string.Format("There is not enough free space on target device [{0}:\\].\nFree space availible {1}\nFree space required {2}",
                     imagePathTextBox.Text[0], Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace)),
                     "Not enough free space", MessageBoxButton.OK, MessageBoxImage.Warning
                     );
@@ -417,7 +582,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -427,7 +592,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
+                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -435,7 +600,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
+                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -443,7 +608,7 @@ namespace dotNetDiskImager
             if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter)))
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format(@"Device [{0}:\] is read only. Aborting.", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter)
+                MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
                         , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -456,7 +621,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -464,7 +629,14 @@ namespace dotNetDiskImager
 
             if (result.Result)
             {
-                DisplayInfoPart(false, true);
+                DisplayInfoPart(false);
+                if (MessageBox.Show(this, string.Format("Writing to the [{0}:\\ - {1}] can corrupt the device.\nMake sure you have selected correct device and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
+                        , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                {
+                    disk?.Dispose();
+                    disk = null;
+                    return;
+                }
                 disk.OperationProgressChanged += Disk_OperationProgressChanged;
                 disk.OperationProgressReport += Disk_OperationProgressReport;
                 disk.OperationFinished += Disk_OperationFinished;
@@ -478,15 +650,35 @@ namespace dotNetDiskImager
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                 programTaskbar.Overlay = Properties.Resources.write.ToBitmapImage();
+
+                switch (AppSettings.Settings.TaskbarExtraInfo)
+                {
+                    case TaskbarExtraInfo.ActiveDevice:
+                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        break;
+                    case TaskbarExtraInfo.ImageFileName:
+                        Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                        break;
+                    case TaskbarExtraInfo.RemainingTime:
+                        Title = "[Calculating...] - dotNet Disk Imager";
+                        break;
+                }
             }
             else
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(string.Format("Target device [{0}:\\] hasn't got enough capacity.\nSpace availible {1}\nSpace required {2}\n" +
+                if (MessageBox.Show(this, string.Format("Target device [{0}:\\] hasn't got enough capacity.\nSpace availible {1}\nSpace required {2}\n" +
                     "The extra space {3} appears to contain any data.\nWould you like to continue anyway ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter,
                     Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), result.DataFound ? "DOES" : "does not"),
                     "Not enough capacity", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
+                    if (MessageBox.Show(this, string.Format("Writing to the [{0}:\\ - {1}] can corrupt the device.\nMake sure you have selected correct device and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
+                        , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        return;
+                    }
                     disk.OperationProgressChanged += Disk_OperationProgressChanged;
                     disk.OperationProgressReport += Disk_OperationProgressReport;
                     disk.OperationFinished += Disk_OperationFinished;
@@ -500,6 +692,19 @@ namespace dotNetDiskImager
                     SetUIState(false);
                     programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                     programTaskbar.Overlay = Properties.Resources.write.ToBitmapImage();
+
+                    switch (AppSettings.Settings.TaskbarExtraInfo)
+                    {
+                        case TaskbarExtraInfo.ActiveDevice:
+                            Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                            break;
+                        case TaskbarExtraInfo.ImageFileName:
+                            Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                            break;
+                        case TaskbarExtraInfo.RemainingTime:
+                            Title = "[Calculating...] - dotNet Disk Imager";
+                            break;
+                    }
                 }
                 else
                 {
@@ -520,7 +725,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -530,7 +735,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
+                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -538,7 +743,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
+                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -551,7 +756,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -573,11 +778,24 @@ namespace dotNetDiskImager
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                 programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
+
+                switch (AppSettings.Settings.TaskbarExtraInfo)
+                {
+                    case TaskbarExtraInfo.ActiveDevice:
+                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        break;
+                    case TaskbarExtraInfo.ImageFileName:
+                        Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                        break;
+                    case TaskbarExtraInfo.RemainingTime:
+                        Title = "[Calculating...] - dotNet Disk Imager";
+                        break;
+                }
             }
             else
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(string.Format("Image and device size does not match.\nImage size: {0}\nDevice size: {1}\nWould you like to verify data up to {2} size?",
+                if (MessageBox.Show(this, string.Format("Image and device size does not match.\nImage size: {0}\nDevice size: {1}\nWould you like to verify data up to {2} size?",
                     Helpers.BytesToXbytes(result.ImageSize), Helpers.BytesToXbytes(result.DeviceSize), (result.DeviceSize > result.ImageSize ? "image" : "device")),
                     "Size does not match", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
@@ -595,6 +813,19 @@ namespace dotNetDiskImager
                     SetUIState(false);
                     programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                     programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
+
+                    switch (AppSettings.Settings.TaskbarExtraInfo)
+                    {
+                        case TaskbarExtraInfo.ActiveDevice:
+                            Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                            break;
+                        case TaskbarExtraInfo.ImageFileName:
+                            Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
+                            break;
+                        case TaskbarExtraInfo.RemainingTime:
+                            Title = "[Calculating...] - dotNet Disk Imager";
+                            break;
+                    }
                 }
                 else
                 {
@@ -621,19 +852,19 @@ namespace dotNetDiskImager
         {
             if (display)
             {
-                DoubleAnimation windowAnimation = new DoubleAnimation(430, TimeSpan.FromMilliseconds(500));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight + progressPartHeight - windowInnerOffset, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 500 : 0));
                 BeginAnimation(HeightProperty, windowAnimation);
                 progressPartGrid.Visibility = Visibility.Visible;
-                progressPartRow.Height = new GridLength(220, GridUnitType.Pixel);
-                applicationPartRow.Height = new GridLength(180, GridUnitType.Pixel);
+                progressPartRow.Height = new GridLength(progressPartHeight, GridUnitType.Pixel);
+                applicationPartRow.Height = new GridLength(applicationPartHeight, GridUnitType.Pixel);
             }
             else
             {
-                DoubleAnimation windowAnimation = new DoubleAnimation(220, TimeSpan.FromMilliseconds(500));
+                DoubleAnimation windowAnimation = new DoubleAnimation(windowHeight, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 500 : 0));
                 BeginAnimation(HeightProperty, windowAnimation);
                 progressPartGrid.Visibility = Visibility.Collapsed;
                 progressPartRow.Height = new GridLength(0, GridUnitType.Pixel);
-                applicationPartRow.Height = new GridLength(190, GridUnitType.Pixel);
+                applicationPartRow.Height = new GridLength(applicationPartHeight + windowInnerOffset, GridUnitType.Pixel);
             }
         }
 
@@ -687,6 +918,123 @@ namespace dotNetDiskImager
             }
 
             return message;
+        }
+
+        private void HandleDrop(DragEventArgs e)
+        {
+            if (disk != null)
+                return;
+            try
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                    if (files != null && files.Length > 0)
+                    {
+                        var file = files[0];
+                        if (file.Length <= 3)
+                        {
+                            if (file[1] == ':' && file[2] == '\\')
+                            {
+                                foreach (ComboBoxDeviceItem device in driveSelectComboBox.Items)
+                                {
+                                    if (device.DriveLetter == file[0])
+                                    {
+                                        driveSelectComboBox.SelectedIndex = driveSelectComboBox.Items.IndexOf(device);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            imagePathTextBox.Text = file;
+                        }
+                    }
+                }
+            }
+            catch { }
+            HideShowWindowOverlay(false);
+            Activate();
+        }
+
+        public void HideShowWindowOverlay(bool show)
+        {
+            if (show)
+            {
+                windowOverlay.Visibility = Visibility.Visible;
+                DoubleAnimation opacityAnim = new DoubleAnimation(0, 0.7, TimeSpan.FromMilliseconds(AppSettings.Settings.EnableAnimations ? 250 : 0));
+                windowOverlay.BeginAnimation(OpacityProperty, opacityAnim);
+            }
+            else
+            {
+                windowOverlay.Opacity = 0;
+                windowOverlay.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        void CheckUpdates(bool displayNoUpdatesAvailible = false)
+        {
+            new Thread(() =>
+            {
+                var result = Updater.IsUpdateAvailible();
+                if (result != null && result.Value)
+                {
+                    if(!closed)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                            {
+                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    if(displayNoUpdatesAvailible)
+                    {
+                        if(result == null)
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                MessageBox.Show(this, "Unable to query update server.\nPlease try again later.", "Unable to query update server", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            });
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                MessageBox.Show(this, "You are using latest version", "No Update Availible", MessageBoxButton.OK, MessageBoxImage.Information);
+                            });
+                        }
+                    }
+                }
+            })
+            { IsBackground = true }.Start();
+        }
+
+        private void ShowSettingsWindow()
+        {
+            if (settingsWindow == null)
+            {
+                settingsWindow = new SettingsWindow();
+                settingsWindow.Closed += (s, e) => settingsWindow = null;
+            }
+            settingsWindow.Show();
+            settingsWindow.Activate();
+        }
+
+        private void ShowAboutWindow()
+        {
+            if (aboutWindow == null)
+            {
+                aboutWindow = new AboutWindow();
+                aboutWindow.Closed += (s, e) => aboutWindow = null;
+            }
+            aboutWindow.Show();
+            aboutWindow.Activate();
         }
     }
 }

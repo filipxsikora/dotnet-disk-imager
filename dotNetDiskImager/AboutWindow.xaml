@@ -1,0 +1,24 @@
+﻿<Window x:Class="dotNetDiskImager.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:dotNetDiskImager"
+        mc:Ignorable="d"
+        Title="About - dotNet Disk Imager" Height="260" Width="450" Icon="icon.ico" ResizeMode="NoResize" PreviewKeyDown="Window_PreviewKeyDown">
+    <Grid>
+        <Image HorizontalAlignment="Left" Height="96" Margin="10,0,0,0" VerticalAlignment="Top" Width="96" Source="icon.ico"/>
+        <Label Content="dotNet Disk Imager" Margin="121,5,10,0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="18" FontWeight="Medium"/>
+        <Label x:Name="versionLabel" Margin="121,35,10,0" Content="version 0.1.0.0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0"/>
+        <Border Margin="10,0,10,30" VerticalAlignment="Bottom" Height="90" BorderBrush="#bbbbbb" BorderThickness="1">
+            <ScrollViewer Padding="5">
+                <TextBlock TextWrapping="Wrap"><Run Text="THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."/></TextBlock>
+            </ScrollViewer>
+        </Border>
+        <TextBlock Margin="10,0,10,10" TextWrapping="Wrap" VerticalAlignment="Bottom"><Run Text="Graph library used: " FontWeight="Medium"/><Hyperlink NavigateUri="http://oxyplot.org/" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="OxyPlot"/></Hyperlink> (MIT License)</TextBlock>
+        <TextBlock Margin="145,80,10,0" TextWrapping="Wrap" VerticalAlignment="Top">
+            <Run Text="This is a free software. You can get it for free "/><Hyperlink NavigateUri="http://dotnetdiskimager.sourceforge.net/" RequestNavigate="Hyperlink_RequestNavigate">HERE</Hyperlink>.
+        </TextBlock>
+        <Label x:Name="copyrightLabel" Margin="121,51,10,0" Content="© FxS 2016" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0"/>
+    </Grid>
+</Window>

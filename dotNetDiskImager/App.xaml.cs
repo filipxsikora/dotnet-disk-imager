@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dotNetDiskImager.Models;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -22,16 +23,15 @@ namespace dotNetDiskImager
 
                 using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("dotNetDiskImager." + resourceName))
                 {
+                    if (stream == null)
+                        return null;
                     byte[] assemblyData = new byte[stream.Length];
                     stream.Read(assemblyData, 0, assemblyData.Length);
                     return Assembly.Load(assemblyData);
                 }
             };
-        }
 
-        private void Application_Startup(object sender, StartupEventArgs e)
-        {
-
+            AppSettings.LoadSettings();
         }
     }
 }

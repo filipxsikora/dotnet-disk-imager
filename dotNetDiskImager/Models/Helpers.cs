@@ -23,34 +23,36 @@ namespace dotNetDiskImager.Models
             return string.Format("{0:0.00} {1}B", speedValue, byteUnits[i]);
         }
 
-        public static string SecondsToEstimate(ulong seconds)
+        public static string SecondsToEstimate(ulong seconds, bool shortFormat = false)
         {
             TimeSpan time;
             if (seconds > 86400)
             {
-                return "More than one day";
+                return shortFormat ? "More than one day" : ">1 Day";
             }
+
+            string pre = shortFormat ? "~" : "About ";
 
             if (seconds > 3600)
             {
                 time = TimeSpan.FromSeconds(((seconds / 300) + 1) * 300);
-                return string.Format("About {0} hour{1}{2}", time.Hours, time.Hours != 1 ? "s" : "", time.Minutes != 0 ? string.Format(" and {0} minutes", time.Minutes) : "");
+                return string.Format("{0}{1} hour{2}{3}", pre, time.Hours, time.Hours != 1 ? "s" : "", time.Minutes != 0 ? string.Format(" and {0} minutes", time.Minutes) : "");
             }
 
             if (seconds > 600)
             {
                 time = TimeSpan.FromSeconds(((seconds / 30) + 1) * 30);
-                return string.Format("About {0} minute{1}{2}", time.Minutes, time.Minutes != 1 ? "s" : "", time.Seconds != 0 ? string.Format(" and {0} seconds", time.Seconds) : "");
+                return string.Format("{0}{1} minute{2}{3}", pre, time.Minutes, time.Minutes != 1 ? "s" : "", time.Seconds != 0 ? string.Format(" and {0} seconds", time.Seconds) : "");
             }
 
             if (seconds >= 55)
             {
                 time = TimeSpan.FromSeconds(((seconds / 15) + 1) * 15);
-                return string.Format("About {0} minute{1}{2}", time.Minutes, time.Minutes != 1 ? "s" : "", time.Seconds != 0 ? string.Format(" and {0} seconds", time.Seconds) : "");
+                return string.Format("{0}{1} minute{2}{3}", pre, time.Minutes, time.Minutes != 1 ? "s" : "", time.Seconds != 0 ? string.Format(" and {0} seconds", time.Seconds) : "");
             }
 
             time = TimeSpan.FromSeconds(((seconds / 5) + 1) * 5);
-            return string.Format("About {0} seconds", time.Seconds);
+            return string.Format("{0}{1} seconds", pre, time.Seconds);
 
         }
     }
