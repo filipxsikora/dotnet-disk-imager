@@ -517,7 +517,7 @@ namespace dotNetDiskImager
             }
             try
             {
-                disk = new Disk((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
                 result = disk.InitReadImageFromDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
             catch (Exception ex)
@@ -615,7 +615,7 @@ namespace dotNetDiskImager
 
             try
             {
-                disk = new Disk((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
                 result = disk.InitWriteImageToDevice(imagePathTextBox.Text);
             }
             catch (Exception ex)
@@ -750,7 +750,7 @@ namespace dotNetDiskImager
 
             try
             {
-                disk = new Disk((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
                 result = disk.InitVerifyImageAndDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
             catch (Exception ex)

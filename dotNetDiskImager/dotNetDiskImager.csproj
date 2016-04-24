@@ -91,6 +91,7 @@
     <Compile Include="AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DiskAccess\Disk.cs" />
     <Compile Include="DiskAccess\DiskOperation.cs" />
     <Compile Include="DiskAccess\OperationFinishedState.cs" />
     <Compile Include="Models\Settings.cs" />
@@ -120,7 +121,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Buffers\CircularBuffer.cs" />
-    <Compile Include="DiskAccess\Disk.cs" />
+    <Compile Include="DiskAccess\DiskRaw.cs" />
     <Compile Include="DiskAccess\InitOperationResult.cs" />
     <Compile Include="DiskAccess\NativeDiskWrapper.cs" />
     <Compile Include="DiskAccess\NativeDiskEnums.cs" />
