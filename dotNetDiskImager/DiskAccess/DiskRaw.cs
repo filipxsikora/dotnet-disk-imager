@@ -130,7 +130,7 @@ namespace dotNetDiskImager.DiskAccess
                     if (verify && !cancelPending)
                     {
                         OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
-                        result = InternalVerifyWorker(deviceHandle, fileHandle, sectorSize, numSectors);
+                        result = VerifyImageAndDeviceWorker(deviceHandle, fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
@@ -220,7 +220,7 @@ namespace dotNetDiskImager.DiskAccess
                     if (verify && !cancelPending)
                     {
                         OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
-                        result = InternalVerifyWorker(deviceHandle, fileHandle, sectorSize, numSectors);
+                        result = VerifyImageAndDeviceWorker(deviceHandle, fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
@@ -339,7 +339,7 @@ namespace dotNetDiskImager.DiskAccess
 
                 try
                 {
-                    result = InternalVerifyWorker(deviceHandle, fileHandle, sectorSize, numSectors);
+                    result = VerifyImageAndDeviceWorker(deviceHandle, fileHandle, sectorSize, numSectors);
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
@@ -467,7 +467,7 @@ namespace dotNetDiskImager.DiskAccess
             return true;
         }
 
-        protected override bool InternalVerifyWorker(IntPtr deviceHandle, IntPtr fileHandle, ulong sectorSize, ulong numSectors)
+        protected override bool VerifyImageAndDeviceWorker(IntPtr deviceHandle, IntPtr fileHandle, ulong sectorSize, ulong numSectors)
         {
             byte[] fileData;
             byte[] deviceData;
