@@ -517,7 +517,14 @@ namespace dotNetDiskImager
             }
             try
             {
-                disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                if (onTheFlyZipCheckBox.IsChecked.Value)
+                {
+                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
+                else
+                {
+                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
                 result = disk.InitReadImageFromDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
             catch (Exception ex)
@@ -615,7 +622,14 @@ namespace dotNetDiskImager
 
             try
             {
-                disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                if (onTheFlyZipCheckBox.IsChecked.Value)
+                {
+                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
+                else
+                {
+                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
                 result = disk.InitWriteImageToDevice(imagePathTextBox.Text);
             }
             catch (Exception ex)
@@ -841,6 +855,7 @@ namespace dotNetDiskImager
             readButton.IsEnabled = enabled;
             writeButton.IsEnabled = enabled;
             verifyImageButton.IsEnabled = enabled;
+            onTheFlyZipCheckBox.IsEnabled = enabled;
             imagePathTextBox.IsEnabled = enabled;
             driveSelectComboBox.IsEnabled = enabled;
             verifyCheckBox.IsEnabled = enabled;
