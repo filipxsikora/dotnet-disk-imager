@@ -20,6 +20,8 @@ namespace dotNetDiskImager
     /// </summary>
     public partial class SettingsWindow : Window
     {
+        CustomPlacesWindow customPlacesWindow = null;
+
         public SettingsWindow()
         {
             InitializeComponent();
@@ -159,6 +161,16 @@ namespace dotNetDiskImager
             {
                 defaultFolder_userSpecifyValue.Text = dlg.SelectedPath;
             }
+        }
+
+        private void customPlacesButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (customPlacesWindow == null)
+            {
+                customPlacesWindow = new CustomPlacesWindow();
+                customPlacesWindow.Closed += (s, ea) => customPlacesWindow = null;
+            }
+            customPlacesWindow.ShowDialog();
         }
     }
 }

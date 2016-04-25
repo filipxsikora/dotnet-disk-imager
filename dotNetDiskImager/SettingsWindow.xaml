@@ -17,6 +17,7 @@
                 <Button x:Name="defaultFolderDialogButton" ToolTip="Open dialog to select default folder" Content="{StaticResource openFolderIcon}" HorizontalAlignment="Right" Margin="0,116,10,0" VerticalAlignment="Top" Width="40" Height="23" IsEnabled="False" Click="defaultFolderDialogButton_Click"/>
                 <CheckBox x:Name="enableAnimationsCheckBox" IsChecked="True" Content="Enable animations" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top"/>
                 <CheckBox x:Name="checkForUpdatesCheckBox" IsChecked="True" Content="Check for updates on startup" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                <Button x:Name="customPlacesButton" Content="Custom places" Margin="0,88,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Padding="5,0" Height="23" Click="customPlacesButton_Click"/>
             </Grid>
         </GroupBox>
         <GroupBox Header="Taskbar" Margin="10,186,10,0" VerticalAlignment="Top" Height="60">
