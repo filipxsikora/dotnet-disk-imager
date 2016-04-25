@@ -764,7 +764,14 @@ namespace dotNetDiskImager
 
             try
             {
-                disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                if (onTheFlyZipCheckBox.IsChecked.Value)
+                {
+                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
+                else
+                {
+                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
                 result = disk.InitVerifyImageAndDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
             catch (Exception ex)
