@@ -172,6 +172,8 @@ namespace dotNetDiskImager.DiskAccess
             availibleSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandle, ref sectorSize);
             numSectors = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
 
+            _imagePath = imagePath;
+
             if (numSectors > availibleSectors)
             {
                 bool dataFound = false;
@@ -190,6 +192,8 @@ namespace dotNetDiskImager.DiskAccess
                             break;
                         }
                     }
+
+                    i += nextChunkSize;
                 }
 
                 return new InitOperationResult(false, numSectors * sectorSize, availibleSectors * sectorSize, dataFound);
