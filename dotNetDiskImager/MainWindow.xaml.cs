@@ -341,7 +341,7 @@ namespace dotNetDiskImager
             {
                 CheckFileExists = false,
                 Title = "Select a disk image file",
-                Filter = "Disk image file (*.img)|*.img|Any file|*.*",
+                Filter = "Supported Disk image files|*.zip;*.img|Zipped Disk image file (*.zip)|*.zip|Disk image file (*.img)|*.img|Any file|*.*",
                 InitialDirectory = AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed ? AppSettings.Settings.LastFolderPath : AppSettings.Settings.UserSpecifiedFolder
             };
             try
@@ -358,6 +358,14 @@ namespace dotNetDiskImager
             {
                 AppSettings.Settings.LastFolderPath = new FileInfo(dlg.FileName).DirectoryName;
                 imagePathTextBox.Text = dlg.FileName;
+                if(new FileInfo(dlg.FileName).Extension == ".zip")
+                {
+                    onTheFlyZipCheckBox.IsChecked = true;
+                }
+                else
+                {
+                    onTheFlyZipCheckBox.IsChecked = false;
+                }
             }
         }
 
