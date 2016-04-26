@@ -24,6 +24,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Shell;
 using dotNetDiskImager.UI;
+using System.Media;
 
 namespace dotNetDiskImager
 {
@@ -98,7 +99,7 @@ namespace dotNetDiskImager
                 AppSettings.SaveSettings();
             };
 
-            if(AppSettings.Settings.CheckForUpdatesOnStartup)
+            if (AppSettings.Settings.CheckForUpdatesOnStartup)
             {
                 CheckUpdates();
             }
@@ -157,9 +158,9 @@ namespace dotNetDiskImager
                         handled = true;
                         break;
                     case WindowContextMenu.EnableLinkedConn:
-                        if(!Utils.CheckMappedDrivesEnable())
+                        if (!Utils.CheckMappedDrivesEnable())
                         {
-                            if(Utils.SetMappedDrivesEnable())
+                            if (Utils.SetMappedDrivesEnable())
                             {
                                 MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
@@ -235,6 +236,7 @@ namespace dotNetDiskImager
                     verifyingAfterOperation = false;
                     Dispatcher.Invoke(() =>
                     {
+                        PlayNotifySound();
                         this.FlashWindow();
                         SetUIState(true);
                         GraphModel.ResetToNormal();
@@ -262,7 +264,7 @@ namespace dotNetDiskImager
                             GraphModel.ResetToVerify();
                             remainingTimeEstimator.Reset();
                             timeRemainingText.Content = "Remaining time: Calculating...";
-                            if(AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.RemainingTime)
+                            if (AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.RemainingTime)
                             {
                                 Title = "[Calculating...] - dotNet Disk Imager";
                             }
@@ -345,11 +347,11 @@ namespace dotNetDiskImager
                 InitialDirectory = AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed ? AppSettings.Settings.LastFolderPath : AppSettings.Settings.UserSpecifiedFolder
             };
 
-            foreach(var customPlace in AppSettings.Settings.CustomPlaces)
+            foreach (var customPlace in AppSettings.Settings.CustomPlaces)
             {
                 try
                 {
-                    if(Directory.Exists(customPlace))
+                    if (Directory.Exists(customPlace))
                     {
                         dlg.CustomPlaces.Add(new FileDialogCustomPlace(customPlace));
                     }
@@ -371,7 +373,7 @@ namespace dotNetDiskImager
             {
                 AppSettings.Settings.LastFolderPath = new FileInfo(dlg.FileName).DirectoryName;
                 imagePathTextBox.Text = dlg.FileName;
-                if(new FileInfo(dlg.FileName).Extension == ".zip")
+                if (new FileInfo(dlg.FileName).Extension == ".zip")
                 {
                     onTheFlyZipCheckBox.IsChecked = true;
                 }
@@ -1023,7 +1025,7 @@ namespace dotNetDiskImager
                 var result = Updater.IsUpdateAvailible();
                 if (result != null && result.Value)
                 {
-                    if(!closed)
+                    if (!closed)
                     {
                         Dispatcher.Invoke(() =>
                         {
@@ -1036,9 +1038,9 @@ namespace dotNetDiskImager
                 }
                 else
                 {
-                    if(displayNoUpdatesAvailible)
+                    if (displayNoUpdatesAvailible)
                     {
-                        if(result == null)
+                        if (result == null)
                         {
                             Dispatcher.Invoke(() =>
                             {
@@ -1078,6 +1080,15 @@ namespace dotNetDiskImager
             }
             aboutWindow.Show();
             aboutWindow.Activate();
+        }
+
+        private void PlayNotifySound()
+        {
+            using (Stream str = Properties.Resources.notify)
+            using (SoundPlayer snd = new SoundPlayer(str))
+            {
+                snd.Play();
+            }
         }
     }
 }
