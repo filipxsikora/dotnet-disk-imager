@@ -271,4 +271,58 @@
             </Rectangle.Fill>
         </Rectangle>
     </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="removeIcon" SnapsToDevicePixels="True" Width="12" Height="12" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Stretch="Fill">
+        <Rectangle Width="12" Height="12">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M0,11L16,11 16,5.001 0,5.001z" />
+                                <GeometryDrawing Brush="#FFA1260D" Geometry="F1M15,10L1,10 1,6 15,6z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="downIcon" SnapsToDevicePixels="True" Width="12" Height="12" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Stretch="Fill">
+        <Rectangle Width="12" Height="12">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M1.5859,5L14.4139,5 7.9999,11.414z" />
+                                <GeometryDrawing Brush="#FF424242" Geometry="F1M8,10L4,6 12,6z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="upIcon" SnapsToDevicePixels="True" Width="12" Height="12" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Stretch="Fill">
+        <Rectangle Width="12" Height="12">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M1.5859,11L7.9999,4.586 14.4139,11z" />
+                                <GeometryDrawing Brush="#FF424242" Geometry="F1M12,10L4,10 8,6z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
 </ResourceDictionary>

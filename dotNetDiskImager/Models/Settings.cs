@@ -49,6 +49,7 @@ namespace dotNetDiskImager.Models
         public bool EnableAnimations { get; set; }
         public TaskbarExtraInfo TaskbarExtraInfo { get; set; }
         public bool CheckForUpdatesOnStartup { get; set; }
+        public List<string> CustomPlaces { get; set; }
 
         public static SettingsInternal Default
         {   get
@@ -61,7 +62,8 @@ namespace dotNetDiskImager.Models
                     UserSpecifiedFolder = "",
                     DisplayWriteWarnings = true,
                     TaskbarExtraInfo = TaskbarExtraInfo.Nothing,
-                    CheckForUpdatesOnStartup = true
+                    CheckForUpdatesOnStartup = true,
+                    CustomPlaces = new List<string>()
                 };
             }
         } 

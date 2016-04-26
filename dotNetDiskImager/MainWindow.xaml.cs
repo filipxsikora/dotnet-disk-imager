@@ -345,6 +345,18 @@ namespace dotNetDiskImager
                 InitialDirectory = AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed ? AppSettings.Settings.LastFolderPath : AppSettings.Settings.UserSpecifiedFolder
             };
 
+            foreach(var customPlace in AppSettings.Settings.CustomPlaces)
+            {
+                try
+                {
+                    if(Directory.Exists(customPlace))
+                    {
+                        dlg.CustomPlaces.Add(new FileDialogCustomPlace(customPlace));
+                    }
+                }
+                catch { }
+            }
+
             try
             {
                 result = dlg.ShowDialog().Value;
