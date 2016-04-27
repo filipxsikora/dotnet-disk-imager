@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:dotNetDiskImager"
         mc:Ignorable="d"
-        Title="Custom Place - dotNet Disk Imager" Height="122" Width="400" Icon="icon.ico" ShowInTaskbar="False" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" PreviewKeyDown="Window_PreviewKeyDown">
+        Title="Custom Place - dotNet Disk Imager" Height="137" Width="400" Icon="icon.ico" ShowInTaskbar="False" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
-        <TextBox x:Name="pathTextBox" Margin="10,10,55,0" TextWrapping="NoWrap" Text="" Height="23" VerticalAlignment="Top"/>
-        <Button x:Name="folderDialogButton" ToolTip="Open dialog to select default folder" Content="{StaticResource openFolderIcon}" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="40" Height="23" Click="folderDialogButton_Click"/>
-        <Button x:Name="okButton" Content="OK" HorizontalAlignment="Right" Margin="0,50,10,0" Width="55" Height="23" VerticalAlignment="Top" Click="okButton_Click"/>
-        <Rectangle Height="1" Margin="10,41,10,0" VerticalAlignment="Top" Stroke="#FFBBBBBB"/>
+        <TextBox x:Name="pathTextBox" Margin="10,25,55,0" TextWrapping="NoWrap" Text="" Height="23" VerticalAlignment="Top"/>
+        <Button x:Name="folderDialogButton" ToolTip="Open dialog to select default folder" Content="{StaticResource openFolderIcon}" HorizontalAlignment="Right" Margin="0,25,10,0" VerticalAlignment="Top" Width="40" Height="23" Click="folderDialogButton_Click"/>
+        <Button x:Name="okButton" Content="OK" HorizontalAlignment="Right" Margin="0,65,10,0" Width="55" Height="23" VerticalAlignment="Top" Click="okButton_Click"/>
+        <Rectangle Height="1" Margin="10,56,10,0" VerticalAlignment="Top" Stroke="#FFBBBBBB"/>
+        <TextBlock HorizontalAlignment="Left" Margin="10,6,0,0" TextWrapping="Wrap" Text="Folder path:" VerticalAlignment="Top"/>
     </Grid>
 </Window>
