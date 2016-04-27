@@ -20,15 +20,16 @@ namespace dotNetDiskImager
     /// </summary>
     public partial class CustomPlacesWindow : Window
     {
-        public CustomPlacesWindow()
+        public CustomPlacesWindow(Window owner)
         {
             InitializeComponent();
+            Owner = owner;
             customPlacesListBox.ItemsSource = AppSettings.Settings.CustomPlaces;
         }
 
         private void addButton_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new AddCustomPlaceWindow("");
+            var dlg = new AddCustomPlaceWindow(this, "");
             if (dlg.ShowDialog().Value)
             {
                 AppSettings.Settings.CustomPlaces.Add(dlg.Path);
@@ -42,7 +43,7 @@ namespace dotNetDiskImager
             int selectedIndex = customPlacesListBox.SelectedIndex;
             if (selectedIndex != -1)
             {
-                var dlg = new AddCustomPlaceWindow(AppSettings.Settings.CustomPlaces[selectedIndex]);
+                var dlg = new AddCustomPlaceWindow(this, AppSettings.Settings.CustomPlaces[selectedIndex]);
                 if (dlg.ShowDialog().Value)
                 {
                     AppSettings.Settings.CustomPlaces[selectedIndex] = dlg.Path;

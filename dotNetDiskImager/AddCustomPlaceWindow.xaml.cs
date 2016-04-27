@@ -27,9 +27,10 @@ namespace dotNetDiskImager
             }
         }
 
-        public AddCustomPlaceWindow(string path)
+        public AddCustomPlaceWindow(Window owner, string path)
         {
             InitializeComponent();
+            Owner = owner;
             pathTextBox.Text = path;
         }
 

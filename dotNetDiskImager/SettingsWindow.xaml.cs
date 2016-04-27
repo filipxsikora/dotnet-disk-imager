@@ -167,7 +167,7 @@ namespace dotNetDiskImager
         {
             if (customPlacesWindow == null)
             {
-                customPlacesWindow = new CustomPlacesWindow();
+                customPlacesWindow = new CustomPlacesWindow(this);
                 customPlacesWindow.Closed += (s, ea) => customPlacesWindow = null;
             }
             customPlacesWindow.ShowDialog();
