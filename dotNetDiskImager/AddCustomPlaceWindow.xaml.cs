@@ -58,7 +58,14 @@ namespace dotNetDiskImager
 
         private void okButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
+            if (pathTextBox.Text.Length > 0)
+            {
+                DialogResult = true;
+            }
+            else
+            {
+                DialogResult = false;
+            }
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -73,7 +80,14 @@ namespace dotNetDiskImager
                 }
                 if(e.Key == Key.Enter)
                 {
-                    DialogResult = true;
+                    if (pathTextBox.Text.Length > 0)
+                    {
+                        DialogResult = true;
+                    }
+                    else
+                    {
+                        DialogResult = false;
+                    }
                     e.Handled = true;
                     Close();
                 }
