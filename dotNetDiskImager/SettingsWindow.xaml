@@ -45,9 +45,9 @@
         <GroupBox Header="Compression" Margin="10,270,10,0" VerticalAlignment="Top" Height="60">
             <Grid>
                 <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="Compression"/><Run Text=" method:"/></TextBlock>
-                <ComboBox x:Name="compressionMethod" HorizontalAlignment="Left" Margin="132,8,0,0" VerticalAlignment="Top" Width="170" SelectedIndex="0">
-                    <ComboBoxItem Content="Fast (worse compression)"/>
-                    <ComboBoxItem Content="Slow (better compression)"/>
+                <ComboBox x:Name="compressionMethod" HorizontalAlignment="Left" Margin="132,8,0,0" VerticalAlignment="Top" Width="190" SelectedIndex="0">
+                    <ComboBoxItem Content="Fastest (worse compression)"/>
+                    <ComboBoxItem Content="Optimal (better compression)"/>
                 </ComboBox>
             </Grid>
         </GroupBox>
