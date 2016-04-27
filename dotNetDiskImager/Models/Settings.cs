@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Xml.Serialization;
 
 namespace dotNetDiskImager.Models
@@ -18,25 +19,44 @@ namespace dotNetDiskImager.Models
 
         public static void SaveSettings()
         {
-            string directory = string.Format(@"{0}\dotNetDiskImager", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-            using (var stream = File.Create(string.Format(@"{0}\settings.xml", directory )))
+            try
             {
-                var serializer = new XmlSerializer(typeof(SettingsInternal));
-                serializer.Serialize(stream, Settings);
+                string directory = string.Format(@"{0}\dotNetDiskImager", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+                if (!Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+                using (var stream = File.Create(string.Format(@"{0}\settings.xml", directory)))
+                {
+                    var serializer = new XmlSerializer(typeof(SettingsInternal));
+                    serializer.Serialize(stream, Settings);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Error occured while saving options file.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         public static void LoadSettings()
         {
-            string file = string.Format(@"{0}\dotNetDiskImager\settings.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-            if (!File.Exists(file))
-                return;
-            using (var stream = File.Open(file, FileMode.Open))
+            try
             {
-                var serializer = new XmlSerializer(typeof(SettingsInternal));
-                Settings = serializer.Deserialize(stream) as SettingsInternal;
+                string file = string.Format(@"{0}\dotNetDiskImager\settings.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+                if (!File.Exists(file))
+                    return;
+                using (var stream = File.Open(file, FileMode.Open))
+                {
+                    var serializer = new XmlSerializer(typeof(SettingsInternal));
+                    Settings = serializer.Deserialize(stream) as SettingsInternal;
+                    if (Settings.EnableSoundNotify == null)
+                    {
+                        Settings.EnableSoundNotify = true;
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Error occured while loading options file.\nUsing default.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Settings = SettingsInternal.Default;
             }
         }
     }
@@ -51,7 +71,7 @@ namespace dotNetDiskImager.Models
         public TaskbarExtraInfo TaskbarExtraInfo { get; set; }
         public bool CheckForUpdatesOnStartup { get; set; }
         public List<string> CustomPlaces { get; set; }
-        public bool EnableSoundNotify { get; set; }
+        public bool? EnableSoundNotify { get; set; }
         public CompressionMethod CompressionMethod { get; set; }
 
 
