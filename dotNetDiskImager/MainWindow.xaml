@@ -72,7 +72,6 @@
                 </TextBlock>
             </CheckBox.ToolTip>
         </CheckBox>
-        <Button TabIndex="10" x:Name="optionsButton" Content="{StaticResource optionsIcon}" ToolTip="Configure read/write/verify parameters" HorizontalAlignment="Right" Margin="0,162,10,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1"/>
         <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0" AllowDrop="True">Drop File or Drive here</Label>
     </Grid>
 </Window>
