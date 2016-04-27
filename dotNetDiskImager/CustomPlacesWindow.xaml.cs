@@ -28,10 +28,10 @@ namespace dotNetDiskImager
 
         private void addButton_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new System.Windows.Forms.FolderBrowserDialog();
-            if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            var dlg = new AddCustomPlaceWindow("");
+            if (dlg.ShowDialog().Value)
             {
-                AppSettings.Settings.CustomPlaces.Add(dlg.SelectedPath);
+                AppSettings.Settings.CustomPlaces.Add(dlg.Path);
                 customPlacesListBox.Items.Refresh();
                 customPlacesListBox.Focus();
             }
@@ -42,23 +42,10 @@ namespace dotNetDiskImager
             int selectedIndex = customPlacesListBox.SelectedIndex;
             if (selectedIndex != -1)
             {
-                System.Windows.Forms.DialogResult result = System.Windows.Forms.DialogResult.None;
-                var dlg = new System.Windows.Forms.FolderBrowserDialog();
-
-                dlg.SelectedPath = AppSettings.Settings.CustomPlaces[selectedIndex];
-
-                try
+                var dlg = new AddCustomPlaceWindow(AppSettings.Settings.CustomPlaces[selectedIndex]);
+                if (dlg.ShowDialog().Value)
                 {
-                    result = dlg.ShowDialog();
-                }
-                catch
-                {
-                    dlg.SelectedPath = "";
-                    result = dlg.ShowDialog();
-                }
-                if (result == System.Windows.Forms.DialogResult.OK)
-                {
-                    AppSettings.Settings.CustomPlaces[selectedIndex] = dlg.SelectedPath;
+                    AppSettings.Settings.CustomPlaces[selectedIndex] = dlg.Path;
                     customPlacesListBox.Items.Refresh();
                     customPlacesListBox.Focus();
                 }

@@ -1,0 +1,15 @@
+﻿<Window x:Class="dotNetDiskImager.AddCustomPlaceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:dotNetDiskImager"
+        mc:Ignorable="d"
+        Title="Custom Place - dotNet Disk Imager" Height="122" Width="400" Icon="icon.ico" ShowInTaskbar="False" ResizeMode="NoResize" Topmost="True" PreviewKeyDown="Window_PreviewKeyDown">
+    <Grid>
+        <TextBox x:Name="pathTextBox" Margin="10,10,55,0" TextWrapping="NoWrap" Text="" Height="23" VerticalAlignment="Top"/>
+        <Button x:Name="folderDialogButton" ToolTip="Open dialog to select default folder" Content="{StaticResource openFolderIcon}" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="40" Height="23" Click="folderDialogButton_Click"/>
+        <Button x:Name="okButton" Content="OK" HorizontalAlignment="Right" Margin="0,50,10,0" Width="55" Height="23" VerticalAlignment="Top" Click="okButton_Click"/>
+        <Rectangle Height="1" Margin="10,41,10,0" VerticalAlignment="Top" Stroke="#FFBBBBBB"/>
+    </Grid>
+</Window>
