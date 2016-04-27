@@ -10,6 +10,7 @@ namespace dotNetDiskImager.Models
 {
     public enum DefaultFolder { LastUsed, UserDefined }
     public enum TaskbarExtraInfo { Nothing, Percent, CurrentSpeed, RemainingTime, ActiveDevice, ImageFileName }
+    public enum CompressionMethod { Fast, Slow }
 
     public static class AppSettings
     {
@@ -50,6 +51,9 @@ namespace dotNetDiskImager.Models
         public TaskbarExtraInfo TaskbarExtraInfo { get; set; }
         public bool CheckForUpdatesOnStartup { get; set; }
         public List<string> CustomPlaces { get; set; }
+        public bool EnableSoundNotify { get; set; }
+        public CompressionMethod CompressionMethod { get; set; }
+
 
         public static SettingsInternal Default
         {   get
@@ -63,7 +67,9 @@ namespace dotNetDiskImager.Models
                     DisplayWriteWarnings = true,
                     TaskbarExtraInfo = TaskbarExtraInfo.Nothing,
                     CheckForUpdatesOnStartup = true,
-                    CustomPlaces = new List<string>()
+                    CustomPlaces = new List<string>(),
+                    EnableSoundNotify = true,
+                    CompressionMethod = CompressionMethod.Fast
                 };
             }
         } 

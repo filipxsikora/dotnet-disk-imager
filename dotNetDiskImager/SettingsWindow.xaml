@@ -5,22 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:dotNetDiskImager"
         mc:Ignorable="d"
-        Title="Settings - dotNet Disk Imager" Height="330" Width="400" ResizeMode="NoResize" Icon="icon.ico" PreviewKeyDown="Window_PreviewKeyDown">
+        Title="Settings - dotNet Disk Imager" Height="420" Width="400" ResizeMode="NoResize" Icon="icon.ico" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
-        <GroupBox Header="General" Margin="10,10,10,0" VerticalAlignment="Top" Height="171">
+        <GroupBox Header="General" Margin="10,10,10,0" VerticalAlignment="Top" Height="190">
             <Grid>
                 <CheckBox x:Name="displayPreWriteWarnings" IsChecked="True" Content="Display warnings before write" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                <TextBlock HorizontalAlignment="Left" Margin="10,75,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="Default folder"/><Run Text=":"/></TextBlock>
-                <RadioButton x:Name="defaultFolder_lastUsed" Content="Last used" HorizontalAlignment="Left" Margin="10,96,0,0" VerticalAlignment="Top" GroupName="defaultFolder" IsChecked="True" Click="defaultFolder_lastUsed_Click"/>
-                <RadioButton x:Name="defaultFolder_userSpecify" Content="User specified" HorizontalAlignment="Left" Margin="101,96,0,0" VerticalAlignment="Top" GroupName="defaultFolder" Click="defaultFolder_userSpecify_Click"/>
-                <TextBox x:Name="defaultFolder_userSpecifyValue" Margin="10,116,55,0" TextWrapping="NoWrap" IsEnabled="False" Height="23" VerticalAlignment="Top"/>
-                <Button x:Name="defaultFolderDialogButton" ToolTip="Open dialog to select default folder" Content="{StaticResource openFolderIcon}" HorizontalAlignment="Right" Margin="0,116,10,0" VerticalAlignment="Top" Width="40" Height="23" IsEnabled="False" Click="defaultFolderDialogButton_Click"/>
+                <TextBlock HorizontalAlignment="Left" Margin="10,0,0,58" TextWrapping="Wrap" Height="16" VerticalAlignment="Bottom"><Run Text="Default folder"/><Run Text=":"/></TextBlock>
+                <RadioButton x:Name="defaultFolder_lastUsed" Content="Last used" HorizontalAlignment="Left" Margin="10,0,0,38" GroupName="defaultFolder" IsChecked="True" Click="defaultFolder_lastUsed_Click" Height="15" VerticalAlignment="Bottom"/>
+                <RadioButton x:Name="defaultFolder_userSpecify" Content="User specified" HorizontalAlignment="Left" Margin="101,0,0,38" VerticalAlignment="Bottom" GroupName="defaultFolder" Click="defaultFolder_userSpecify_Click"/>
+                <TextBox x:Name="defaultFolder_userSpecifyValue" Margin="10,0,55,10" TextWrapping="NoWrap" IsEnabled="False" Height="23" VerticalAlignment="Bottom"/>
+                <Button x:Name="defaultFolderDialogButton" ToolTip="Open dialog to select default folder" Content="{StaticResource openFolderIcon}" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="40" Height="23" IsEnabled="False" Click="defaultFolderDialogButton_Click"/>
                 <CheckBox x:Name="enableAnimationsCheckBox" IsChecked="True" Content="Enable animations" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top"/>
                 <CheckBox x:Name="checkForUpdatesCheckBox" IsChecked="True" Content="Check for updates on startup" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                <Button x:Name="customPlacesButton" Content="Custom places" Margin="0,88,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Padding="5,0" Height="23" Click="customPlacesButton_Click"/>
+                <Button x:Name="customPlacesButton" Content="Custom places" Margin="0,0,10,38" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="5,0" Height="23" Click="customPlacesButton_Click"/>
+                <CheckBox x:Name="soundNotifyCheckBox" IsChecked="True" Content="Enable sound notify when finished" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
-        <GroupBox Header="Taskbar" Margin="10,186,10,0" VerticalAlignment="Top" Height="60">
+        <GroupBox Header="Taskbar" Margin="10,205,10,0" VerticalAlignment="Top" Height="60">
             <Grid>
                 <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="Show "/><Run Text="more:"/></TextBlock>
                 <ComboBox x:Name="showMoreOptions" HorizontalAlignment="Left" Margin="80,8,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="0">
@@ -35,11 +36,20 @@
                 </ComboBox>
             </Grid>
         </GroupBox>
-        <Button x:Name="saveButton" Margin="0,256,10,0" HorizontalAlignment="Right" Padding="5,0" Click="saveButton_Click" Height="23" VerticalAlignment="Top">
+        <Button x:Name="saveButton" Margin="0,0,10,10" HorizontalAlignment="Right" Padding="5,0" Click="saveButton_Click" Height="23" VerticalAlignment="Bottom">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource saveIcon}" Padding="0,0,3,0"></Label>
                 <TextBlock Text="Save"/>
             </StackPanel>
         </Button>
+        <GroupBox Header="Compression" Margin="10,270,10,0" VerticalAlignment="Top" Height="60">
+            <Grid>
+                <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="Compression"/><Run Text=" method:"/></TextBlock>
+                <ComboBox x:Name="compressionMethod" HorizontalAlignment="Left" Margin="132,8,0,0" VerticalAlignment="Top" Width="170" SelectedIndex="0">
+                    <ComboBoxItem Content="Fast (worse compression)"/>
+                    <ComboBoxItem Content="Slow (better compression)"/>
+                </ComboBox>
+            </Grid>
+        </GroupBox>
     </Grid>
 </Window>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿using dotNetDiskImager.Models;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ namespace dotNetDiskImager.DiskAccess
 {
     public class DiskZip : Disk
     {
+        CompressionMethod compressionMethod;
         private const int ZIP_LEAD_BYTES = 0x04034b50;
 
         public override event OperationFinishedEventHandler OperationFinished;
@@ -22,6 +24,11 @@ namespace dotNetDiskImager.DiskAccess
 
         public DiskZip(char driveLetter) : base(driveLetter)
         {
+        }
+
+        public DiskZip(char driveLetter, CompressionMethod compressMethod) : base(driveLetter)
+        {
+            compressionMethod = compressMethod;
         }
 
         public override void BeginReadImageFromDevice(bool verify)
@@ -350,6 +357,7 @@ namespace dotNetDiskImager.DiskAccess
             ulong bytesReadedPerPercent = 0;
             int lastProgress = 0;
             int progress = 0;
+            CompressionLevel compressionLevel = CompressionLevel.Fastest;
 
             sw.Start();
             percentStopwatch.Start();
@@ -357,7 +365,17 @@ namespace dotNetDiskImager.DiskAccess
             using (FileStream fileStream = new FileStream(new SafeFileHandle(fileHandle, false), FileAccess.ReadWrite))
             using (ZipArchive archive = new ZipArchive(fileStream, ZipArchiveMode.Create))
             {
-                Stream zipEntryStream = archive.CreateEntry(string.Format("{0}.img", Path.GetFileNameWithoutExtension(_imagePath)), CompressionLevel.Fastest).Open();
+                switch(AppSettings.Settings.CompressionMethod)
+                {
+                    case CompressionMethod.Fast:
+                        compressionLevel = CompressionLevel.Fastest;
+                        break;
+                    case CompressionMethod.Slow:
+                        compressionLevel = CompressionLevel.Optimal;
+                        break;
+                }
+
+                Stream zipEntryStream = archive.CreateEntry(string.Format("{0}.img", Path.GetFileNameWithoutExtension(_imagePath)), compressionLevel).Open();
                 using (BinaryWriter zipWriter = new BinaryWriter(zipEntryStream, Encoding.UTF8))
                 {
                     for (ulong i = 0; i < numSectors; i += 1024)

@@ -53,6 +53,7 @@ namespace dotNetDiskImager
 
             enableAnimationsCheckBox.IsChecked = AppSettings.Settings.EnableAnimations;
             checkForUpdatesCheckBox.IsChecked = AppSettings.Settings.CheckForUpdatesOnStartup;
+            soundNotifyCheckBox.IsChecked = AppSettings.Settings.EnableSoundNotify;
 
             switch (AppSettings.Settings.TaskbarExtraInfo)
             {
@@ -73,6 +74,16 @@ namespace dotNetDiskImager
                     break;
                 case TaskbarExtraInfo.ImageFileName:
                     showMoreOptions.SelectedIndex = 5;
+                    break;
+            }
+
+            switch(AppSettings.Settings.CompressionMethod)
+            {
+                case CompressionMethod.Fast:
+                    compressionMethod.SelectedIndex = 0;
+                    break;
+                case CompressionMethod.Slow:
+                    compressionMethod.SelectedIndex = 1;
                     break;
             }
         }
@@ -107,6 +118,7 @@ namespace dotNetDiskImager
 
             AppSettings.Settings.EnableAnimations = enableAnimationsCheckBox.IsChecked.Value;
             AppSettings.Settings.CheckForUpdatesOnStartup = enableAnimationsCheckBox.IsChecked.Value;
+            AppSettings.Settings.EnableSoundNotify = soundNotifyCheckBox.IsChecked.Value;
 
             switch (showMoreOptions.SelectedIndex)
             {
@@ -127,6 +139,16 @@ namespace dotNetDiskImager
                     break;
                 case 5:
                     AppSettings.Settings.TaskbarExtraInfo = TaskbarExtraInfo.ImageFileName;
+                    break;
+            }
+
+            switch (compressionMethod.SelectedIndex)
+            {
+                case 0:
+                    AppSettings.Settings.CompressionMethod = CompressionMethod.Fast;
+                    break;
+                case 1:
+                    AppSettings.Settings.CompressionMethod = CompressionMethod.Slow;
                     break;
             }
 

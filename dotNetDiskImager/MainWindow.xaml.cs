@@ -1084,10 +1084,13 @@ namespace dotNetDiskImager
 
         private void PlayNotifySound()
         {
-            using (Stream str = Properties.Resources.notify)
-            using (SoundPlayer snd = new SoundPlayer(str))
+            if (AppSettings.Settings.EnableSoundNotify)
             {
-                snd.Play();
+                using (Stream str = Properties.Resources.notify)
+                using (SoundPlayer snd = new SoundPlayer(str))
+                {
+                    snd.Play();
+                }
             }
         }
     }
