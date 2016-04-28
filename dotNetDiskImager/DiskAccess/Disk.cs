@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -11,382 +9,36 @@ using System.Threading.Tasks;
 
 namespace dotNetDiskImager.DiskAccess
 {
-    public class Disk
+    public abstract class Disk : IDisposable
     {
         public delegate void OperationFinishedEventHandler(object sender, OperationFinishedEventArgs eventArgs);
         public delegate void OperationProgressChangedEventHandler(object sender, OperationProgressChangedEventArgs eventArgs);
         public delegate void OperationProgressReportEventHandler(object sender, OperationProgressReportEventArgs eventArgs);
 
-        public event OperationFinishedEventHandler OperationFinished;
-        public event OperationProgressChangedEventHandler OperationProgressChanged;
-        public event OperationProgressReportEventHandler OperationProgressReport;
+        public virtual event OperationFinishedEventHandler OperationFinished;
+        public virtual event OperationProgressChangedEventHandler OperationProgressChanged;
+        public virtual event OperationProgressReportEventHandler OperationProgressReport;
 
         public char DriveLetter { get; }
 
-        DiskOperation currentDiskOperation;
-        int deviceID;
-        int volumeID;
-        IntPtr volumeHandle = IntPtr.Zero;
-        IntPtr deviceHandle = IntPtr.Zero;
-        IntPtr fileHandle = IntPtr.Zero;
-        Thread workingThread;
-        ulong sectorSize = 0;
-        ulong numSectors = 0;
-        ulong availibleSectors = 0;
-        volatile bool cancelPending = false;
-        string _imagePath;
+        protected DiskOperation currentDiskOperation;
+        protected int deviceID;
+        protected int volumeID;
+        protected IntPtr volumeHandle = IntPtr.Zero;
+        protected IntPtr deviceHandle = IntPtr.Zero;
+        protected IntPtr fileHandle = IntPtr.Zero;
+        protected Thread workingThread;
+        protected ulong sectorSize = 0;
+        protected ulong numSectors = 0;
+        protected ulong availibleSectors = 0;
+        protected volatile bool cancelPending = false;
+        protected string _imagePath;
 
         public Disk(char driveLetter)
         {
             DriveLetter = driveLetter;
             deviceID = NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", DriveLetter));
             volumeID = DriveLetter - 'A';
-        }
-
-        public InitOperationResult InitReadImageFromDevice(string imagePath, bool skipUnallocated)
-        {
-            ulong fileSize;
-            ulong spaceNeeded;
-            availibleSectors = 0;
-            sectorSize = 0;
-            numSectors = 0;
-            ulong freeSpace = 0;
-
-            Dispose();
-
-            volumeHandle = NativeDiskWrapper.GetHandleOnVolume(volumeID, NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandle);
-            NativeDiskWrapper.UnmountVolume(volumeHandle);
-
-            fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
-            deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_READ);
-
-            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandle, ref sectorSize);
-
-            _imagePath = imagePath;
-
-            if (skipUnallocated)
-            {
-                var partitionInfo = NativeDiskWrapper.GetDiskPartitionInfo(deviceHandle);
-                if (partitionInfo.PartitionStyle == PARTITION_STYLE.MasterBootRecord)
-                {
-                    numSectors = 1;
-                    unsafe
-                    {
-                        byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, sectorSize);
-
-                        for (int i = 0; i < 4; i++)
-                        {
-                            ulong partitionStartSector = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 8 + 16 * i);
-                            ulong partitionNumSectors = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 12 + 16 * i);
-
-                            if (partitionStartSector + partitionNumSectors > numSectors)
-                            {
-                                numSectors = partitionStartSector + partitionNumSectors;
-                            }
-                        }
-                    }
-                }
-                else if (partitionInfo.PartitionStyle == PARTITION_STYLE.GuidPartitionTable)
-                {
-                    numSectors = 1;
-                    unsafe
-                    {
-                        byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, sectorSize);
-                        uint gptHeaderOffset = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1C6);
-                        data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, gptHeaderOffset, 1, sectorSize);
-                        ulong partitionTableSector = (ulong)Marshal.ReadInt64(new IntPtr(data), 0x48);
-                        uint noOfPartitionEntries = (uint)Marshal.ReadInt32(new IntPtr(data), 0x50);
-                        uint sizeOfPartitionEntry = (uint)Marshal.ReadInt32(new IntPtr(data), 0x54);
-
-                        data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, partitionTableSector, (sectorSize / sizeOfPartitionEntry) * noOfPartitionEntries, sectorSize);
-
-                        for (int i = 0; i < noOfPartitionEntries; i++)
-                        {
-                            ulong partitionStartSector = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x20 + sizeOfPartitionEntry * i));
-                            ulong partitionNumSectors = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x28 + sizeOfPartitionEntry * i));
-
-                            if (partitionStartSector + partitionNumSectors > numSectors)
-                            {
-                                numSectors = partitionStartSector + partitionNumSectors;
-                            }
-                        }
-                    }
-                }
-            }
-
-            fileSize = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
-            if (fileSize >= numSectors)
-            {
-                spaceNeeded = 0;
-            }
-            else
-            {
-                spaceNeeded = (numSectors - fileSize) * sectorSize;
-            }
-
-            if (!NativeDiskWrapper.SpaceAvailible(imagePath.Substring(0, 3), spaceNeeded, out freeSpace))
-            {
-                return new InitOperationResult(false, spaceNeeded, freeSpace, false);
-            }
-
-            return new InitOperationResult(true, spaceNeeded, freeSpace, false);
-        }
-
-        public void BeginReadImageFromDevice(bool verify)
-        {
-            cancelPending = false;
-            currentDiskOperation = DiskOperation.Read;
-            if (verify)
-                currentDiskOperation |= DiskOperation.Verify;
-
-            workingThread = new Thread(() =>
-            {
-                bool result = false;
-                OperationFinishedState state = OperationFinishedState.Error;
-
-                try
-                {
-                    result = ReadImageFromDeviceWorker(sectorSize, numSectors);
-                    if (verify && !cancelPending)
-                    {
-                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
-                        result = InternalVerifyWorker(deviceHandle, fileHandle, sectorSize, numSectors);
-                    }
-                    Dispose();
-                    state = OperationFinishedState.Success;
-                }
-                catch
-                {
-                    result = false;
-                    state = OperationFinishedState.Error;
-                }
-                finally
-                {
-                    if (cancelPending)
-                        state = OperationFinishedState.Canceled;
-                    if (!result && !cancelPending)
-                        state = OperationFinishedState.Error;
-
-                    Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
-                }
-            });
-            workingThread.Start();
-        }
-
-        public InitOperationResult InitWriteImageToDevice(string imagePath)
-        {
-            availibleSectors = 0;
-            sectorSize = 0;
-            numSectors = 0;
-
-            Dispose();
-
-            volumeHandle = NativeDiskWrapper.GetHandleOnVolume(volumeID, NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandle);
-            NativeDiskWrapper.UnmountVolume(volumeHandle);
-
-            fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
-            deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
-
-            availibleSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandle, ref sectorSize);
-            numSectors = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
-
-            if (numSectors > availibleSectors)
-            {
-                bool dataFound = false;
-                ulong i = availibleSectors;
-                ulong nextChunkSize = 0;
-
-                while (i < numSectors && !dataFound)
-                {
-                    nextChunkSize = ((numSectors - i) >= 1024) ? 1024 : (numSectors - i);
-                    var sectorData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, nextChunkSize, sectorSize);
-                    foreach (var data in sectorData)
-                    {
-                        if (data != 0)
-                        {
-                            dataFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                return new InitOperationResult(false, numSectors * sectorSize, availibleSectors * sectorSize, dataFound);
-            }
-
-            return new InitOperationResult(true, numSectors * sectorSize, availibleSectors * sectorSize, false);
-        }
-
-        public void BeginWriteImageToDevice(bool verify, bool cropData = false)
-        {
-            cancelPending = false;
-            currentDiskOperation = DiskOperation.Write;
-
-            if (verify)
-                currentDiskOperation |= DiskOperation.Verify;
-
-            if (cropData)
-                numSectors = availibleSectors;
-
-            workingThread = new Thread(() =>
-            {
-                bool result = false;
-                OperationFinishedState state = OperationFinishedState.Error;
-
-                try
-                {
-                    result = WriteImageToDeviceWorker(sectorSize, numSectors);
-                    if (verify && !cancelPending)
-                    {
-                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
-                        result = InternalVerifyWorker(deviceHandle, fileHandle, sectorSize, numSectors);
-                    }
-                    Dispose();
-                    state = OperationFinishedState.Success;
-                }
-                catch
-                {
-                    result = false;
-                    state = OperationFinishedState.Error;
-                }
-                finally
-                {
-                    if (cancelPending)
-                        state = OperationFinishedState.Canceled;
-                    if (!result && !cancelPending)
-                        state = OperationFinishedState.Error;
-
-                    Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
-                }
-            });
-            workingThread.Start();
-        }
-
-        public VerifyInitOperationResult InitVerifyImageAndDevice(string imagePath, bool skipUnallocated)
-        {
-            ulong fileSize;
-            availibleSectors = 0;
-            sectorSize = 0;
-            numSectors = 0;
-
-            Dispose();
-
-            volumeHandle = NativeDiskWrapper.GetHandleOnVolume(volumeID, NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandle);
-            NativeDiskWrapper.UnmountVolume(volumeHandle);
-
-            fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
-            deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_READ);
-
-            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandle, ref sectorSize);
-
-            _imagePath = imagePath;
-
-            if (skipUnallocated)
-            {
-                var partitionInfo = NativeDiskWrapper.GetDiskPartitionInfo(deviceHandle);
-                if (partitionInfo.PartitionStyle == PARTITION_STYLE.MasterBootRecord)
-                {
-                    numSectors = 1;
-                    unsafe
-                    {
-                        byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, sectorSize);
-
-                        for (int i = 0; i < 4; i++)
-                        {
-                            ulong partitionStartSector = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 8 + 16 * i);
-                            ulong partitionNumSectors = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 12 + 16 * i);
-
-                            if (partitionStartSector + partitionNumSectors > numSectors)
-                            {
-                                numSectors = partitionStartSector + partitionNumSectors;
-                            }
-                        }
-                    }
-                }
-                else if (partitionInfo.PartitionStyle == PARTITION_STYLE.GuidPartitionTable)
-                {
-                    numSectors = 1;
-                    unsafe
-                    {
-                        byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, sectorSize);
-                        uint gptHeaderOffset = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1C6);
-                        data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, gptHeaderOffset, 1, sectorSize);
-                        ulong partitionTableSector = (ulong)Marshal.ReadInt64(new IntPtr(data), 0x48);
-                        uint noOfPartitionEntries = (uint)Marshal.ReadInt32(new IntPtr(data), 0x50);
-                        uint sizeOfPartitionEntry = (uint)Marshal.ReadInt32(new IntPtr(data), 0x54);
-
-                        data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, partitionTableSector, (sectorSize / sizeOfPartitionEntry) * noOfPartitionEntries, sectorSize);
-
-                        for (int i = 0; i < noOfPartitionEntries; i++)
-                        {
-                            ulong partitionStartSector = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x20 + sizeOfPartitionEntry * i));
-                            ulong partitionNumSectors = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x28 + sizeOfPartitionEntry * i));
-
-                            if (partitionStartSector + partitionNumSectors > numSectors)
-                            {
-                                numSectors = partitionStartSector + partitionNumSectors;
-                            }
-                        }
-                    }
-                }
-            }
-
-            fileSize = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
-            if (fileSize == numSectors)
-            {
-                return new VerifyInitOperationResult(true, fileSize * sectorSize, numSectors * sectorSize);
-            }
-            else
-            {
-                return new VerifyInitOperationResult(false, fileSize * sectorSize, numSectors * sectorSize);
-            }
-        }
-
-        public void BeginVerifyImageAndDevice(ulong numBytesToVerify)
-        {
-            cancelPending = false;
-            currentDiskOperation = DiskOperation.Verify;
-
-            numSectors = numBytesToVerify / sectorSize;
-
-            workingThread = new Thread(() =>
-            {
-                bool result = false;
-                OperationFinishedState state = OperationFinishedState.Error;
-
-                try
-                {
-                    result = InternalVerifyWorker(deviceHandle, fileHandle, sectorSize, numSectors);
-                    Dispose();
-                    state = OperationFinishedState.Success;
-                }
-                catch
-                {
-                    result = false;
-                    state = OperationFinishedState.Error;
-                }
-                finally
-                {
-                    if (cancelPending)
-                        state = OperationFinishedState.Canceled;
-                    if (!result && !cancelPending)
-                        state = OperationFinishedState.Error;
-
-                    Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
-                }
-            });
-            workingThread.Start();
-        }
-
-        public void CancelOperation()
-        {
-            cancelPending = true;
-            workingThread = null;
         }
 
         public void Dispose()
@@ -413,110 +65,82 @@ namespace dotNetDiskImager.DiskAccess
             }
         }
 
-        bool ReadImageFromDeviceWorker(ulong sectorSize, ulong numSectors)
+        public void CancelOperation()
         {
-            Stopwatch sw = new Stopwatch();
-            Stopwatch percentStopwatch = new Stopwatch();
-            byte[] deviceData;
-            ulong totalBytesReaded = 0;
-            ulong bytesReaded = 0;
-            ulong bytesToRead = sectorSize * numSectors;
-            ulong bytesReadedPerPercent = 0;
-            int lastProgress = 0;
-            int progress = 0;
+            cancelPending = true;
+            workingThread = null;
+        }
 
-            sw.Start();
-            percentStopwatch.Start();
+        public ulong GetLastUsedPartition()
+        {
+            var partitionInfo = NativeDiskWrapper.GetDiskPartitionInfo(deviceHandle);
 
-            for (ulong i = 0; i < numSectors; i += 1024)
+            if (partitionInfo.PartitionStyle == PARTITION_STYLE.MasterBootRecord)
             {
-                if (cancelPending)
+                numSectors = 1;
+                unsafe
                 {
-                    return false;
+                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, sectorSize);
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        ulong partitionStartSector = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 8 + 16 * i);
+                        ulong partitionNumSectors = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 12 + 16 * i);
+
+                        if (partitionStartSector + partitionNumSectors > numSectors)
+                        {
+                            numSectors = partitionStartSector + partitionNumSectors;
+                        }
+                    }
                 }
-
-                deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                NativeDiskWrapper.WriteSectorDataToHandle(fileHandle, deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-
-                totalBytesReaded += (ulong)deviceData.Length;
-                bytesReaded += (ulong)deviceData.Length;
-                bytesReadedPerPercent += (ulong)deviceData.Length;
-                bytesToRead -= (ulong)deviceData.Length;
-
-                progress = (int)(i / (numSectors / 100.0)) + 1;
-
-                if (progress != lastProgress)
+            }
+            else if (partitionInfo.PartitionStyle == PARTITION_STYLE.GuidPartitionTable)
+            {
+                numSectors = 1;
+                unsafe
                 {
-                    ulong averageBps = (ulong)(bytesReadedPerPercent / (percentStopwatch.ElapsedMilliseconds / 1000.0));
-                    OperationProgressChanged?.Invoke(this, new OperationProgressChangedEventArgs(progress, averageBps, currentDiskOperation));
-                    lastProgress = progress;
-                    bytesReadedPerPercent = 0;
-                    percentStopwatch.Restart();
-                }
+                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, sectorSize);
+                    uint gptHeaderOffset = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1C6);
+                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, gptHeaderOffset, 1, sectorSize);
+                    ulong partitionTableSector = (ulong)Marshal.ReadInt64(new IntPtr(data), 0x48);
+                    uint noOfPartitionEntries = (uint)Marshal.ReadInt32(new IntPtr(data), 0x50);
+                    uint sizeOfPartitionEntry = (uint)Marshal.ReadInt32(new IntPtr(data), 0x54);
 
-                if (sw.ElapsedMilliseconds >= 1000)
-                {
-                    ulong averageBps = (ulong)(bytesReaded / (sw.ElapsedMilliseconds / 1000.0));
-                    OperationProgressReport?.Invoke(this, new OperationProgressReportEventArgs(averageBps, totalBytesReaded, bytesToRead));
-                    bytesReaded = 0;
-                    sw.Restart();
+                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, partitionTableSector, (sectorSize / sizeOfPartitionEntry) * noOfPartitionEntries, sectorSize);
+
+                    for (int i = 0; i < noOfPartitionEntries; i++)
+                    {
+                        ulong partitionStartSector = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x20 + sizeOfPartitionEntry * i));
+                        ulong partitionNumSectors = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x28 + sizeOfPartitionEntry * i));
+
+                        if (partitionStartSector + partitionNumSectors > numSectors)
+                        {
+                            numSectors = partitionStartSector + partitionNumSectors;
+                        }
+                    }
                 }
             }
 
-            return true;
+            return numSectors;
         }
 
-        bool WriteImageToDeviceWorker(ulong sectorSize, ulong numSectors)
-        {
-            Stopwatch msStopwatch = new Stopwatch();
-            Stopwatch percentStopwatch = new Stopwatch();
-            byte[] imageData;
-            ulong totalBytesWritten = 0;
-            ulong bytesWritten = 0;
-            ulong bytesToWrite = sectorSize * numSectors;
-            ulong bytesWrittenPerPercent = 0;
-            int lastProgress = 0;
-            int progress = 0;
+        public abstract InitOperationResult InitReadImageFromDevice(string imagePath, bool skipUnallocated);
 
-            msStopwatch.Start();
-            percentStopwatch.Start();
+        public abstract void BeginReadImageFromDevice(bool verify);
 
-            for (ulong i = 0; i < numSectors; i += 1024)
-            {
-                if (cancelPending)
-                {
-                    return false;
-                }
+        public abstract InitOperationResult InitWriteImageToDevice(string imagePath);
 
-                imageData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                NativeDiskWrapper.WriteSectorDataToHandle(deviceHandle, imageData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                totalBytesWritten += (ulong)imageData.Length;
-                bytesWritten += (ulong)imageData.Length;
-                bytesWrittenPerPercent += (ulong)imageData.Length;
-                bytesToWrite -= (ulong)imageData.Length;
+        public abstract void BeginWriteImageToDevice(bool verify, bool cropData = false);
 
-                progress = (int)(i / (numSectors / 100.0)) + 1;
+        public abstract VerifyInitOperationResult InitVerifyImageAndDevice(string imagePath, bool skipUnallocated);
 
-                if (progress != lastProgress)
-                {
-                    ulong averageBps = (ulong)(bytesWrittenPerPercent / (percentStopwatch.ElapsedMilliseconds / 1000.0));
-                    OperationProgressChanged?.Invoke(this, new OperationProgressChangedEventArgs(progress, averageBps, currentDiskOperation));
-                    lastProgress = progress;
-                    bytesWrittenPerPercent = 0;
-                    percentStopwatch.Restart();
-                }
+        public abstract void BeginVerifyImageAndDevice(ulong numBytesToVerify);
 
-                if (msStopwatch.ElapsedMilliseconds >= 1000)
-                {
-                    ulong averageBps = (ulong)(bytesWritten / (msStopwatch.ElapsedMilliseconds / 1000.0));
-                    OperationProgressReport?.Invoke(this, new OperationProgressReportEventArgs(averageBps, totalBytesWritten, bytesToWrite));
-                    bytesWritten = 0;
-                    msStopwatch.Restart();
-                }
-            }
+        protected abstract bool ReadImageFromDeviceWorker(ulong sectorSize, ulong numSectors);
 
-            return true;
-        }
+        protected abstract bool WriteImageToDeviceWorker(ulong sectorSize, ulong numSectors);
+
+        protected abstract bool VerifyImageAndDeviceWorker(IntPtr deviceHandle, IntPtr fileHandle, ulong sectorSize, ulong numSectors);
 
         public static char[] GetLogicalDrives()
         {
@@ -610,61 +234,6 @@ namespace dotNetDiskImager.DiskAccess
 
             }
             return result;
-        }
-
-        private bool InternalVerifyWorker(IntPtr deviceHandle, IntPtr fileHandle, ulong sectorSize, ulong numSectors)
-        {
-            byte[] fileData;
-            byte[] deviceData;
-            Stopwatch msStopwatch = new Stopwatch();
-            Stopwatch percentStopwatch = new Stopwatch();
-            ulong totalBytesVerified = 0;
-            ulong bytesVerified = 0;
-            ulong bytesToVerify = sectorSize * numSectors;
-            ulong bytesVerifiedPerPercent = 0;
-            int lastProgress = 0;
-            int progress = 0;
-
-            msStopwatch.Start();
-            percentStopwatch.Start();
-
-            for (ulong i = 0; i < numSectors; i += 1024)
-            {
-                if (cancelPending)
-                    return false;
-
-                fileData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-
-                if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData))
-                    return false;
-
-                totalBytesVerified += (ulong)fileData.Length;
-                bytesVerified += (ulong)fileData.Length;
-                bytesVerifiedPerPercent += (ulong)fileData.Length;
-                bytesToVerify -= (ulong)fileData.Length;
-
-                progress = (int)(i / (numSectors / 100.0)) + 1;
-
-                if (progress != lastProgress)
-                {
-                    ulong averageBps = (ulong)(bytesVerifiedPerPercent / (percentStopwatch.ElapsedMilliseconds / 1000.0));
-                    OperationProgressChanged?.Invoke(this, new OperationProgressChangedEventArgs(progress, averageBps, currentDiskOperation));
-                    lastProgress = progress;
-                    bytesVerifiedPerPercent = 0;
-                    percentStopwatch.Restart();
-                }
-
-                if (msStopwatch.ElapsedMilliseconds >= 1000)
-                {
-                    ulong averageBps = (ulong)(bytesVerified / (msStopwatch.ElapsedMilliseconds / 1000.0));
-                    OperationProgressReport?.Invoke(this, new OperationProgressReportEventArgs(averageBps, totalBytesVerified, bytesToVerify));
-                    bytesVerified = 0;
-                    msStopwatch.Restart();
-                }
-            }
-
-            return true;
         }
     }
 }

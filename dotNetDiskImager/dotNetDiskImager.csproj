@@ -68,6 +68,8 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -91,7 +93,15 @@
     <Compile Include="AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="AddCustomPlaceWindow.xaml.cs">
+      <DependentUpon>AddCustomPlaceWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CustomPlacesWindow.xaml.cs">
+      <DependentUpon>CustomPlacesWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DiskAccess\Disk.cs" />
     <Compile Include="DiskAccess\DiskOperation.cs" />
+    <Compile Include="DiskAccess\DiskZip.cs" />
     <Compile Include="DiskAccess\OperationFinishedState.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Models\Updater.cs" />
@@ -111,6 +121,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="AddCustomPlaceWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CustomPlacesWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -120,7 +138,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Buffers\CircularBuffer.cs" />
-    <Compile Include="DiskAccess\Disk.cs" />
+    <Compile Include="DiskAccess\DiskRaw.cs" />
     <Compile Include="DiskAccess\InitOperationResult.cs" />
     <Compile Include="DiskAccess\NativeDiskWrapper.cs" />
     <Compile Include="DiskAccess\NativeDiskEnums.cs" />
@@ -201,6 +219,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Versioning.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\notify.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

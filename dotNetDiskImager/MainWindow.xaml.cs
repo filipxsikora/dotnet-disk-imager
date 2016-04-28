@@ -24,6 +24,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Shell;
 using dotNetDiskImager.UI;
+using System.Media;
 
 namespace dotNetDiskImager
 {
@@ -39,11 +40,11 @@ namespace dotNetDiskImager
         const int DBT_DEVTYP_VOLUME = 0x02;
         #endregion
 
-        const int windowHeight = 220;
+        const int windowHeight = 240;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
         const int progressPartHeight = 220;
-        const int applicationPartHeight = 180;
+        const int applicationPartHeight = 200;
         const int windowInnerOffset = 10;
 
         public IntPtr Handle
@@ -98,7 +99,7 @@ namespace dotNetDiskImager
                 AppSettings.SaveSettings();
             };
 
-            if(AppSettings.Settings.CheckForUpdatesOnStartup)
+            if (AppSettings.Settings.CheckForUpdatesOnStartup)
             {
                 CheckUpdates();
             }
@@ -157,9 +158,9 @@ namespace dotNetDiskImager
                         handled = true;
                         break;
                     case WindowContextMenu.EnableLinkedConn:
-                        if(!Utils.CheckMappedDrivesEnable())
+                        if (!Utils.CheckMappedDrivesEnable())
                         {
-                            if(Utils.SetMappedDrivesEnable())
+                            if (Utils.SetMappedDrivesEnable())
                             {
                                 MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
@@ -235,6 +236,7 @@ namespace dotNetDiskImager
                     verifyingAfterOperation = false;
                     Dispatcher.Invoke(() =>
                     {
+                        PlayNotifySound();
                         this.FlashWindow();
                         SetUIState(true);
                         GraphModel.ResetToNormal();
@@ -262,7 +264,7 @@ namespace dotNetDiskImager
                             GraphModel.ResetToVerify();
                             remainingTimeEstimator.Reset();
                             timeRemainingText.Content = "Remaining time: Calculating...";
-                            if(AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.RemainingTime)
+                            if (AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.RemainingTime)
                             {
                                 Title = "[Calculating...] - dotNet Disk Imager";
                             }
@@ -341,9 +343,22 @@ namespace dotNetDiskImager
             {
                 CheckFileExists = false,
                 Title = "Select a disk image file",
-                Filter = "Disk image file (*.img)|*.img|Any file|*.*",
+                Filter = "Supported Disk image files|*.zip;*.img|Zipped Disk image file (*.zip)|*.zip|Disk image file (*.img)|*.img|Any file|*.*",
                 InitialDirectory = AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed ? AppSettings.Settings.LastFolderPath : AppSettings.Settings.UserSpecifiedFolder
             };
+
+            foreach (var customPlace in AppSettings.Settings.CustomPlaces)
+            {
+                try
+                {
+                    if (Directory.Exists(customPlace))
+                    {
+                        dlg.CustomPlaces.Add(new FileDialogCustomPlace(customPlace));
+                    }
+                }
+                catch { }
+            }
+
             try
             {
                 result = dlg.ShowDialog().Value;
@@ -358,6 +373,14 @@ namespace dotNetDiskImager
             {
                 AppSettings.Settings.LastFolderPath = new FileInfo(dlg.FileName).DirectoryName;
                 imagePathTextBox.Text = dlg.FileName;
+                if (new FileInfo(dlg.FileName).Extension == ".zip")
+                {
+                    onTheFlyZipCheckBox.IsChecked = true;
+                }
+                else
+                {
+                    onTheFlyZipCheckBox.IsChecked = false;
+                }
             }
         }
 
@@ -517,7 +540,14 @@ namespace dotNetDiskImager
             }
             try
             {
-                disk = new Disk((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                if (onTheFlyZipCheckBox.IsChecked.Value)
+                {
+                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
+                else
+                {
+                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
                 result = disk.InitReadImageFromDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
             catch (Exception ex)
@@ -615,7 +645,14 @@ namespace dotNetDiskImager
 
             try
             {
-                disk = new Disk((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                if (onTheFlyZipCheckBox.IsChecked.Value)
+                {
+                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
+                else
+                {
+                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
                 result = disk.InitWriteImageToDevice(imagePathTextBox.Text);
             }
             catch (Exception ex)
@@ -750,7 +787,14 @@ namespace dotNetDiskImager
 
             try
             {
-                disk = new Disk((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                if (onTheFlyZipCheckBox.IsChecked.Value)
+                {
+                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
+                else
+                {
+                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                }
                 result = disk.InitVerifyImageAndDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
             catch (Exception ex)
@@ -841,6 +885,7 @@ namespace dotNetDiskImager
             readButton.IsEnabled = enabled;
             writeButton.IsEnabled = enabled;
             verifyImageButton.IsEnabled = enabled;
+            onTheFlyZipCheckBox.IsEnabled = enabled;
             imagePathTextBox.IsEnabled = enabled;
             driveSelectComboBox.IsEnabled = enabled;
             verifyCheckBox.IsEnabled = enabled;
@@ -980,7 +1025,7 @@ namespace dotNetDiskImager
                 var result = Updater.IsUpdateAvailible();
                 if (result != null && result.Value)
                 {
-                    if(!closed)
+                    if (!closed)
                     {
                         Dispatcher.Invoke(() =>
                         {
@@ -993,9 +1038,9 @@ namespace dotNetDiskImager
                 }
                 else
                 {
-                    if(displayNoUpdatesAvailible)
+                    if (displayNoUpdatesAvailible)
                     {
-                        if(result == null)
+                        if (result == null)
                         {
                             Dispatcher.Invoke(() =>
                             {
@@ -1035,6 +1080,18 @@ namespace dotNetDiskImager
             }
             aboutWindow.Show();
             aboutWindow.Activate();
+        }
+
+        private void PlayNotifySound()
+        {
+            if (AppSettings.Settings.EnableSoundNotify.Value)
+            {
+                using (Stream str = Properties.Resources.notify)
+                using (SoundPlayer snd = new SoundPlayer(str))
+                {
+                    snd.Play();
+                }
+            }
         }
     }
 }
