@@ -235,5 +235,24 @@ namespace dotNetDiskImager.DiskAccess
             }
             return result;
         }
+
+        public static ulong GetDeviceLength(int deviceID)
+        {
+            ulong length = 0;
+
+            IntPtr deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_READ);
+
+            unsafe
+            {
+                int returnLength = 0;
+                IntPtr lengthPtr = new IntPtr(&length);
+                
+                NativeDisk.DeviceIoControl(deviceHandle, NativeDisk.IOCTL_DISK_GET_LENGTH_INFO, IntPtr.Zero, 0, lengthPtr, 8, ref returnLength, IntPtr.Zero);
+            }
+
+            NativeDisk.CloseHandle(deviceHandle);
+
+            return length;
+        }
     }
 }

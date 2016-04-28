@@ -23,6 +23,13 @@ namespace dotNetDiskImager.Models
             return string.Format("{0:0.00} {1}B", speedValue, byteUnits[i]);
         }
 
+        public static string BytesToClosestXbytes(ulong bytes)
+        {
+            double result = Math.Ceiling(bytes / 1000000000.0);
+            //if(result > 0)
+            return string.Format("{0:0.0} GB", result);
+        }
+
         public static string SecondsToEstimate(ulong seconds, bool shortFormat = false)
         {
             TimeSpan time;
