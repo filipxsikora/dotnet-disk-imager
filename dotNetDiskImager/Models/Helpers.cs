@@ -25,9 +25,32 @@ namespace dotNetDiskImager.Models
 
         public static string BytesToClosestXbytes(ulong bytes)
         {
-            double result = Math.Ceiling(bytes / 1000000000.0);
-            //if(result > 0)
-            return string.Format("{0:0.0} GB", result);
+            double result = 0;
+            string unit = "";
+
+            if (bytes >= 966367641)
+            {
+                unit = "GB";
+                result = bytes / 1073741824.0;
+            }
+            else
+            {
+                result = bytes / 1048576.0;
+                unit = "MB";
+            }
+
+            if (result >= 100)
+            {
+                return string.Format("{0:0.} {1}", result, unit);
+            }
+            else if (result >= 10)
+            {
+                return string.Format("{0:0.#} {1}", result, unit);
+            }
+            else
+            {
+                return string.Format("{0:0.##} {1}", result, unit);
+            }
         }
 
         public static string SecondsToEstimate(ulong seconds, bool shortFormat = false)
