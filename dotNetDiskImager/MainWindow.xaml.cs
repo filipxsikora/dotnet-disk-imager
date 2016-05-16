@@ -40,11 +40,11 @@ namespace dotNetDiskImager
         const int DBT_DEVTYP_VOLUME = 0x02;
         #endregion
 
-        const int windowHeight = 240;
+        const int windowHeight = 290;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
         const int progressPartHeight = 220;
-        const int applicationPartHeight = 200;
+        const int applicationPartHeight = 250;
         const int windowInnerOffset = 10;
 
         public IntPtr Handle
@@ -448,6 +448,32 @@ namespace dotNetDiskImager
                 HideShowWindowOverlay(false);
                 e.Handled = true;
             }
+        }
+
+        private void calculateChecksumButton_Click(object sender, RoutedEventArgs e)
+        {
+            Checksum.ChecksumProgressChanged += (s, ea) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    checksumProgressBar.Value = ea.Progress;
+                });
+            };
+
+            Checksum.ChecksumDone += (s, ea) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    checksumProgressBar.Visibility = Visibility.Collapsed;
+                    checksumTextBox.Text = ea.Checksum;
+                    SetUIState(true, false);
+                });
+            };
+
+            Checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumComboBox.SelectedIndex == 0 ? ChecksumType.MD5 : ChecksumType.SHA1);
+            checksumProgressBar.Value = 0;
+            checksumProgressBar.Visibility = Visibility.Visible;
+            SetUIState(false, false);
         }
 
         private void DisplayInfoPart(bool display, bool noAnimation = false, OperationFinishedState state = OperationFinishedState.Error, string message = "")
@@ -879,9 +905,17 @@ namespace dotNetDiskImager
             }
         }
 
-        private void SetUIState(bool enabled)
+        private void SetUIState(bool enabled, bool? displayProgressPart = null)
         {
-            DisplayProgressPart(!enabled);
+            if (displayProgressPart == null)
+            {
+                DisplayProgressPart(!enabled);
+            }
+            else
+            {
+                DisplayProgressPart(displayProgressPart.Value);
+            }
+
             readButton.IsEnabled = enabled;
             writeButton.IsEnabled = enabled;
             verifyImageButton.IsEnabled = enabled;
@@ -891,6 +925,7 @@ namespace dotNetDiskImager
             verifyCheckBox.IsEnabled = enabled;
             readOnlyAllocatedCheckBox.IsEnabled = enabled;
             fileSelectDialogButton.IsEnabled = enabled;
+            calculateChecksumButton.IsEnabled = enabled;
         }
 
         private void DisplayProgressPart(bool display)

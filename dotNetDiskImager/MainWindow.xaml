@@ -7,23 +7,23 @@
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
         x:Name="window"
-        Title="dotNet Disk Imager" Height="240" Width="525" ResizeMode="CanMinimize" Background="White" AllowDrop="True" Icon="icon.ico" WindowStartupLocation="CenterOwner" PreviewKeyDown="window_PreviewKeyDown" Drop="program_Drop" PreviewDragEnter="program_DragEnter" PreviewDragLeave="program_DragLeave">
+        Title="dotNet Disk Imager" Height="290" Width="525" ResizeMode="CanMinimize" Background="White" AllowDrop="True" Icon="icon.ico" WindowStartupLocation="CenterOwner" PreviewKeyDown="window_PreviewKeyDown" Drop="program_Drop" PreviewDragEnter="program_DragEnter" PreviewDragLeave="program_DragLeave">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="programTaskbar" Description="dotNet Disk Imager" ProgressState="Normal"/>
     </Window.TaskbarItemInfo>
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="infoPartRow" Height="Auto"/>
-            <RowDefinition x:Name="applicationPartRow" Height="210"/>
+            <RowDefinition x:Name="applicationPartRow" Height="260"/>
             <RowDefinition x:Name="progressPartRow" Height="0"/>
         </Grid.RowDefinitions>
-        <Button TabIndex="6" x:Name="readButton" ToolTip="Read data from device to image file" HorizontalAlignment="Left" Margin="10,162,0,0" Padding="5,0" VerticalAlignment="Top" Click="readButton_Click" Height="23" Grid.Row="1">
+        <Button TabIndex="8" x:Name="readButton" ToolTip="Read data from device to image file" HorizontalAlignment="Left" Margin="10,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="readButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource readImageIcon}" Padding="0,0,3,0"></Label>
                 <TextBlock Text="Read from Device"/>
             </StackPanel>
         </Button>
-        <ComboBox TabIndex="2" x:Name="driveSelectComboBox" Margin="10,74,55,0" VerticalAlignment="Top" Height="23" Grid.Row="1"/>
+        <ComboBox TabIndex="2" x:Name="driveSelectComboBox" Margin="10,74,10,0" VerticalAlignment="Top" Height="23" Grid.Row="1"/>
         <TextBox TabIndex="0" x:Name="imagePathTextBox" Height="23" Margin="10,26,55,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
         <Button TabIndex="1" x:Name="fileSelectDialogButton" ToolTip="Open dialog to select image file" Content="{StaticResource openImageIcon}" HorizontalAlignment="Right" Margin="0,26,10,0" VerticalAlignment="Top" Width="40" Click="fileSelectDialogButton_Click" Height="23" Grid.Row="1"/>
         <Label Content="Image file:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Grid.Row="1"/>
@@ -35,15 +35,15 @@
             <Label x:Name="stepText" Content="" Margin="0,0,20,184" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
             <Label x:Name="timeRemainingText" Content="" HorizontalAlignment="Left" Margin="20,0,0,17" Height="26" VerticalAlignment="Bottom"/>
         </Grid>
-        <Button TabIndex="9" x:Name="cancelButton" ToolTip="Cancel current operation" HorizontalAlignment="Left" Margin="359,162,0,0" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Grid.Row="1">
+        <Button TabIndex="11" x:Name="cancelButton" ToolTip="Cancel current operation" HorizontalAlignment="Left" Margin="359,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource cancelIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Cancel"/>
             </StackPanel>
         </Button>
         <Label Content="Device:" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <CheckBox TabIndex="3" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" HorizontalAlignment="Left" Margin="10,111,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <Button TabIndex="7" x:Name="writeButton" ToolTip="Write data from image to device" HorizontalAlignment="Left" Margin="140,162,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
+        <CheckBox TabIndex="5" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <Button TabIndex="9" x:Name="writeButton" ToolTip="Write data from image to device" HorizontalAlignment="Left" Margin="140,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource writeImageIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Write to Device"/>
@@ -56,14 +56,14 @@
                 <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             </Grid>
         </Border>
-        <Button TabIndex="8" x:Name="verifyImageButton" ToolTip="Verify image data against data at device" HorizontalAlignment="Left" Margin="257,162,0,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="verifyImageButton_Click">
+        <Button TabIndex="10" x:Name="verifyImageButton" ToolTip="Verify image data against data at device" HorizontalAlignment="Left" Margin="257,212,0,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="verifyImageButton_Click">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource verifyImageIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Verify image"/>
             </StackPanel>
         </Button>
-        <CheckBox TabIndex="4" x:Name="verifyCheckBox" ToolTip="Verify procedure will be started automatically when read or write finishes" Content="Verify data when finished" Margin="271,111,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
-        <CheckBox TabIndex="5" x:Name="onTheFlyZipCheckBox" Content="Compress/Decompress data on the fly" HorizontalAlignment="Left" Margin="10,134,0,0" VerticalAlignment="Top" Grid.Row="1">
+        <CheckBox TabIndex="6" x:Name="verifyCheckBox" ToolTip="Verify procedure will be started automatically when read or write finishes" Content="Verify data when finished" Margin="271,161,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
+        <CheckBox TabIndex="7" x:Name="onTheFlyZipCheckBox" Content="Compress/Decompress data on the fly" HorizontalAlignment="Left" Margin="10,184,0,0" VerticalAlignment="Top" Grid.Row="1">
             <CheckBox.ToolTip>
                 <TextBlock>
                     If reading from device, data will be compressed on the fly
@@ -72,6 +72,19 @@
                 </TextBlock>
             </CheckBox.ToolTip>
         </CheckBox>
+        <TextBox TabIndex="3" x:Name="checksumTextBox" Height="23" Margin="10,123,159,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
+        <ProgressBar x:Name="checksumProgressBar" Visibility="Collapsed" Height="23" Margin="10,123,159,0"  VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
+        <Label Content="Checksum:" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <ComboBox TabIndex="4" x:Name="checksumComboBox" Margin="355,123,94,0" Grid.Row="1" VerticalAlignment="Top" Height="23" SelectedIndex="0">
+            <ComboBoxItem Content="MD5"/>
+            <ComboBoxItem Content="SHA1"/>
+        </ComboBox>
+        <Button TabIndex="10" x:Name="calculateChecksumButton" ToolTip="Calculates checksum of selected image file" Margin="0,123,10,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="calculateChecksumButton_Click" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{StaticResource keyIcon}" Padding="0,0,3,0"/>
+                <TextBlock Text="Calculate"/>
+            </StackPanel>
+        </Button>
         <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0" AllowDrop="True">Drop File or Drive here</Label>
     </Grid>
 </Window>
