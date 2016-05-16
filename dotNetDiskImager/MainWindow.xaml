@@ -42,7 +42,7 @@
             </StackPanel>
         </Button>
         <Label Content="Device:" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <CheckBox TabIndex="5" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <CheckBox TabIndex="5" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" ToolTip="Reads only allocated partitions on device if checked" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <Button TabIndex="9" x:Name="writeButton" ToolTip="Write data from image to device" HorizontalAlignment="Left" Margin="140,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource writeImageIcon}" Padding="0,0,3,0"/>
@@ -62,13 +62,13 @@
                 <TextBlock Text="Verify image"/>
             </StackPanel>
         </Button>
-        <CheckBox TabIndex="6" x:Name="verifyCheckBox" ToolTip="Verify procedure will be started automatically when read or write finishes" Content="Verify data when finished" Margin="271,161,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
+        <CheckBox TabIndex="6" x:Name="verifyCheckBox" ToolTip="Verify procedure will be started automatically when read or write finishes if checked" Content="Verify data when finished" Margin="271,161,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
         <CheckBox TabIndex="7" x:Name="onTheFlyZipCheckBox" Content="Compress/Decompress data on the fly" HorizontalAlignment="Left" Margin="10,184,0,0" VerticalAlignment="Top" Grid.Row="1">
             <CheckBox.ToolTip>
                 <TextBlock>
-                    If reading from device, data will be compressed on the fly
+                    If reading from device, data will be compressed on the fly if checked
                     <LineBreak/>
-                    If writing to device, data will be decompressed on the fly
+                    If writing to device, data will be decompressed on the fly if checked
                 </TextBlock>
             </CheckBox.ToolTip>
         </CheckBox>
