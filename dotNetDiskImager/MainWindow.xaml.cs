@@ -465,6 +465,11 @@ namespace dotNetDiskImager
             }
         }
 
+        private void checksumTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            checksumTextBox.SelectAll();
+        }
+
         private void HandleCalculateChecksum()
         {
             if(string.IsNullOrEmpty(imagePathTextBox.Text))

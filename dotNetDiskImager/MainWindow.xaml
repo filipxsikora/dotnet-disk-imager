@@ -72,7 +72,7 @@
                 </TextBlock>
             </CheckBox.ToolTip>
         </CheckBox>
-        <TextBox TabIndex="3" x:Name="checksumTextBox" Height="23" Margin="10,123,159,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
+        <TextBox TabIndex="3" x:Name="checksumTextBox" Height="23" Margin="10,123,159,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" GotKeyboardFocus="checksumTextBox_GotFocus" GotMouseCapture="checksumTextBox_GotFocus"/>
         <ProgressBar x:Name="checksumProgressBar" Visibility="Collapsed" Height="23" Margin="10,123,159,0"  VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
         <Label Content="Checksum:" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <ComboBox TabIndex="4" x:Name="checksumComboBox" Margin="355,123,94,0" Grid.Row="1" VerticalAlignment="Top" Height="23" SelectedIndex="0">
