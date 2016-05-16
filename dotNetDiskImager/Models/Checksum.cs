@@ -21,7 +21,7 @@ namespace dotNetDiskImager.Models
 
         volatile bool cancelPending = false;
 
-        public void BeginChecksumCalculation(string imagePath, ChecksumType checksumType)
+        public void BeginChecksumCalculation(string filePath, ChecksumType checksumType)
         {
             HashAlgorithm checksum = null;
 
@@ -39,50 +39,57 @@ namespace dotNetDiskImager.Models
             new Thread(() =>
             {
                 cancelPending = false;
-                byte[] fileData = new byte[512 * 1024];
+                byte[] fileData = new byte[524288];
                 long totalReaded = 0;
                 int readed = 0;
                 int percent = 0;
                 int lastPercent = 0;
 
-                using (FileStream fs = new FileStream(imagePath, FileMode.Open))
+                try
                 {
-                    while (totalReaded < fs.Length)
+                    using (FileStream checksumStream = new FileStream(filePath, FileMode.Open))
                     {
+                        while (totalReaded < checksumStream.Length)
+                        {
+                            if (cancelPending)
+                                break;
+
+                            readed = checksumStream.Read(fileData, 0, 524288);
+                            totalReaded += readed;
+                            if (totalReaded >= checksumStream.Length)
+                            {
+                                checksum.TransformFinalBlock(fileData, 0, readed);
+                                break;
+                            }
+
+                            checksum.TransformBlock(fileData, 0, readed, null, 0);
+                            percent = (int)(totalReaded / (checksumStream.Length / 100.0)) + 1;
+                            if (lastPercent != percent)
+                            {
+                                lastPercent = percent;
+                                ChecksumProgressChanged?.Invoke(typeof(Checksum), new ChecksumProgressChangedEventArgs(percent));
+                            }
+                        }
+
                         if (cancelPending)
-                            break;
-
-                        readed = fs.Read(fileData, 0, 512 * 1024);
-                        totalReaded += readed;
-                        if (totalReaded >= fs.Length)
                         {
-                            checksum.TransformFinalBlock(fileData, 0, readed);
-                            break;
+                            ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs("", false));
+                            return;
                         }
 
-                        checksum.TransformBlock(fileData, 0, readed, null, 0);
-                        percent = (int)(totalReaded / (fs.Length / 100.0)) + 1;
-                        if (lastPercent != percent)
+                        StringBuilder result = new StringBuilder(checksum.Hash.Length * 2);
+
+                        for (int i = 0; i < checksum.Hash.Length; i++)
                         {
-                            lastPercent = percent;
-                            ChecksumProgressChanged?.Invoke(typeof(Checksum), new ChecksumProgressChangedEventArgs(percent));
+                            result.Append(checksum.Hash[i].ToString("x2"));
                         }
+
+                        ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs(result.ToString(), true));
                     }
-
-                    if (cancelPending)
-                    {
-                        ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs("", false));
-                        return;
-                    }
-
-                    StringBuilder result = new StringBuilder(checksum.Hash.Length * 2);
-
-                    for (int i = 0; i < checksum.Hash.Length; i++)
-                    {
-                        result.Append(checksum.Hash[i].ToString("x2"));
-                    }
-
-                    ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs(result.ToString(), true));
+                }
+                catch
+                {
+                    ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs("", false));
                 }
             })
             { IsBackground = true }.Start();
