@@ -41,15 +41,15 @@ namespace dotNetDiskImager.Models
 
             if (result >= 100)
             {
-                return string.Format("{0:0.} {1}", result, unit);
+                return string.Format("{0:0.} {1}", Math.Truncate(result), unit);
             }
             else if (result >= 10)
             {
-                return string.Format("{0:0.#} {1}", result, unit);
+                return string.Format("{0:0.0} {1}", Math.Truncate(result * 10) / 10, unit);
             }
             else
             {
-                return string.Format("{0:0.##} {1}", result, unit);
+                return string.Format("{0:0.00} {1}", Math.Truncate(result * 100) / 100, unit);
             }
         }
 
