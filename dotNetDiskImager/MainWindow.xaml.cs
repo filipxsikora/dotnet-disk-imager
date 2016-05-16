@@ -56,6 +56,7 @@ namespace dotNetDiskImager
         }
 
         Disk disk;
+        Checksum checksum;
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
         AboutWindow aboutWindow = null;
         SettingsWindow settingsWindow = null;
@@ -394,6 +395,20 @@ namespace dotNetDiskImager
                     disk.CancelOperation();
                 }
             }
+
+            checksum?.Cancel();
+        }
+
+        private void calculateChecksumButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                HandleCalculateChecksum();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Unknown error");
+            }
         }
 
         private void closeInfoButton_Click(object sender, RoutedEventArgs e)
@@ -450,9 +465,27 @@ namespace dotNetDiskImager
             }
         }
 
-        private void calculateChecksumButton_Click(object sender, RoutedEventArgs e)
+        private void HandleCalculateChecksum()
         {
-            Checksum.ChecksumProgressChanged += (s, ea) =>
+            if(string.IsNullOrEmpty(imagePathTextBox.Text))
+            {
+                MessageBox.Show("No image file selected.\nPlease select image file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!new FileInfo(imagePathTextBox.Text).Exists)
+            {
+                MessageBox.Show("Selected image file doesn't exist.\nPlease select valid image file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (new FileInfo(imagePathTextBox.Text).Length == 0)
+            {
+                MessageBox.Show("Selected image file is empty.\nPlease select valid image file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            checksum = new Checksum();
+
+            checksum.ChecksumProgressChanged += (s, ea) =>
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -460,17 +493,18 @@ namespace dotNetDiskImager
                 });
             };
 
-            Checksum.ChecksumDone += (s, ea) =>
+            checksum.ChecksumDone += (s, ea) =>
             {
                 Dispatcher.Invoke(() =>
                 {
                     checksumProgressBar.Visibility = Visibility.Collapsed;
                     checksumTextBox.Text = ea.Checksum;
                     SetUIState(true, false);
+                    checksum = null;
                 });
             };
 
-            Checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumComboBox.SelectedIndex == 0 ? ChecksumType.MD5 : ChecksumType.SHA1);
+            checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumComboBox.SelectedIndex == 0 ? ChecksumType.MD5 : ChecksumType.SHA1);
             checksumProgressBar.Value = 0;
             checksumProgressBar.Visibility = Visibility.Visible;
             SetUIState(false, false);

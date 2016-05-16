@@ -16,10 +16,12 @@ namespace dotNetDiskImager.Models
         public delegate void ChecksumProgressChangedEventHandler(object sender, ChecksumProgressChangedEventArgs eventArgs);
         public delegate void ChecksumDoneEventHandler(object sender, ChecksumDoneEventArgs eventArgs);
 
-        public static event ChecksumProgressChangedEventHandler ChecksumProgressChanged;
-        public static event ChecksumDoneEventHandler ChecksumDone;
+        public event ChecksumProgressChangedEventHandler ChecksumProgressChanged;
+        public event ChecksumDoneEventHandler ChecksumDone;
 
-        public static void BeginChecksumCalculation(string imagePath, ChecksumType checksumType)
+        volatile bool cancelPending = false;
+
+        public void BeginChecksumCalculation(string imagePath, ChecksumType checksumType)
         {
             HashAlgorithm checksum = null;
 
@@ -36,6 +38,7 @@ namespace dotNetDiskImager.Models
 
             new Thread(() =>
             {
+                cancelPending = false;
                 byte[] fileData = new byte[512 * 1024];
                 long totalReaded = 0;
                 int readed = 0;
@@ -46,6 +49,9 @@ namespace dotNetDiskImager.Models
                 {
                     while (totalReaded < fs.Length)
                     {
+                        if (cancelPending)
+                            break;
+
                         readed = fs.Read(fileData, 0, 512 * 1024);
                         totalReaded += readed;
                         if (totalReaded >= fs.Length)
@@ -63,17 +69,28 @@ namespace dotNetDiskImager.Models
                         }
                     }
 
+                    if (cancelPending)
+                    {
+                        ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs("", false));
+                        return;
+                    }
+
                     StringBuilder result = new StringBuilder(checksum.Hash.Length * 2);
 
                     for (int i = 0; i < checksum.Hash.Length; i++)
                     {
-                        result.Append(checksum.Hash[i].ToString("X2"));
+                        result.Append(checksum.Hash[i].ToString("x2"));
                     }
 
-                    ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs(result.ToString()));
+                    ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs(result.ToString(), true));
                 }
             })
             { IsBackground = true }.Start();
+        }
+
+        public void Cancel()
+        {
+            cancelPending = true;
         }
     }
 
@@ -90,10 +107,12 @@ namespace dotNetDiskImager.Models
     public class ChecksumDoneEventArgs
     {
         public string Checksum { get; }
+        public bool Finished { get; }
 
-        public ChecksumDoneEventArgs(string checksum)
+        public ChecksumDoneEventArgs(string checksum, bool finished)
         {
             Checksum = checksum;
+            Finished = finished;
         }
     }
 }
