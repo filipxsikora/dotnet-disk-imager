@@ -495,6 +495,7 @@ namespace dotNetDiskImager
                 Dispatcher.Invoke(() =>
                 {
                     checksumProgressBar.Value = ea.Progress;
+                    programTaskbar.ProgressValue = ea.Progress / 100.0;
                 });
             };
 
@@ -506,12 +507,14 @@ namespace dotNetDiskImager
                     checksumTextBox.Text = ea.Checksum;
                     SetUIState(true, false);
                     checksum = null;
+                    programTaskbar.ProgressState = TaskbarItemProgressState.None;
                 });
             };
 
             checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumComboBox.SelectedIndex == 0 ? ChecksumType.MD5 : ChecksumType.SHA1);
             checksumProgressBar.Value = 0;
             checksumProgressBar.Visibility = Visibility.Visible;
+            programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
             SetUIState(false, false);
         }
 
