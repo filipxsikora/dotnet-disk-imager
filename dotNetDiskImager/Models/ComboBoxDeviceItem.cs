@@ -11,13 +11,17 @@ namespace dotNetDiskImager.Models
 {
     public class ComboBoxDeviceItem : ComboBoxItem
     {
-        public char DriveLetter { get; set; }
+        public char DriveLetter { get; }
         public string Model { get; private set; }
+        public ulong DeviceLength { get; }
 
         public ComboBoxDeviceItem(char driveLetter) : base()
         {
             DriveLetter = driveLetter;
-            Content = string.Format(@"[{0}:\] - getting device information", driveLetter);
+            int deviceID = NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", DriveLetter));
+            DeviceLength = Disk.GetDeviceLength(deviceID);
+
+            Content = string.Format(@"[{0}:\] ({1}) - getting device information", driveLetter, Helpers.BytesToClosestXbytes(DeviceLength));
             IsEnabled = false;
 
             new Thread(() =>
@@ -36,7 +40,7 @@ namespace dotNetDiskImager.Models
 
                     Dispatcher.Invoke(() =>
                     {
-                        Content = string.Format(@"[{0}:\] - {1}", DriveLetter, model);
+                        Content = string.Format(@"[{0}:\] ({1}) - {2}", DriveLetter, Helpers.BytesToClosestXbytes(DeviceLength), model);
                         Model = model;
                         IsEnabled = true;
                     });

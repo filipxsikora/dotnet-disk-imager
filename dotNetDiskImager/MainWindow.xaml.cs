@@ -40,11 +40,11 @@ namespace dotNetDiskImager
         const int DBT_DEVTYP_VOLUME = 0x02;
         #endregion
 
-        const int windowHeight = 240;
+        const int windowHeight = 290;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
         const int progressPartHeight = 220;
-        const int applicationPartHeight = 200;
+        const int applicationPartHeight = 250;
         const int windowInnerOffset = 10;
 
         public IntPtr Handle
@@ -56,6 +56,7 @@ namespace dotNetDiskImager
         }
 
         Disk disk;
+        Checksum checksum;
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
         AboutWindow aboutWindow = null;
         SettingsWindow settingsWindow = null;
@@ -162,7 +163,7 @@ namespace dotNetDiskImager
                         {
                             if (Utils.SetMappedDrivesEnable())
                             {
-                                MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
                             else
                             {
@@ -171,7 +172,7 @@ namespace dotNetDiskImager
                         }
                         else
                         {
-                            MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                         break;
                     case WindowContextMenu.CheckUpdatesCommand:
@@ -227,11 +228,11 @@ namespace dotNetDiskImager
             }
         }
 
-        private void Disk_OperationFinished(object sender, OperationFinishedEventArgs eventArgs)
+        private void Disk_OperationFinished(object sender, OperationFinishedEventArgs e)
         {
             try
             {
-                if (eventArgs.Done)
+                if (e.Done)
                 {
                     verifyingAfterOperation = false;
                     Dispatcher.Invoke(() =>
@@ -247,14 +248,14 @@ namespace dotNetDiskImager
                         disk.Dispose();
                         disk = null;
 
-                        DisplayInfoPart(true, false, eventArgs.OperationState, CreateInfoMessage(eventArgs));
+                        DisplayInfoPart(true, false, e.OperationState, CreateInfoMessage(e));
 
                         Title = "dotNet Disk Imager";
                     });
                 }
                 else
                 {
-                    if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
+                    if ((e.DiskOperation & DiskOperation.Verify) > 0)
                     {
                         verifyingAfterOperation = true;
                         Dispatcher.Invoke(() =>
@@ -276,10 +277,10 @@ namespace dotNetDiskImager
             catch { }
         }
 
-        private void Disk_OperationProgressReport(object sender, OperationProgressReportEventArgs eventArgs)
+        private void Disk_OperationProgressReport(object sender, OperationProgressReportEventArgs e)
         {
-            GraphModel.UpdateSpeedLineValue(eventArgs.AverageBps);
-            remainingTimeEstimator.Add(eventArgs.RemainingBytes / eventArgs.AverageBps);
+            GraphModel.UpdateSpeedLineValue(e.AverageBps);
+            remainingTimeEstimator.Add(e.RemainingBytes / e.AverageBps);
 
             Dispatcher.Invoke(() =>
             {
@@ -292,36 +293,36 @@ namespace dotNetDiskImager
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", Helpers.SecondsToEstimate(averageSeconds, true));
                     }
                 }
-                transferredText.Content = string.Format("Transferred: {0} of {1}", Helpers.BytesToXbytes(eventArgs.TotalBytesProcessed), Helpers.BytesToXbytes(eventArgs.TotalBytesProcessed + eventArgs.RemainingBytes));
+                transferredText.Content = string.Format("Transferred: {0} of {1}", Helpers.BytesToXbytes(e.TotalBytesProcessed), Helpers.BytesToXbytes(e.TotalBytesProcessed + e.RemainingBytes));
                 if (AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.CurrentSpeed)
                 {
-                    Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(eventArgs.AverageBps));
+                    Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(e.AverageBps));
                 }
             });
         }
 
-        private void Disk_OperationProgressChanged(object sender, OperationProgressChangedEventArgs eventArgs)
+        private void Disk_OperationProgressChanged(object sender, OperationProgressChangedEventArgs e)
         {
-            GraphModel.UpdateSpeedLineValue(eventArgs.AverageBps);
-            GraphModel.AddDataPoint(eventArgs.Progress, eventArgs.AverageBps);
+            GraphModel.UpdateSpeedLineValue(e.AverageBps);
+            GraphModel.AddDataPoint(e.Progress, e.AverageBps);
             Dispatcher.Invoke(() =>
             {
-                if (verifyCheckBox.IsChecked.Value && eventArgs.DiskOperation != DiskOperation.Verify)
+                if (verifyCheckBox.IsChecked.Value && e.DiskOperation != DiskOperation.Verify)
                 {
                     if (verifyingAfterOperation)
                     {
-                        programTaskbar.ProgressValue = ((eventArgs.Progress / 100.0) / 2.0) + 0.5;
+                        programTaskbar.ProgressValue = ((e.Progress / 100.0) / 2.0) + 0.5;
                     }
                     else
                     {
-                        programTaskbar.ProgressValue = ((eventArgs.Progress / 100.0) / 2.0);
+                        programTaskbar.ProgressValue = ((e.Progress / 100.0) / 2.0);
                     }
                 }
                 else
                 {
-                    programTaskbar.ProgressValue = eventArgs.Progress / 100.0;
+                    programTaskbar.ProgressValue = e.Progress / 100.0;
                 }
-                progressText.Content = string.Format("{0}% Complete", eventArgs.Progress);
+                progressText.Content = string.Format("{0}% Complete", e.Progress);
 
                 switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
@@ -329,7 +330,7 @@ namespace dotNetDiskImager
                         Title = string.Format("[{0}%] - dotNet Disk Imager", (int)(programTaskbar.ProgressValue * 100));
                         break;
                     case TaskbarExtraInfo.CurrentSpeed:
-                        Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(eventArgs.AverageBps));
+                        Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(e.AverageBps));
                         break;
                 }
             });
@@ -394,6 +395,20 @@ namespace dotNetDiskImager
                     disk.CancelOperation();
                 }
             }
+
+            checksum?.Cancel();
+        }
+
+        private void calculateChecksumButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                HandleCalculateChecksum();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Unknown error");
+            }
         }
 
         private void closeInfoButton_Click(object sender, RoutedEventArgs e)
@@ -448,6 +463,83 @@ namespace dotNetDiskImager
                 HideShowWindowOverlay(false);
                 e.Handled = true;
             }
+        }
+
+        private void checksumTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            checksumTextBox.SelectAll();
+        }
+
+        private void HandleCalculateChecksum()
+        {
+            if(string.IsNullOrEmpty(imagePathTextBox.Text))
+            {
+                MessageBox.Show("No file selected.\nPlease select file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!new FileInfo(imagePathTextBox.Text).Exists)
+            {
+                MessageBox.Show("Selected file doesn't exist.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (new FileInfo(imagePathTextBox.Text).Length == 0)
+            {
+                MessageBox.Show("Selected file is empty.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            checksum = new Checksum();
+
+            checksum.ChecksumProgressChanged += (s, ea) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    checksumProgressBar.Value = ea.Progress;
+                    programTaskbar.ProgressValue = ea.Progress / 100.0;
+                });
+            };
+
+            checksum.ChecksumDone += (s, ea) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    checksumProgressBar.Visibility = Visibility.Collapsed;
+                    checksumTextBox.Text = ea.Checksum;
+                    SetUIState(true, false);
+                    checksum.Dispose();
+                    checksum = null;
+                    programTaskbar.ProgressState = TaskbarItemProgressState.None;
+                });
+            };
+
+            ChecksumType checksumType = ChecksumType.MD5;
+
+            switch(checksumComboBox.SelectedIndex)
+            {
+                case 0:
+                    checksumType = ChecksumType.MD5;
+                    break;
+                case 1:
+                    checksumType = ChecksumType.SHA1;
+                    break;
+                case 2:
+                    checksumType = ChecksumType.SHA256;
+                    break;
+            }
+
+            if (!checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumType))
+            {
+                var fileInfo = new FileInfo(imagePathTextBox.Text);
+
+                MessageBox.Show(this, string.Format("Unable to read from file {0}\nFile is probably in use by another application.", fileInfo.Name), "Unable to open file", MessageBoxButton.OK, MessageBoxImage.Error);
+                checksum.Dispose();
+                checksum = null;
+                return;
+            }
+            checksumProgressBar.Value = 0;
+            checksumProgressBar.Visibility = Visibility.Visible;
+            programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
+            SetUIState(false, false);
         }
 
         private void DisplayInfoPart(bool display, bool noAnimation = false, OperationFinishedState state = OperationFinishedState.Error, string message = "")
@@ -879,10 +971,18 @@ namespace dotNetDiskImager
             }
         }
 
-        private void SetUIState(bool enabled)
+        private void SetUIState(bool enabled, bool? displayProgressPart = null)
         {
-            DisplayProgressPart(!enabled);
-            readButton.IsEnabled = enabled;
+            if (displayProgressPart == null)
+            {
+                DisplayProgressPart(!enabled);
+            }
+            else
+            {
+                DisplayProgressPart(displayProgressPart.Value);
+            }
+
+            readButton.IsEnabled = true;
             writeButton.IsEnabled = enabled;
             verifyImageButton.IsEnabled = enabled;
             onTheFlyZipCheckBox.IsEnabled = enabled;
@@ -891,6 +991,7 @@ namespace dotNetDiskImager
             verifyCheckBox.IsEnabled = enabled;
             readOnlyAllocatedCheckBox.IsEnabled = enabled;
             fileSelectDialogButton.IsEnabled = enabled;
+            calculateChecksumButton.IsEnabled = enabled;
         }
 
         private void DisplayProgressPart(bool display)
@@ -925,21 +1026,21 @@ namespace dotNetDiskImager
                 throw new ArgumentException("Image file cannot be located on the device.");
         }
 
-        private static string CreateInfoMessage(OperationFinishedEventArgs eventArgs)
+        private static string CreateInfoMessage(OperationFinishedEventArgs e)
         {
             string message;
-            if ((eventArgs.DiskOperation & DiskOperation.Read) > 0)
+            if ((e.DiskOperation & DiskOperation.Read) > 0)
             {
                 message = "Reading";
-                if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
+                if ((e.DiskOperation & DiskOperation.Verify) > 0)
                 {
                     message += " and verify";
                 }
             }
-            else if ((eventArgs.DiskOperation & DiskOperation.Write) > 0)
+            else if ((e.DiskOperation & DiskOperation.Write) > 0)
             {
                 message = "Writing";
-                if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
+                if ((e.DiskOperation & DiskOperation.Verify) > 0)
                 {
                     message += " and verify";
                 }
@@ -949,7 +1050,7 @@ namespace dotNetDiskImager
                 message = "Verifying";
             }
 
-            switch (eventArgs.OperationState)
+            switch (e.OperationState)
             {
                 case OperationFinishedState.Success:
                     message += " was finished successfully";
@@ -1051,7 +1152,7 @@ namespace dotNetDiskImager
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                MessageBox.Show(this, "You are using latest version", "No Update Availible", MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBox.Show(this, "You are using the latest version", "No Update Availible", MessageBoxButton.OK, MessageBoxImage.Information);
                             });
                         }
                     }

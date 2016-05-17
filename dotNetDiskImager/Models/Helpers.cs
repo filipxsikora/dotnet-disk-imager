@@ -23,6 +23,36 @@ namespace dotNetDiskImager.Models
             return string.Format("{0:0.00} {1}B", speedValue, byteUnits[i]);
         }
 
+        public static string BytesToClosestXbytes(ulong bytes)
+        {
+            double result = 0;
+            string unit = "";
+
+            if (bytes >= 966367641)
+            {
+                unit = "GB";
+                result = bytes / 1073741824.0;
+            }
+            else
+            {
+                result = bytes / 1048576.0;
+                unit = "MB";
+            }
+
+            if (result >= 100)
+            {
+                return string.Format("{0:0.} {1}", Math.Truncate(result), unit);
+            }
+            else if (result >= 10)
+            {
+                return string.Format("{0:0.0} {1}", Math.Truncate(result * 10) / 10, unit);
+            }
+            else
+            {
+                return string.Format("{0:0.00} {1}", Math.Truncate(result * 100) / 100, unit);
+            }
+        }
+
         public static string SecondsToEstimate(ulong seconds, bool shortFormat = false)
         {
             TimeSpan time;

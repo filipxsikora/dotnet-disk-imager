@@ -11,9 +11,9 @@ namespace dotNetDiskImager.DiskAccess
 {
     public abstract class Disk : IDisposable
     {
-        public delegate void OperationFinishedEventHandler(object sender, OperationFinishedEventArgs eventArgs);
-        public delegate void OperationProgressChangedEventHandler(object sender, OperationProgressChangedEventArgs eventArgs);
-        public delegate void OperationProgressReportEventHandler(object sender, OperationProgressReportEventArgs eventArgs);
+        public delegate void OperationFinishedEventHandler(object sender, OperationFinishedEventArgs e);
+        public delegate void OperationProgressChangedEventHandler(object sender, OperationProgressChangedEventArgs e);
+        public delegate void OperationProgressReportEventHandler(object sender, OperationProgressReportEventArgs e);
 
         public virtual event OperationFinishedEventHandler OperationFinished;
         public virtual event OperationProgressChangedEventHandler OperationProgressChanged;
@@ -234,6 +234,25 @@ namespace dotNetDiskImager.DiskAccess
 
             }
             return result;
+        }
+
+        public static ulong GetDeviceLength(int deviceID)
+        {
+            ulong length = 0;
+
+            IntPtr deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_READ);
+
+            unsafe
+            {
+                int returnLength = 0;
+                IntPtr lengthPtr = new IntPtr(&length);
+                
+                NativeDisk.DeviceIoControl(deviceHandle, NativeDisk.IOCTL_DISK_GET_LENGTH_INFO, IntPtr.Zero, 0, lengthPtr, 8, ref returnLength, IntPtr.Zero);
+            }
+
+            NativeDisk.CloseHandle(deviceHandle);
+
+            return length;
         }
     }
 }

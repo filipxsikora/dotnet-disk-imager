@@ -27,6 +27,7 @@ namespace dotNetDiskImager.DiskAccess
         internal const uint IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400;
         internal const uint IOCTL_STORAGE_GET_DEVICE_NUMBER = 0x2D1080;
         internal const uint IOCTL_STORAGE_CHECK_VERIFY2 = 0x2D0800;
+        internal const uint IOCTL_DISK_GET_LENGTH_INFO = 0x07 << 16 | 0x01 << 14 | 0x17 << 2;
         internal const uint IOCTL_STORAGE_CHECK_VERIFY = (0x2D << 16) | (1 << 14) | (0x200 << 2);
         internal const uint FILE_READ_ATTRIBUTES = 0x80;
         internal const uint FILE_READ_DATA = 0x1;
