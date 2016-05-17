@@ -11,7 +11,7 @@ namespace dotNetDiskImager.Models
 {
     public enum ChecksumType { MD5, SHA1 }
 
-    public class Checksum
+    public class Checksum : IDisposable
     {
         public delegate void ChecksumProgressChangedEventHandler(object sender, ChecksumProgressChangedEventArgs eventArgs);
         public delegate void ChecksumDoneEventHandler(object sender, ChecksumDoneEventArgs eventArgs);
@@ -19,11 +19,20 @@ namespace dotNetDiskImager.Models
         public event ChecksumProgressChangedEventHandler ChecksumProgressChanged;
         public event ChecksumDoneEventHandler ChecksumDone;
 
+        FileStream checksumStream = null;
+        HashAlgorithm checksum = null;
         volatile bool cancelPending = false;
 
-        public void BeginChecksumCalculation(string filePath, ChecksumType checksumType)
+        public bool BeginChecksumCalculation(string filePath, ChecksumType checksumType)
         {
-            HashAlgorithm checksum = null;
+            try
+            {
+                checksumStream = new FileStream(filePath, FileMode.Open);
+            }
+            catch
+            {
+                return false;
+            }
 
             switch (checksumType)
             {
@@ -47,7 +56,7 @@ namespace dotNetDiskImager.Models
 
                 try
                 {
-                    using (FileStream checksumStream = new FileStream(filePath, FileMode.Open))
+
                     {
                         while (totalReaded < checksumStream.Length)
                         {
@@ -93,11 +102,19 @@ namespace dotNetDiskImager.Models
                 }
             })
             { IsBackground = true }.Start();
+
+            return true;
         }
 
         public void Cancel()
         {
             cancelPending = true;
+        }
+
+        public void Dispose()
+        {
+            checksumStream?.Dispose();
+            checksum?.Dispose();
         }
     }
 

@@ -163,7 +163,7 @@ namespace dotNetDiskImager
                         {
                             if (Utils.SetMappedDrivesEnable())
                             {
-                                MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
                             else
                             {
@@ -172,7 +172,7 @@ namespace dotNetDiskImager
                         }
                         else
                         {
-                            MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                         break;
                     case WindowContextMenu.CheckUpdatesCommand:
@@ -474,17 +474,17 @@ namespace dotNetDiskImager
         {
             if(string.IsNullOrEmpty(imagePathTextBox.Text))
             {
-                MessageBox.Show("No image file selected.\nPlease select image file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("No file selected.\nPlease select file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (!new FileInfo(imagePathTextBox.Text).Exists)
             {
-                MessageBox.Show("Selected image file doesn't exist.\nPlease select valid image file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Selected file doesn't exist.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (new FileInfo(imagePathTextBox.Text).Length == 0)
             {
-                MessageBox.Show("Selected image file is empty.\nPlease select valid image file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Selected file is empty.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -506,12 +506,21 @@ namespace dotNetDiskImager
                     checksumProgressBar.Visibility = Visibility.Collapsed;
                     checksumTextBox.Text = ea.Checksum;
                     SetUIState(true, false);
+                    checksum.Dispose();
                     checksum = null;
                     programTaskbar.ProgressState = TaskbarItemProgressState.None;
                 });
             };
 
-            checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumComboBox.SelectedIndex == 0 ? ChecksumType.MD5 : ChecksumType.SHA1);
+            if(!checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumComboBox.SelectedIndex == 0 ? ChecksumType.MD5 : ChecksumType.SHA1))
+            {
+                var fileInfo = new FileInfo(imagePathTextBox.Text);
+
+                MessageBox.Show(this, string.Format("Unable to read from file {0}\nFile is probably in use by another application.", fileInfo.Name), "Unable to open file", MessageBoxButton.OK, MessageBoxImage.Error);
+                checksum.Dispose();
+                checksum = null;
+                return;
+            }
             checksumProgressBar.Value = 0;
             checksumProgressBar.Visibility = Visibility.Visible;
             programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
@@ -1128,7 +1137,7 @@ namespace dotNetDiskImager
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                MessageBox.Show(this, "You are using latest version", "No Update Availible", MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBox.Show(this, "You are using the latest version", "No Update Availible", MessageBoxButton.OK, MessageBoxImage.Information);
                             });
                         }
                     }
