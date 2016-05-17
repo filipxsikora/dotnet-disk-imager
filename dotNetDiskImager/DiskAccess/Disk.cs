@@ -11,9 +11,9 @@ namespace dotNetDiskImager.DiskAccess
 {
     public abstract class Disk : IDisposable
     {
-        public delegate void OperationFinishedEventHandler(object sender, OperationFinishedEventArgs eventArgs);
-        public delegate void OperationProgressChangedEventHandler(object sender, OperationProgressChangedEventArgs eventArgs);
-        public delegate void OperationProgressReportEventHandler(object sender, OperationProgressReportEventArgs eventArgs);
+        public delegate void OperationFinishedEventHandler(object sender, OperationFinishedEventArgs e);
+        public delegate void OperationProgressChangedEventHandler(object sender, OperationProgressChangedEventArgs e);
+        public delegate void OperationProgressReportEventHandler(object sender, OperationProgressReportEventArgs e);
 
         public virtual event OperationFinishedEventHandler OperationFinished;
         public virtual event OperationProgressChangedEventHandler OperationProgressChanged;

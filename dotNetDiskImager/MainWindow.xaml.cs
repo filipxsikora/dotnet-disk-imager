@@ -228,11 +228,11 @@ namespace dotNetDiskImager
             }
         }
 
-        private void Disk_OperationFinished(object sender, OperationFinishedEventArgs eventArgs)
+        private void Disk_OperationFinished(object sender, OperationFinishedEventArgs e)
         {
             try
             {
-                if (eventArgs.Done)
+                if (e.Done)
                 {
                     verifyingAfterOperation = false;
                     Dispatcher.Invoke(() =>
@@ -248,14 +248,14 @@ namespace dotNetDiskImager
                         disk.Dispose();
                         disk = null;
 
-                        DisplayInfoPart(true, false, eventArgs.OperationState, CreateInfoMessage(eventArgs));
+                        DisplayInfoPart(true, false, e.OperationState, CreateInfoMessage(e));
 
                         Title = "dotNet Disk Imager";
                     });
                 }
                 else
                 {
-                    if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
+                    if ((e.DiskOperation & DiskOperation.Verify) > 0)
                     {
                         verifyingAfterOperation = true;
                         Dispatcher.Invoke(() =>
@@ -277,10 +277,10 @@ namespace dotNetDiskImager
             catch { }
         }
 
-        private void Disk_OperationProgressReport(object sender, OperationProgressReportEventArgs eventArgs)
+        private void Disk_OperationProgressReport(object sender, OperationProgressReportEventArgs e)
         {
-            GraphModel.UpdateSpeedLineValue(eventArgs.AverageBps);
-            remainingTimeEstimator.Add(eventArgs.RemainingBytes / eventArgs.AverageBps);
+            GraphModel.UpdateSpeedLineValue(e.AverageBps);
+            remainingTimeEstimator.Add(e.RemainingBytes / e.AverageBps);
 
             Dispatcher.Invoke(() =>
             {
@@ -293,36 +293,36 @@ namespace dotNetDiskImager
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", Helpers.SecondsToEstimate(averageSeconds, true));
                     }
                 }
-                transferredText.Content = string.Format("Transferred: {0} of {1}", Helpers.BytesToXbytes(eventArgs.TotalBytesProcessed), Helpers.BytesToXbytes(eventArgs.TotalBytesProcessed + eventArgs.RemainingBytes));
+                transferredText.Content = string.Format("Transferred: {0} of {1}", Helpers.BytesToXbytes(e.TotalBytesProcessed), Helpers.BytesToXbytes(e.TotalBytesProcessed + e.RemainingBytes));
                 if (AppSettings.Settings.TaskbarExtraInfo == TaskbarExtraInfo.CurrentSpeed)
                 {
-                    Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(eventArgs.AverageBps));
+                    Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(e.AverageBps));
                 }
             });
         }
 
-        private void Disk_OperationProgressChanged(object sender, OperationProgressChangedEventArgs eventArgs)
+        private void Disk_OperationProgressChanged(object sender, OperationProgressChangedEventArgs e)
         {
-            GraphModel.UpdateSpeedLineValue(eventArgs.AverageBps);
-            GraphModel.AddDataPoint(eventArgs.Progress, eventArgs.AverageBps);
+            GraphModel.UpdateSpeedLineValue(e.AverageBps);
+            GraphModel.AddDataPoint(e.Progress, e.AverageBps);
             Dispatcher.Invoke(() =>
             {
-                if (verifyCheckBox.IsChecked.Value && eventArgs.DiskOperation != DiskOperation.Verify)
+                if (verifyCheckBox.IsChecked.Value && e.DiskOperation != DiskOperation.Verify)
                 {
                     if (verifyingAfterOperation)
                     {
-                        programTaskbar.ProgressValue = ((eventArgs.Progress / 100.0) / 2.0) + 0.5;
+                        programTaskbar.ProgressValue = ((e.Progress / 100.0) / 2.0) + 0.5;
                     }
                     else
                     {
-                        programTaskbar.ProgressValue = ((eventArgs.Progress / 100.0) / 2.0);
+                        programTaskbar.ProgressValue = ((e.Progress / 100.0) / 2.0);
                     }
                 }
                 else
                 {
-                    programTaskbar.ProgressValue = eventArgs.Progress / 100.0;
+                    programTaskbar.ProgressValue = e.Progress / 100.0;
                 }
-                progressText.Content = string.Format("{0}% Complete", eventArgs.Progress);
+                progressText.Content = string.Format("{0}% Complete", e.Progress);
 
                 switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
@@ -330,7 +330,7 @@ namespace dotNetDiskImager
                         Title = string.Format("[{0}%] - dotNet Disk Imager", (int)(programTaskbar.ProgressValue * 100));
                         break;
                     case TaskbarExtraInfo.CurrentSpeed:
-                        Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(eventArgs.AverageBps));
+                        Title = string.Format(@"[{0}/s] - dotNet Disk Imager", Helpers.BytesToXbytes(e.AverageBps));
                         break;
                 }
             });
@@ -982,7 +982,7 @@ namespace dotNetDiskImager
                 DisplayProgressPart(displayProgressPart.Value);
             }
 
-            readButton.IsEnabled = enabled;
+            readButton.IsEnabled = true;
             writeButton.IsEnabled = enabled;
             verifyImageButton.IsEnabled = enabled;
             onTheFlyZipCheckBox.IsEnabled = enabled;
@@ -1026,21 +1026,21 @@ namespace dotNetDiskImager
                 throw new ArgumentException("Image file cannot be located on the device.");
         }
 
-        private static string CreateInfoMessage(OperationFinishedEventArgs eventArgs)
+        private static string CreateInfoMessage(OperationFinishedEventArgs e)
         {
             string message;
-            if ((eventArgs.DiskOperation & DiskOperation.Read) > 0)
+            if ((e.DiskOperation & DiskOperation.Read) > 0)
             {
                 message = "Reading";
-                if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
+                if ((e.DiskOperation & DiskOperation.Verify) > 0)
                 {
                     message += " and verify";
                 }
             }
-            else if ((eventArgs.DiskOperation & DiskOperation.Write) > 0)
+            else if ((e.DiskOperation & DiskOperation.Write) > 0)
             {
                 message = "Writing";
-                if ((eventArgs.DiskOperation & DiskOperation.Verify) > 0)
+                if ((e.DiskOperation & DiskOperation.Verify) > 0)
                 {
                     message += " and verify";
                 }
@@ -1050,7 +1050,7 @@ namespace dotNetDiskImager
                 message = "Verifying";
             }
 
-            switch (eventArgs.OperationState)
+            switch (e.OperationState)
             {
                 case OperationFinishedState.Success:
                     message += " was finished successfully";

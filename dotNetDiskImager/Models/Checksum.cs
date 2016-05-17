@@ -13,8 +13,8 @@ namespace dotNetDiskImager.Models
 
     public class Checksum : IDisposable
     {
-        public delegate void ChecksumProgressChangedEventHandler(object sender, ChecksumProgressChangedEventArgs eventArgs);
-        public delegate void ChecksumDoneEventHandler(object sender, ChecksumDoneEventArgs eventArgs);
+        public delegate void ChecksumProgressChangedEventHandler(object sender, ChecksumProgressChangedEventArgs e);
+        public delegate void ChecksumDoneEventHandler(object sender, ChecksumDoneEventArgs e);
 
         public event ChecksumProgressChangedEventHandler ChecksumProgressChanged;
         public event ChecksumDoneEventHandler ChecksumDone;
@@ -79,13 +79,13 @@ namespace dotNetDiskImager.Models
                             if (lastPercent != percent)
                             {
                                 lastPercent = percent;
-                                ChecksumProgressChanged?.Invoke(typeof(Checksum), new ChecksumProgressChangedEventArgs(percent));
+                                ChecksumProgressChanged?.Invoke(this, new ChecksumProgressChangedEventArgs(percent));
                             }
                         }
 
                         if (cancelPending)
                         {
-                            ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs("", false));
+                            ChecksumDone?.Invoke(this, new ChecksumDoneEventArgs("", false));
                             return;
                         }
 
@@ -96,12 +96,12 @@ namespace dotNetDiskImager.Models
                             result.Append(checksum.Hash[i].ToString("x2"));
                         }
 
-                        ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs(result.ToString(), true));
+                        ChecksumDone?.Invoke(this, new ChecksumDoneEventArgs(result.ToString(), true));
                     }
                 }
                 catch
                 {
-                    ChecksumDone?.Invoke(typeof(Checksum), new ChecksumDoneEventArgs("", false));
+                    ChecksumDone?.Invoke(this, new ChecksumDoneEventArgs("", false));
                 }
             })
             { IsBackground = true }.Start();
