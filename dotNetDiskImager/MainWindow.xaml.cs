@@ -982,7 +982,7 @@ namespace dotNetDiskImager
                 DisplayProgressPart(displayProgressPart.Value);
             }
 
-            readButton.IsEnabled = true;
+            readButton.IsEnabled = enabled;
             writeButton.IsEnabled = enabled;
             verifyImageButton.IsEnabled = enabled;
             onTheFlyZipCheckBox.IsEnabled = enabled;
