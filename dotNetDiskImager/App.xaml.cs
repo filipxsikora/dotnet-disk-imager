@@ -17,9 +17,9 @@ namespace dotNetDiskImager
     {
         public App()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+            AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
             {
-                string resourceName = new AssemblyName(args.Name).Name + ".dll";
+                string resourceName = new AssemblyName(e.Name).Name + ".dll";
 
                 using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("dotNetDiskImager." + resourceName))
                 {
