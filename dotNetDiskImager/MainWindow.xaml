@@ -17,7 +17,7 @@
             <RowDefinition x:Name="applicationPartRow" Height="260"/>
             <RowDefinition x:Name="progressPartRow" Height="0"/>
         </Grid.RowDefinitions>
-        <Button TabIndex="8" x:Name="readButton" ToolTip="Read data from device to image file" HorizontalAlignment="Left" Margin="10,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="readButton_Click" Height="23" Grid.Row="1">
+        <Button TabIndex="8" x:Name="readButton" ToolTip="Reads data from device to image file" HorizontalAlignment="Left" Margin="10,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="readButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource readImageIcon}" Padding="0,0,3,0"></Label>
                 <TextBlock Text="Read from Device"/>
@@ -43,7 +43,7 @@
         </Button>
         <Label Content="Device:" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <CheckBox TabIndex="5" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" ToolTip="Reads only allocated partitions on device if checked" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <Button TabIndex="9" x:Name="writeButton" ToolTip="Write data from image to device" HorizontalAlignment="Left" Margin="140,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
+        <Button TabIndex="9" x:Name="writeButton" ToolTip="Writes data from image to device" HorizontalAlignment="Left" Margin="140,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource writeImageIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Write to Device"/>
@@ -56,7 +56,7 @@
                 <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             </Grid>
         </Border>
-        <Button TabIndex="10" x:Name="verifyImageButton" ToolTip="Verify image data against data at device" HorizontalAlignment="Left" Margin="257,212,0,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="verifyImageButton_Click">
+        <Button TabIndex="10" x:Name="verifyImageButton" ToolTip="Verifies image data against data at device" HorizontalAlignment="Left" Margin="257,212,0,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="verifyImageButton_Click">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource verifyImageIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Verify image"/>
