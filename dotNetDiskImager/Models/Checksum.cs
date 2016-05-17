@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace dotNetDiskImager.Models
 {
-    public enum ChecksumType { MD5, SHA1 }
+    public enum ChecksumType { MD5, SHA1, SHA256 }
 
     public class Checksum : IDisposable
     {
@@ -41,6 +41,9 @@ namespace dotNetDiskImager.Models
                     break;
                 case ChecksumType.SHA1:
                     checksum = SHA1.Create();
+                    break;
+                case ChecksumType.SHA256:
+                    checksum = SHA256.Create();
                     break;
             }
             checksum.Initialize();

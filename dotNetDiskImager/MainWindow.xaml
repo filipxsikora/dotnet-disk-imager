@@ -72,12 +72,13 @@
                 </TextBlock>
             </CheckBox.ToolTip>
         </CheckBox>
-        <TextBox TabIndex="3" x:Name="checksumTextBox" Height="23" Margin="10,123,159,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" GotKeyboardFocus="checksumTextBox_GotFocus" GotMouseCapture="checksumTextBox_GotFocus"/>
+        <TextBox TabIndex="3" x:Name="checksumTextBox" Height="23" Margin="10,123,169,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" GotKeyboardFocus="checksumTextBox_GotFocus" GotMouseCapture="checksumTextBox_GotFocus"/>
         <ProgressBar x:Name="checksumProgressBar" Visibility="Collapsed" Height="23" Margin="10,123,159,0"  VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
         <Label Content="Checksum:" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <ComboBox TabIndex="4" x:Name="checksumComboBox" Margin="355,123,94,0" Grid.Row="1" VerticalAlignment="Top" Height="23" SelectedIndex="0">
+        <ComboBox TabIndex="4" x:Name="checksumComboBox" Margin="345,123,94,0" Grid.Row="1" VerticalAlignment="Top" Height="23" SelectedIndex="0">
             <ComboBoxItem Content="MD5"/>
             <ComboBoxItem Content="SHA1"/>
+            <ComboBoxItem Content="SHA256"/>
         </ComboBox>
         <Button TabIndex="10" x:Name="calculateChecksumButton" ToolTip="Calculates checksum of selected image file" Margin="0,123,10,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="calculateChecksumButton_Click" HorizontalAlignment="Right">
             <StackPanel Orientation="Horizontal">

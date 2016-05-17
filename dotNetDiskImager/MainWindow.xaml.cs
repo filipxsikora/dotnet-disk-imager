@@ -512,7 +512,22 @@ namespace dotNetDiskImager
                 });
             };
 
-            if(!checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumComboBox.SelectedIndex == 0 ? ChecksumType.MD5 : ChecksumType.SHA1))
+            ChecksumType checksumType = ChecksumType.MD5;
+
+            switch(checksumComboBox.SelectedIndex)
+            {
+                case 0:
+                    checksumType = ChecksumType.MD5;
+                    break;
+                case 1:
+                    checksumType = ChecksumType.SHA1;
+                    break;
+                case 2:
+                    checksumType = ChecksumType.SHA256;
+                    break;
+            }
+
+            if (!checksum.BeginChecksumCalculation(imagePathTextBox.Text, checksumType))
             {
                 var fileInfo = new FileInfo(imagePathTextBox.Text);
 
