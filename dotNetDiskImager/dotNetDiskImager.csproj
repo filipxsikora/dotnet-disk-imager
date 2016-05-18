@@ -166,7 +166,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\ComboBoxDeviceItem.cs" />
+    <Compile Include="Models\CheckBoxDeviceItem.cs" />
     <Compile Include="Models\Helpers.cs" />
     <Compile Include="Models\SpeedGraphModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
