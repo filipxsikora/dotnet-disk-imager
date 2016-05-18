@@ -19,13 +19,13 @@ namespace dotNetDiskImager.DiskAccess
         public virtual event OperationProgressChangedEventHandler OperationProgressChanged;
         public virtual event OperationProgressReportEventHandler OperationProgressReport;
 
-        public char DriveLetter { get; }
+        public char[] DriveLetters { get; }
 
         protected DiskOperation currentDiskOperation;
-        protected int deviceID;
-        protected int volumeID;
-        protected IntPtr volumeHandle = IntPtr.Zero;
-        protected IntPtr deviceHandle = IntPtr.Zero;
+        protected int[] deviceIDs;
+        protected int[] volumeIDs;
+        protected IntPtr[] volumeHandles;
+        protected IntPtr[] deviceHandles;
         protected IntPtr fileHandle = IntPtr.Zero;
         protected Thread workingThread;
         protected ulong sectorSize = 0;
@@ -34,34 +34,52 @@ namespace dotNetDiskImager.DiskAccess
         protected volatile bool cancelPending = false;
         protected string _imagePath;
 
-        public Disk(char driveLetter)
+        public Disk(char[] driveLetters)
         {
-            DriveLetter = driveLetter;
-            deviceID = NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", DriveLetter));
-            volumeID = DriveLetter - 'A';
+            deviceIDs = new int[driveLetters.Length];
+            volumeIDs = new int[driveLetters.Length];
+            volumeHandles = new IntPtr[driveLetters.Length];
+            deviceHandles = new IntPtr[driveLetters.Length];
+
+            DriveLetters = driveLetters;
+
+            for (int i = 0; i < driveLetters.Length; i++)
+            {
+                deviceIDs[i] = NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", DriveLetters[i]));
+                volumeIDs[i] = DriveLetters[i] - 'A';
+                volumeHandles[i] = deviceHandles[i] = IntPtr.Zero;
+            }
         }
 
         public void Dispose()
         {
-            if (volumeHandle != IntPtr.Zero)
+            for (int i = 0; i < volumeHandles.Length; i++)
             {
-                try
+                if (volumeHandles[i] != IntPtr.Zero)
                 {
-                    NativeDiskWrapper.RemoveLockOnVolume(volumeHandle);
+                    try
+                    {
+                        NativeDiskWrapper.RemoveLockOnVolume(volumeHandles[i]);
+                    }
+                    catch { }
+                    NativeDisk.CloseHandle(volumeHandles[i]);
+                    volumeHandles[i] = IntPtr.Zero;
                 }
-                catch { }
-                NativeDisk.CloseHandle(volumeHandle);
-                volumeHandle = IntPtr.Zero;
             }
+
             if (fileHandle != IntPtr.Zero)
             {
                 NativeDisk.CloseHandle(fileHandle);
                 fileHandle = IntPtr.Zero;
             }
-            if (deviceHandle != IntPtr.Zero)
+
+            for (int i = 0; i < deviceHandles.Length; i++)
             {
-                NativeDisk.CloseHandle(deviceHandle);
-                deviceHandle = IntPtr.Zero;
+                if (deviceHandles[i] != IntPtr.Zero)
+                {
+                    NativeDisk.CloseHandle(deviceHandles[i]);
+                    deviceHandles[i] = IntPtr.Zero;
+                }
             }
         }
 
@@ -73,14 +91,14 @@ namespace dotNetDiskImager.DiskAccess
 
         public ulong GetLastUsedPartition()
         {
-            var partitionInfo = NativeDiskWrapper.GetDiskPartitionInfo(deviceHandle);
+            var partitionInfo = NativeDiskWrapper.GetDiskPartitionInfo(deviceHandles[0]);
 
             if (partitionInfo.PartitionStyle == PARTITION_STYLE.MasterBootRecord)
             {
                 numSectors = 1;
                 unsafe
                 {
-                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, sectorSize);
+                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[0], 0, 1, sectorSize);
 
                     for (int i = 0; i < 4; i++)
                     {
@@ -99,14 +117,14 @@ namespace dotNetDiskImager.DiskAccess
                 numSectors = 1;
                 unsafe
                 {
-                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, sectorSize);
+                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[0], 0, 1, sectorSize);
                     uint gptHeaderOffset = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1C6);
-                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, gptHeaderOffset, 1, sectorSize);
+                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[0], gptHeaderOffset, 1, sectorSize);
                     ulong partitionTableSector = (ulong)Marshal.ReadInt64(new IntPtr(data), 0x48);
                     uint noOfPartitionEntries = (uint)Marshal.ReadInt32(new IntPtr(data), 0x50);
                     uint sizeOfPartitionEntry = (uint)Marshal.ReadInt32(new IntPtr(data), 0x54);
 
-                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, partitionTableSector, (sectorSize / sizeOfPartitionEntry) * noOfPartitionEntries, sectorSize);
+                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[0], partitionTableSector, (sectorSize / sizeOfPartitionEntry) * noOfPartitionEntries, sectorSize);
 
                     for (int i = 0; i < noOfPartitionEntries; i++)
                     {
@@ -246,7 +264,7 @@ namespace dotNetDiskImager.DiskAccess
             {
                 int returnLength = 0;
                 IntPtr lengthPtr = new IntPtr(&length);
-                
+
                 NativeDisk.DeviceIoControl(deviceHandle, NativeDisk.IOCTL_DISK_GET_LENGTH_INFO, IntPtr.Zero, 0, lengthPtr, 8, ref returnLength, IntPtr.Zero);
             }
 
