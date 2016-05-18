@@ -156,9 +156,9 @@ namespace dotNetDiskImager.DiskAccess
 
         protected abstract bool ReadImageFromDeviceWorker(ulong sectorSize, ulong numSectors);
 
-        protected abstract bool WriteImageToDeviceWorker(ulong sectorSize, ulong numSectors);
+        protected abstract Task<bool> WriteImageToDeviceWorker(ulong sectorSize, ulong numSectors);
 
-        protected abstract bool VerifyImageAndDeviceWorker(IntPtr deviceHandle, IntPtr fileHandle, ulong sectorSize, ulong numSectors);
+        protected abstract Task<bool> VerifyImageAndDeviceWorkerAsync(IntPtr fileHandle, ulong sectorSize, ulong numSectors);
 
         public static char[] GetLogicalDrives()
         {
