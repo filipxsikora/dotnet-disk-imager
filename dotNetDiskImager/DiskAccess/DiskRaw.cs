@@ -17,7 +17,7 @@ namespace dotNetDiskImager.DiskAccess
         public override event OperationProgressChangedEventHandler OperationProgressChanged;
         public override event OperationProgressReportEventHandler OperationProgressReport;
 
-        public DiskRaw(char driveLetter) : base(driveLetter)
+        public DiskRaw(char[] driveLetter) : base(driveLetter)
         {
 
         }
@@ -33,14 +33,14 @@ namespace dotNetDiskImager.DiskAccess
 
             Dispose();
 
-            volumeHandle = NativeDiskWrapper.GetHandleOnVolume(volumeID, NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandle);
-            NativeDiskWrapper.UnmountVolume(volumeHandle);
+            volumeHandles[0] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[0], NativeDisk.GENERIC_WRITE);
+            NativeDiskWrapper.GetLockOnVolume(volumeHandles[0]);
+            NativeDiskWrapper.UnmountVolume(volumeHandles[0]);
 
             fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
-            deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_READ);
+            deviceHandles[0] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[0], NativeDisk.GENERIC_READ);
 
-            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandle, ref sectorSize);
+            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
 
             _imagePath = imagePath;
 
@@ -85,7 +85,7 @@ namespace dotNetDiskImager.DiskAccess
                     if (verify && !cancelPending)
                     {
                         OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
-                        result = VerifyImageAndDeviceWorker(deviceHandle, fileHandle, sectorSize, numSectors);
+                        result = VerifyImageAndDeviceWorker(deviceHandles[0], fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
@@ -117,14 +117,14 @@ namespace dotNetDiskImager.DiskAccess
 
             Dispose();
 
-            volumeHandle = NativeDiskWrapper.GetHandleOnVolume(volumeID, NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandle);
-            NativeDiskWrapper.UnmountVolume(volumeHandle);
+            volumeHandles[0] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[0], NativeDisk.GENERIC_WRITE);
+            NativeDiskWrapper.GetLockOnVolume(volumeHandles[0]);
+            NativeDiskWrapper.UnmountVolume(volumeHandles[0]);
 
             fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
-            deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
+            deviceHandles[0] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[0], NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
 
-            availibleSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandle, ref sectorSize);
+            availibleSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
             numSectors = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
 
             _imagePath = imagePath;
@@ -179,7 +179,7 @@ namespace dotNetDiskImager.DiskAccess
                     if (verify && !cancelPending)
                     {
                         OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
-                        result = VerifyImageAndDeviceWorker(deviceHandle, fileHandle, sectorSize, numSectors);
+                        result = VerifyImageAndDeviceWorker(deviceHandles[0], fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
@@ -212,14 +212,14 @@ namespace dotNetDiskImager.DiskAccess
 
             Dispose();
 
-            volumeHandle = NativeDiskWrapper.GetHandleOnVolume(volumeID, NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandle);
-            NativeDiskWrapper.UnmountVolume(volumeHandle);
+            volumeHandles[0] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[0], NativeDisk.GENERIC_WRITE);
+            NativeDiskWrapper.GetLockOnVolume(volumeHandles[0]);
+            NativeDiskWrapper.UnmountVolume(volumeHandles[0]);
 
             fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
-            deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_READ);
+            deviceHandles[0] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[0], NativeDisk.GENERIC_READ);
 
-            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandle, ref sectorSize);
+            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
 
             _imagePath = imagePath;
 
@@ -253,7 +253,7 @@ namespace dotNetDiskImager.DiskAccess
 
                 try
                 {
-                    result = VerifyImageAndDeviceWorker(deviceHandle, fileHandle, sectorSize, numSectors);
+                    result = VerifyImageAndDeviceWorker(deviceHandles[0], fileHandle, sectorSize, numSectors);
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
@@ -298,7 +298,7 @@ namespace dotNetDiskImager.DiskAccess
                     return false;
                 }
 
-                deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
                 NativeDiskWrapper.WriteSectorDataToHandle(fileHandle, deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
                 totalBytesReaded += (ulong)deviceData.Length;
@@ -352,7 +352,7 @@ namespace dotNetDiskImager.DiskAccess
                 }
 
                 imageData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                NativeDiskWrapper.WriteSectorDataToHandle(deviceHandle, imageData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                NativeDiskWrapper.WriteSectorDataToHandle(deviceHandles[0], imageData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
                 totalBytesWritten += (ulong)imageData.Length;
                 bytesWritten += (ulong)imageData.Length;
                 bytesWrittenPerPercent += (ulong)imageData.Length;
