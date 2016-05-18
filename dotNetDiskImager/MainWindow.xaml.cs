@@ -660,6 +660,10 @@ namespace dotNetDiskImager
 
             try
             {
+                if(GetSelectedDevices().Length > 1)
+                {
+                    throw new ArgumentException("Cannot read from multiple devices at once.\nPlease select only one device");
+                }
                 ValidateInputs();
             }
             catch (ArgumentException ex)
@@ -686,11 +690,11 @@ namespace dotNetDiskImager
             {
                 if (onTheFlyZipCheckBox.IsChecked.Value)
                 {
-                    disk = new DiskZip((driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter);
+                    disk = new DiskZip(GetSelectedDevices());
                 }
                 else
                 {
-                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter);
+                    disk = new DiskRaw(GetSelectedDevices());
                 }
                 result = disk.InitReadImageFromDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
@@ -723,7 +727,7 @@ namespace dotNetDiskImager
                 switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
                     case TaskbarExtraInfo.ActiveDevice:
-                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetters[0]);
                         break;
                     case TaskbarExtraInfo.ImageFileName:
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -779,23 +783,26 @@ namespace dotNetDiskImager
                 return;
             }
 
-            if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", (driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter)))
+            foreach (var driveLetter in GetSelectedDevices())
             {
-                DisplayInfoPart(false);
-                MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", (driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).Model)
-                        , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", driveLetter)))
+                {
+                    DisplayInfoPart(false);
+                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", driveLetter, Disk.GetModelFromDrive(driveLetter))
+                            , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
             }
 
             try
             {
                 if (onTheFlyZipCheckBox.IsChecked.Value)
                 {
-                    disk = new DiskZip((driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter);
+                    disk = new DiskZip(GetSelectedDevices());
                 }
                 else
                 {
-                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter);
+                    disk = new DiskRaw(GetSelectedDevices());
                 }
                 result = disk.InitWriteImageToDevice(imagePathTextBox.Text);
             }
@@ -811,7 +818,7 @@ namespace dotNetDiskImager
             if (result.Result)
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(this, string.Format("Writing to the [{0}:\\ - {1}] can corrupt the device.\nMake sure you have selected correct device and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", (driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).Model)
+                if (MessageBox.Show(this, string.Format("Writing to the {0}\n can corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices()))
                         , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                 {
                     disk?.Dispose();
@@ -835,7 +842,7 @@ namespace dotNetDiskImager
                 switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
                     case TaskbarExtraInfo.ActiveDevice:
-                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        Title = string.Format(@"{0} - dotNet Disk Imager", Helpers.GetDevicesListShort(disk.DriveLetters));
                         break;
                     case TaskbarExtraInfo.ImageFileName:
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -849,11 +856,11 @@ namespace dotNetDiskImager
             {
                 DisplayInfoPart(false);
                 if (MessageBox.Show(this, string.Format("Target device [{0}:\\] hasn't got enough capacity.\nSpace availible {1}\nSpace required {2}\n" +
-                    "The extra space {3} appears to contain any data.\nWould you like to continue anyway ?", (driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter,
+                    "The extra space {3} appear to contain any data.\nWould you like to continue anyway ?", result.AffectedDevice,
                     Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), result.DataFound ? "DOES" : "does not"),
                     "Not enough capacity", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    if (MessageBox.Show(this, string.Format("Writing to the [{0}:\\ - {1}] can corrupt the device.\nMake sure you have selected correct device and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", (driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).Model)
+                    if (MessageBox.Show(this, string.Format("Writing to the {0}\n can corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices()))
                         , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     {
                         disk?.Dispose();
@@ -877,7 +884,7 @@ namespace dotNetDiskImager
                     switch (AppSettings.Settings.TaskbarExtraInfo)
                     {
                         case TaskbarExtraInfo.ActiveDevice:
-                            Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                            Title = string.Format(@"{0} - dotNet Disk Imager", Helpers.GetDevicesListShort(disk.DriveLetters));
                             break;
                         case TaskbarExtraInfo.ImageFileName:
                             Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -933,11 +940,11 @@ namespace dotNetDiskImager
             {
                 if (onTheFlyZipCheckBox.IsChecked.Value)
                 {
-                    disk = new DiskZip((driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter);
+                    disk = new DiskZip(GetSelectedDevices());
                 }
                 else
                 {
-                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter);
+                    disk = new DiskRaw(GetSelectedDevices());
                 }
                 result = disk.InitVerifyImageAndDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
@@ -970,7 +977,7 @@ namespace dotNetDiskImager
                 switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
                     case TaskbarExtraInfo.ActiveDevice:
-                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        Title = string.Format(@"{0} - dotNet Disk Imager", Helpers.GetDevicesListShort(disk.DriveLetters));
                         break;
                     case TaskbarExtraInfo.ImageFileName:
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -1005,7 +1012,7 @@ namespace dotNetDiskImager
                     switch (AppSettings.Settings.TaskbarExtraInfo)
                     {
                         case TaskbarExtraInfo.ActiveDevice:
-                            Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                            Title = string.Format(@"{0} - dotNet Disk Imager", Helpers.GetDevicesListShort(disk.DriveLetters));
                             break;
                         case TaskbarExtraInfo.ImageFileName:
                             Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -1072,10 +1079,15 @@ namespace dotNetDiskImager
                 throw new ArgumentException("Image file was not selected.");
             if (driveSelectComboBox.Items.Count == 0)
                 throw new ArgumentException("No supported device found.");
-            if (driveSelectComboBox.SelectedIndex < 0)
+            if (GetSelectedDevices().Length == 0)
                 throw new ArgumentException("Device was not selected.");
-            if ((driveSelectComboBox.SelectedItem as CheckBoxDeviceItem).DriveLetter == imagePathTextBox.Text[0])
-                throw new ArgumentException("Image file cannot be located on the device.");
+            foreach (var driveLetter in GetSelectedDevices())
+            {
+                if(imagePathTextBox.Text[0] == driveLetter)
+                {
+                    throw new ArgumentException("Image file cannot be located on the device.");
+                }
+            }                
         }
 
         private static string CreateInfoMessage(OperationFinishedEventArgs e)
@@ -1321,8 +1333,27 @@ namespace dotNetDiskImager
                         str += ((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).Content;
                     }
                 }
-            (driveSelectComboBox.Items[0] as ComboBoxItem).Content = str;
+
+                (driveSelectComboBox.Items[0] as ComboBoxItem).Content = str;
             }
+        }
+
+        private char[] GetSelectedDevices()
+        {
+            List<char> selectedDevices = new List<char>();
+
+            if (driveSelectComboBox.Items.Count != 0)
+            {
+                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+                {
+                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).IsChecked.Value)
+                    {
+                        selectedDevices.Add(((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter);
+                    }
+                }
+            }
+
+            return selectedDevices.ToArray();
         }
     }
 }

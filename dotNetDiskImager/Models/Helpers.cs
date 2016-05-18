@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dotNetDiskImager.DiskAccess;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -84,6 +85,34 @@ namespace dotNetDiskImager.Models
             time = TimeSpan.FromSeconds(((seconds / 5) + 1) * 5);
             return string.Format("{0}{1} seconds", pre, time.Seconds);
 
+        }
+
+        public static string GetDevicesListWithModel(char[] deviceLetters)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var deviceLetter in deviceLetters)
+            {
+                sb.Append(string.Format("\n[{0}:\\ - {1}]", deviceLetter, Disk.GetModelFromDrive(deviceLetter)));
+            }
+
+            return sb.ToString();
+        }
+
+        public static string GetDevicesListShort(char[] deviceLetters)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < deviceLetters.Length; i++)
+            {
+                sb.Append(string.Format("[{0}:\\]", deviceLetters[i]));
+                if(i < deviceLetters.Length - 1)
+                {
+                    sb.Append(", ");
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }
