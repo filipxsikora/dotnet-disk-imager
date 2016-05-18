@@ -74,7 +74,7 @@ namespace dotNetDiskImager.DiskAccess
             if (verify)
                 currentDiskOperation |= DiskOperation.Verify;
 
-            workingThread = new Thread(() =>
+            workingThread = new Thread(async () =>
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
@@ -85,7 +85,7 @@ namespace dotNetDiskImager.DiskAccess
                     if (verify && !cancelPending)
                     {
                         OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
-                        result = VerifyImageAndDeviceWorker(deviceHandles[0], fileHandle, sectorSize, numSectors);
+                        result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
@@ -168,18 +168,18 @@ namespace dotNetDiskImager.DiskAccess
             if (cropData)
                 numSectors = availibleSectors;
 
-            workingThread = new Thread(() =>
+            workingThread = new Thread(async () =>
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
 
                 try
                 {
-                    result = WriteImageToDeviceWorker(sectorSize, numSectors);
+                    result = await WriteImageToDeviceWorker(sectorSize, numSectors);
                     if (verify && !cancelPending)
                     {
                         OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
-                        result = VerifyImageAndDeviceWorker(deviceHandles[0], fileHandle, sectorSize, numSectors);
+                        result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
@@ -246,14 +246,14 @@ namespace dotNetDiskImager.DiskAccess
 
             numSectors = numBytesToVerify / sectorSize;
 
-            workingThread = new Thread(() =>
+            workingThread = new Thread(async () =>
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
 
                 try
                 {
-                    result = VerifyImageAndDeviceWorker(deviceHandles[0], fileHandle, sectorSize, numSectors);
+                    result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
@@ -329,7 +329,7 @@ namespace dotNetDiskImager.DiskAccess
             return true;
         }
 
-        protected override bool WriteImageToDeviceWorker(ulong sectorSize, ulong numSectors)
+        protected override async Task<bool> WriteImageToDeviceWorker(ulong sectorSize, ulong numSectors)
         {
             Stopwatch msStopwatch = new Stopwatch();
             Stopwatch percentStopwatch = new Stopwatch();
@@ -344,15 +344,26 @@ namespace dotNetDiskImager.DiskAccess
             msStopwatch.Start();
             percentStopwatch.Start();
 
+            List<Task> taskList = new List<Task>(deviceHandles.Length);
+
             for (ulong i = 0; i < numSectors; i += 1024)
             {
+                taskList.Clear();
+
                 if (cancelPending)
                 {
                     return false;
                 }
 
                 imageData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                NativeDiskWrapper.WriteSectorDataToHandle(deviceHandles[0], imageData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+
+                foreach (var deviceHandle in deviceHandles)
+                {
+                    taskList.Add(NativeDiskWrapper.WriteSectorDataToHandleAsync(deviceHandle, imageData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize));
+                }
+
+                await Task.WhenAll(taskList.ToArray());
+
                 totalBytesWritten += (ulong)imageData.Length;
                 bytesWritten += (ulong)imageData.Length;
                 bytesWrittenPerPercent += (ulong)imageData.Length;
@@ -381,10 +392,9 @@ namespace dotNetDiskImager.DiskAccess
             return true;
         }
 
-        protected override bool VerifyImageAndDeviceWorker(IntPtr deviceHandle, IntPtr fileHandle, ulong sectorSize, ulong numSectors)
+        protected override async Task<bool> VerifyImageAndDeviceWorkerAsync(IntPtr fileHandle, ulong sectorSize, ulong numSectors)
         {
             byte[] fileData;
-            byte[] deviceData;
             Stopwatch msStopwatch = new Stopwatch();
             Stopwatch percentStopwatch = new Stopwatch();
             ulong totalBytesVerified = 0;
@@ -397,16 +407,40 @@ namespace dotNetDiskImager.DiskAccess
             msStopwatch.Start();
             percentStopwatch.Start();
 
+            List<Task<bool>> taskList = new List<Task<bool>>(deviceHandles.Length);
+
             for (ulong i = 0; i < numSectors; i += 1024)
             {
+                taskList.Clear();
+
                 if (cancelPending)
                     return false;
 
                 fileData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                foreach (var deviceHandle in deviceHandles)
+                {
+                    taskList.Add(Task.Run(() =>
+                    {
+                        var deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
-                if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData))
-                    return false;
+                        if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData))
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }));
+                }
+
+                await Task.WhenAll(taskList.ToArray());
+
+                foreach (var task in taskList)
+                {
+                    if (!task.Result)
+                        return false;
+                }
 
                 totalBytesVerified += (ulong)fileData.Length;
                 bytesVerified += (ulong)fileData.Length;
