@@ -340,11 +340,10 @@ namespace dotNetDiskImager.DiskAccess
             ulong bytesWrittenPerPercent = 0;
             int lastProgress = 0;
             int progress = 0;
+            List<Task> taskList = new List<Task>(deviceHandles.Length);
 
             msStopwatch.Start();
             percentStopwatch.Start();
-
-            List<Task> taskList = new List<Task>(deviceHandles.Length);
 
             for (ulong i = 0; i < numSectors; i += 1024)
             {
@@ -403,11 +402,10 @@ namespace dotNetDiskImager.DiskAccess
             ulong bytesVerifiedPerPercent = 0;
             int lastProgress = 0;
             int progress = 0;
+            List<Task<bool>> taskList = new List<Task<bool>>(deviceHandles.Length);
 
             msStopwatch.Start();
             percentStopwatch.Start();
-
-            List<Task<bool>> taskList = new List<Task<bool>>(deviceHandles.Length);
 
             for (ulong i = 0; i < numSectors; i += 1024)
             {
