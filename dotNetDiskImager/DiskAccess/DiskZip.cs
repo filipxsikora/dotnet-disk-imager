@@ -385,7 +385,7 @@ namespace dotNetDiskImager.DiskAccess
                             return false;
                         }
 
-                        deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                        NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
                         zipWriter.Write(deviceData, 0, deviceData.Length);
 
                         totalBytesReaded += (ulong)deviceData.Length;
@@ -461,7 +461,8 @@ namespace dotNetDiskImager.DiskAccess
                         {
                             taskList.Add(Task.Run(() =>
                             {
-                                var deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                                byte[] deviceData = new byte[1024 * sectorSize];
+                                NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
                                 if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData))
                                 {
@@ -593,7 +594,8 @@ namespace dotNetDiskImager.DiskAccess
 
         bool VerifyZipFile()
         {
-            var data = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, 0, 1, sectorSize);
+            byte[] data = new byte[sectorSize];
+            NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, data, 0, 1, sectorSize);
 
             if (BitConverter.ToInt32(data, 0) == ZIP_LEAD_BYTES)
                 return true;

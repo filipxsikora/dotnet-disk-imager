@@ -134,14 +134,15 @@ namespace dotNetDiskImager.DiskAccess
                 bool dataFound = false;
                 ulong i = availibleSectors;
                 ulong nextChunkSize = 0;
+                byte[] sectorData = new byte[1024 * sectorSize];
 
                 while (i < numSectors && !dataFound)
                 {
                     nextChunkSize = ((numSectors - i) >= 1024) ? 1024 : (numSectors - i);
-                    var sectorData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, nextChunkSize, sectorSize);
-                    foreach (var data in sectorData)
+                    int dataLength = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, sectorData, i, nextChunkSize, sectorSize);
+                    for (int x = 0; x < dataLength; x++)
                     {
-                        if (data != 0)
+                        if (sectorData[x] != 0)
                         {
                             dataFound = true;
                             break;
@@ -280,7 +281,7 @@ namespace dotNetDiskImager.DiskAccess
         {
             Stopwatch sw = new Stopwatch();
             Stopwatch percentStopwatch = new Stopwatch();
-            byte[] deviceData;
+            byte[] deviceData = new byte[1024 * sectorSize];
             ulong totalBytesReaded = 0;
             ulong bytesReaded = 0;
             ulong bytesToRead = sectorSize * numSectors;
@@ -298,7 +299,7 @@ namespace dotNetDiskImager.DiskAccess
                     return false;
                 }
 
-                deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
                 NativeDiskWrapper.WriteSectorDataToHandle(fileHandle, deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
                 totalBytesReaded += (ulong)deviceData.Length;
@@ -333,7 +334,7 @@ namespace dotNetDiskImager.DiskAccess
         {
             Stopwatch msStopwatch = new Stopwatch();
             Stopwatch percentStopwatch = new Stopwatch();
-            byte[] imageData;
+            byte[] imageData = new byte[1024 * sectorSize];
             ulong totalBytesWritten = 0;
             ulong bytesWritten = 0;
             ulong bytesToWrite = sectorSize * numSectors;
@@ -354,7 +355,7 @@ namespace dotNetDiskImager.DiskAccess
                     return false;
                 }
 
-                imageData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, imageData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
                 foreach (var deviceHandle in deviceHandles)
                 {
@@ -393,7 +394,7 @@ namespace dotNetDiskImager.DiskAccess
 
         protected override async Task<bool> VerifyImageAndDeviceWorkerAsync(IntPtr fileHandle, ulong sectorSize, ulong numSectors)
         {
-            byte[] fileData;
+            byte[] fileData = new byte[1024 * sectorSize];
             Stopwatch msStopwatch = new Stopwatch();
             Stopwatch percentStopwatch = new Stopwatch();
             ulong totalBytesVerified = 0;
@@ -414,12 +415,13 @@ namespace dotNetDiskImager.DiskAccess
                 if (cancelPending)
                     return false;
 
-                fileData = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, fileData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
                 foreach (var deviceHandle in deviceHandles)
                 {
                     taskList.Add(Task.Run(() =>
                     {
-                        var deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                        byte[] deviceData = new byte[1024 * sectorSize];
+                        NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
                         if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData))
                         {

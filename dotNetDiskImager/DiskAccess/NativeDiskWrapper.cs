@@ -109,10 +109,9 @@ namespace dotNetDiskImager.DiskAccess
             return !result;
         }
 
-        internal static byte[] ReadSectorDataFromHandle(IntPtr handle, ulong startSector, ulong numSectors, ulong sectorSize)
+        internal static int ReadSectorDataFromHandle(IntPtr handle, byte[] data, ulong startSector, ulong numSectors, ulong sectorSize)
         {
             uint bytesRead;
-            byte[] data = new byte[sectorSize * numSectors];
             LARGE_INTEGER li;
             li.LowPart = 0;
             li.QuadPart = (long)(startSector * sectorSize);
@@ -131,15 +130,14 @@ namespace dotNetDiskImager.DiskAccess
                 }
             }
 
-            return data;
+            return (int)bytesRead;
         }
 
-        internal static Task<byte[]> ReadSectorDataFromHandleAsync(IntPtr handle, ulong startSector, ulong numSectors, ulong sectorSize)
+        internal static Task<int> ReadSectorDataFromHandleAsync(IntPtr handle, byte[] data, ulong startSector, ulong numSectors, ulong sectorSize)
         {
             return Task.Run(() =>
             {
                 uint bytesRead;
-                byte[] data = new byte[sectorSize * numSectors];
                 LARGE_INTEGER li;
                 li.LowPart = 0;
                 li.QuadPart = (long)(startSector * sectorSize);
@@ -158,7 +156,7 @@ namespace dotNetDiskImager.DiskAccess
                     }
                 }
 
-                return data;
+                return (int)bytesRead;
             });
         }
 
