@@ -288,12 +288,19 @@ namespace dotNetDiskImager.DiskAccess
 
             Dispose();
 
-            volumeHandles[0] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[0], NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandles[0]);
-            NativeDiskWrapper.UnmountVolume(volumeHandles[0]);
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                volumeHandles[i] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[i], NativeDisk.GENERIC_WRITE);
+                NativeDiskWrapper.GetLockOnVolume(volumeHandles[i]);
+                NativeDiskWrapper.UnmountVolume(volumeHandles[i]);
+            }
 
             fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
-            deviceHandles[0] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[0], NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
+
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
+            }
 
             availibleSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
 
