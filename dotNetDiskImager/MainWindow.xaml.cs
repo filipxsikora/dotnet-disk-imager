@@ -856,7 +856,7 @@ namespace dotNetDiskImager
             {
                 DisplayInfoPart(false);
                 if (MessageBox.Show(this, string.Format("Target device [{0}:\\] hasn't got enough capacity.\nSpace availible {1}\nSpace required {2}\n" +
-                    "The extra space {3} appear to contain any data.\nWould you like to continue anyway ?", result.AffectedDevice,
+                    "The extra space {3} appear to contain any data.\nWould you like to write data up to device size ?", result.AffectedDevice,
                     Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), result.DataFound ? "DOES" : "does not"),
                     "Not enough capacity", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
