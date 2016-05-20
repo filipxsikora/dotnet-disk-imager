@@ -91,55 +91,66 @@ namespace dotNetDiskImager.DiskAccess
 
         public ulong GetLastUsedPartition()
         {
-            var partitionInfo = NativeDiskWrapper.GetDiskPartitionInfo(deviceHandles[0]);
+            ulong[] numSectorsArr = new ulong[deviceHandles.Length];
 
-            if (partitionInfo.PartitionStyle == PARTITION_STYLE.MasterBootRecord)
+            for (int x = 0; x < deviceHandles.Length; x++)
             {
-                numSectors = 1;
-                unsafe
+                var partitionInfo = NativeDiskWrapper.GetDiskPartitionInfo(deviceHandles[x]);
+
+                if (partitionInfo.PartitionStyle == PARTITION_STYLE.MasterBootRecord)
                 {
-                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[0], 0, 1, sectorSize);
-
-                    for (int i = 0; i < 4; i++)
+                    numSectorsArr[x] = 1;
+                    unsafe
                     {
-                        ulong partitionStartSector = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 8 + 16 * i);
-                        ulong partitionNumSectors = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 12 + 16 * i);
+                        byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[x], 0, 1, sectorSize);
 
-                        if (partitionStartSector + partitionNumSectors > numSectors)
+                        for (int i = 0; i < 4; i++)
                         {
-                            numSectors = partitionStartSector + partitionNumSectors;
+                            ulong partitionStartSector = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 8 + 16 * i);
+                            ulong partitionNumSectors = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 12 + 16 * i);
+
+                            if (partitionStartSector + partitionNumSectors > numSectorsArr[x])
+                            {
+                                numSectorsArr[x] = partitionStartSector + partitionNumSectors;
+                            }
+                        }
+                    }
+                }
+                else if (partitionInfo.PartitionStyle == PARTITION_STYLE.GuidPartitionTable)
+                {
+                    numSectorsArr[x] = 1;
+                    unsafe
+                    {
+                        byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[x], 0, 1, sectorSize);
+                        uint gptHeaderOffset = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1C6);
+                        data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[x], gptHeaderOffset, 1, sectorSize);
+                        ulong partitionTableSector = (ulong)Marshal.ReadInt64(new IntPtr(data), 0x48);
+                        uint noOfPartitionEntries = (uint)Marshal.ReadInt32(new IntPtr(data), 0x50);
+                        uint sizeOfPartitionEntry = (uint)Marshal.ReadInt32(new IntPtr(data), 0x54);
+
+                        data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[x], partitionTableSector, (sectorSize / sizeOfPartitionEntry) * noOfPartitionEntries, sectorSize);
+
+                        for (int i = 0; i < noOfPartitionEntries; i++)
+                        {
+                            ulong partitionStartSector = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x20 + sizeOfPartitionEntry * i));
+                            ulong partitionNumSectors = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x28 + sizeOfPartitionEntry * i));
+
+                            if (partitionStartSector + partitionNumSectors > numSectorsArr[x])
+                            {
+                                numSectorsArr[x] = partitionStartSector + partitionNumSectors;
+                            }
                         }
                     }
                 }
             }
-            else if (partitionInfo.PartitionStyle == PARTITION_STYLE.GuidPartitionTable)
+
+            for (int i = 1; i < deviceHandles.Length; i++)
             {
-                numSectors = 1;
-                unsafe
-                {
-                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[0], 0, 1, sectorSize);
-                    uint gptHeaderOffset = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1C6);
-                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[0], gptHeaderOffset, 1, sectorSize);
-                    ulong partitionTableSector = (ulong)Marshal.ReadInt64(new IntPtr(data), 0x48);
-                    uint noOfPartitionEntries = (uint)Marshal.ReadInt32(new IntPtr(data), 0x50);
-                    uint sizeOfPartitionEntry = (uint)Marshal.ReadInt32(new IntPtr(data), 0x54);
-
-                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandles[0], partitionTableSector, (sectorSize / sizeOfPartitionEntry) * noOfPartitionEntries, sectorSize);
-
-                    for (int i = 0; i < noOfPartitionEntries; i++)
-                    {
-                        ulong partitionStartSector = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x20 + sizeOfPartitionEntry * i));
-                        ulong partitionNumSectors = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x28 + sizeOfPartitionEntry * i));
-
-                        if (partitionStartSector + partitionNumSectors > numSectors)
-                        {
-                            numSectors = partitionStartSector + partitionNumSectors;
-                        }
-                    }
-                }
+                if (numSectorsArr[0] != numSectorsArr[i])
+                    throw new Exception("Devices have different partitions size.\nVerifying will not be started.");
             }
 
-            return numSectors;
+            return numSectorsArr[0];
         }
 
         public abstract InitOperationResult InitReadImageFromDevice(string imagePath, bool skipUnallocated);
