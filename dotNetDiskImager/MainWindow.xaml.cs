@@ -69,6 +69,7 @@ namespace dotNetDiskImager
         {
             InitializeComponent();
             OxyPlot.Wpf.LineAnnotation.PlotViewProperty = speedGraph;
+            Topmost = AppSettings.Settings.IsTopMost.Value;
 
             driveSelectComboBox.SelectionChanged += (s, e) => driveSelectComboBox.SelectedIndex = 0;
 
@@ -96,6 +97,7 @@ namespace dotNetDiskImager
                 closed = true;
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
+                AppSettings.Settings.IsTopMost = WindowContextMenu.IsAlwaysOnTopChecked(Handle);
                 AppSettings.SaveSettings();
             };
 
@@ -205,6 +207,18 @@ namespace dotNetDiskImager
                     case WindowContextMenu.SettingsCommand:
                         ShowSettingsWindow();
                         handled = true;
+                        break;
+                    case WindowContextMenu.AlwaysOnTopCommand:
+                        if(WindowContextMenu.IsAlwaysOnTopChecked(Handle))
+                        {
+                            WindowContextMenu.SetAlwaysOnTopChecked(Handle, false);
+                            Topmost = false;
+                        }
+                        else
+                        {
+                            WindowContextMenu.SetAlwaysOnTopChecked(Handle, true);
+                            Topmost = true;
+                        }                        
                         break;
                     case WindowContextMenu.AboutCommand:
                         ShowAboutWindow();
