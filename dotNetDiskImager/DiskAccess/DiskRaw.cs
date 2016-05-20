@@ -247,13 +247,14 @@ namespace dotNetDiskImager.DiskAccess
 
             _imagePath = imagePath;
 
+            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
+
             if (skipUnallocated)
             {
                 numSectors = GetLastUsedPartition();
             }
             else
             {
-                numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
                 for (int i = 0; i < deviceHandles.Length; i++)
                 {
                     var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
