@@ -357,6 +357,7 @@ namespace dotNetDiskImager.DiskAccess
             ulong bytesReadedPerPercent = 0;
             int lastProgress = 0;
             int progress = 0;
+            int readed = 0;
             CompressionLevel compressionLevel = CompressionLevel.Fastest;
 
             sw.Start();
@@ -385,13 +386,13 @@ namespace dotNetDiskImager.DiskAccess
                             return false;
                         }
 
-                        NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                        readed = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
                         zipWriter.Write(deviceData, 0, deviceData.Length);
 
-                        totalBytesReaded += (ulong)deviceData.Length;
-                        bytesReaded += (ulong)deviceData.Length;
-                        bytesReadedPerPercent += (ulong)deviceData.Length;
-                        bytesToRead -= (ulong)deviceData.Length;
+                        totalBytesReaded += (ulong)readed;
+                        bytesReaded += (ulong)readed;
+                        bytesReadedPerPercent += (ulong)readed;
+                        bytesToRead -= (ulong)readed;
 
                         progress = (int)(i / (numSectors / 100.0)) + 1;
 
@@ -429,6 +430,7 @@ namespace dotNetDiskImager.DiskAccess
             ulong bytesVerifiedPerPercent = 0;
             int lastProgress = 0;
             int progress = 0;
+            int readedFromZip = 0;
             List<Task<bool>> taskList = new List<Task<bool>>(deviceHandles.Length);
 
             msStopwatch.Start();
@@ -456,13 +458,12 @@ namespace dotNetDiskImager.DiskAccess
                         if (cancelPending)
                             return false;
 
-                        zipReader.Read(fileData, 0, (int)(((numSectors - i >= 1024) ? 1024 : (numSectors - i)) * sectorSize));
+                        readedFromZip = zipReader.Read(fileData, 0, (int)(((numSectors - i >= 1024) ? 1024 : (numSectors - i)) * sectorSize));
                         foreach(var deviceHandle in deviceHandles)
                         {
                             taskList.Add(Task.Run(() =>
                             {
-                                byte[] deviceData = new byte[1024 * sectorSize];
-                                NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                                var deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
                                 if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData))
                                 {
@@ -483,10 +484,10 @@ namespace dotNetDiskImager.DiskAccess
                                 return false;
                         }
 
-                        totalBytesVerified += (ulong)fileData.Length;
-                        bytesVerified += (ulong)fileData.Length;
-                        bytesVerifiedPerPercent += (ulong)fileData.Length;
-                        bytesToVerify -= (ulong)fileData.Length;
+                        totalBytesVerified += (ulong)readedFromZip;
+                        bytesVerified += (ulong)readedFromZip;
+                        bytesVerifiedPerPercent += (ulong)readedFromZip;
+                        bytesToVerify -= (ulong)readedFromZip;
 
                         progress = (int)(i / (numSectors / 100.0)) + 1;
 
@@ -562,10 +563,10 @@ namespace dotNetDiskImager.DiskAccess
 
                         await Task.WhenAll(taskList.ToArray());
 
-                        totalBytesWritten += (ulong)imageData.Length;
-                        bytesWritten += (ulong)imageData.Length;
-                        bytesWrittenPerPercent += (ulong)imageData.Length;
-                        bytesToWrite -= (ulong)imageData.Length;
+                        totalBytesWritten += (ulong)readedFromZip;
+                        bytesWritten += (ulong)readedFromZip;
+                        bytesWrittenPerPercent += (ulong)readedFromZip;
+                        bytesToWrite -= (ulong)readedFromZip;
 
                         progress = (int)(i / (numSectors / 100.0)) + 1;
 
@@ -594,8 +595,7 @@ namespace dotNetDiskImager.DiskAccess
 
         bool VerifyZipFile()
         {
-            byte[] data = new byte[sectorSize];
-            NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, data, 0, 1, sectorSize);
+            var data = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, 0, 1, sectorSize);
 
             if (BitConverter.ToInt32(data, 0) == ZIP_LEAD_BYTES)
                 return true;
