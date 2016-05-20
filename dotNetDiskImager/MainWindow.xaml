@@ -41,7 +41,7 @@
                 <TextBlock Text="Cancel"/>
             </StackPanel>
         </Button>
-        <Label Content="Device:" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <Label Content="Device(s):" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <CheckBox TabIndex="5" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" ToolTip="Reads only allocated partitions on device if checked" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <Button TabIndex="9" x:Name="writeButton" ToolTip="Writes data from image to device" HorizontalAlignment="Left" Margin="140,212,0,0" Padding="5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
