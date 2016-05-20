@@ -35,7 +35,7 @@ namespace dotNetDiskImager.UI
         public const int AlwaysOnTopCommand = 0x150;
         public const int AboutCommand = 0x200;
         public const int CheckUpdatesCommand = 0x300;
-        public const int EnableLinkedConn = 0x400;
+        public const int EnableLinkedConnectionCommand = 0x400;
 
         public static void CreateWindowMenu(IntPtr windowHandle)
         {
@@ -47,7 +47,7 @@ namespace dotNetDiskImager.UI
             InsertMenu(systemMenuHandle, 8, MF_BYPOSITION, CheckUpdatesCommand, "Check for updates");
             if (!Utils.CheckMappedDrivesEnable())
             {
-                InsertMenu(systemMenuHandle, 9, MF_BYPOSITION, EnableLinkedConn, "Enable mapped drives");
+                InsertMenu(systemMenuHandle, 9, MF_BYPOSITION, EnableLinkedConnectionCommand, "Enable mapped drives");
                 InsertMenu(systemMenuHandle, 10, MF_BYPOSITION, AboutCommand, "About\tF1");
             }
             else

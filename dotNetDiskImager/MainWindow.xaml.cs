@@ -128,48 +128,7 @@ namespace dotNetDiskImager
                                 }
                                 else
                                 {
-                                    bool inserted = false;
-                                    for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
-                                    {
-                                        if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter > driveLetter)
-                                        {
-                                            var deviceCheckBox = new CheckBoxDeviceItem(driveLetter)
-                                            {
-                                                VerticalContentAlignment = VerticalAlignment.Center,
-                                                Height = 20,
-                                                Width = 485,
-                                            };
-
-                                            deviceCheckBox.Click += DeviceCheckBox_Click;
-
-                                            driveSelectComboBox.Items.Insert(i,
-                                                new ComboBoxItem()
-                                                {
-                                                    Padding = new Thickness(0),
-                                                    Content = deviceCheckBox
-                                                });
-                                            inserted = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (!inserted)
-                                    {
-                                        var deviceCheckBox = new CheckBoxDeviceItem(driveLetter)
-                                        {
-                                            VerticalContentAlignment = VerticalAlignment.Center,
-                                            Height = 20,
-                                            Width = 485,
-                                        };
-
-                                        deviceCheckBox.Click += DeviceCheckBox_Click;
-
-                                        driveSelectComboBox.Items.Add(new ComboBoxItem()
-                                        {
-                                            Padding = new Thickness(0),
-                                            Content = deviceCheckBox
-                                        });
-                                    }
+                                    InsertDriveItem(driveLetter);
                                 }
                             }
                         }
@@ -179,22 +138,7 @@ namespace dotNetDiskImager
                         {
                             DEV_BROADCAST_VOLUME dbv = Marshal.PtrToStructure<DEV_BROADCAST_VOLUME>(lParam);
                             char driveLetter = Disk.GetFirstDriveLetterFromMask(dbv.dbch_Unitmask, false);
-                            if (driveLetter != 0)
-                            {
-                                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
-                                {
-                                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter == driveLetter)
-                                    {
-                                        driveSelectComboBox.Items.RemoveAt(i);
-                                        DeviceCheckBoxClickHandler();
-                                        break;
-                                    }
-                                }
-                                if (driveSelectComboBox.Items.Count == 1)
-                                {
-                                    driveSelectComboBox.Items.Clear();
-                                }
-                            }
+                            RemoveDriveItem(driveLetter);
                         }
                         break;
                 }
@@ -209,40 +153,20 @@ namespace dotNetDiskImager
                         handled = true;
                         break;
                     case WindowContextMenu.AlwaysOnTopCommand:
-                        if (WindowContextMenu.IsAlwaysOnTopChecked(Handle))
-                        {
-                            WindowContextMenu.SetAlwaysOnTopChecked(Handle, false);
-                            Topmost = false;
-                        }
-                        else
-                        {
-                            WindowContextMenu.SetAlwaysOnTopChecked(Handle, true);
-                            Topmost = true;
-                        }
+                        HandleAlwaysOnTopCommand();
+                        handled = true;
                         break;
                     case WindowContextMenu.AboutCommand:
                         ShowAboutWindow();
                         handled = true;
                         break;
-                    case WindowContextMenu.EnableLinkedConn:
-                        if (!Utils.CheckMappedDrivesEnable())
-                        {
-                            if (Utils.SetMappedDrivesEnable())
-                            {
-                                MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
-                            }
-                            else
-                            {
-                                MessageBox.Show(this, "Enabling mapped drives was not successful.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
+                    case WindowContextMenu.EnableLinkedConnectionCommand:
+                        HandleEnableLinkedConnectionCommand();
+                        handled = true;
                         break;
                     case WindowContextMenu.CheckUpdatesCommand:
                         CheckUpdates(true);
+                        handled = true;
                         break;
                 }
             }
@@ -1304,6 +1228,52 @@ namespace dotNetDiskImager
             }
         }
 
+        private void InsertDriveItem(char driveLetter)
+        {
+            bool inserted = false;
+            for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+            {
+                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter > driveLetter)
+                {
+                    var deviceCheckBox = new CheckBoxDeviceItem(driveLetter)
+                    {
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        Height = 20,
+                        Width = 485,
+                    };
+
+                    deviceCheckBox.Click += DeviceCheckBox_Click;
+
+                    driveSelectComboBox.Items.Insert(i,
+                        new ComboBoxItem()
+                        {
+                            Padding = new Thickness(0),
+                            Content = deviceCheckBox
+                        });
+                    inserted = true;
+                    break;
+                }
+            }
+
+            if (!inserted)
+            {
+                var deviceCheckBox = new CheckBoxDeviceItem(driveLetter)
+                {
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Height = 20,
+                    Width = 485,
+                };
+
+                deviceCheckBox.Click += DeviceCheckBox_Click;
+
+                driveSelectComboBox.Items.Add(new ComboBoxItem()
+                {
+                    Padding = new Thickness(0),
+                    Content = deviceCheckBox
+                });
+            }
+        }
+
         private void DeviceCheckBox_Click(object sender, RoutedEventArgs e)
         {
             DeviceCheckBoxClickHandler();
@@ -1369,6 +1339,59 @@ namespace dotNetDiskImager
             }
 
             return selectedDevices.ToArray();
+        }
+
+        private void HandleEnableLinkedConnectionCommand()
+        {
+            if (!Utils.CheckMappedDrivesEnable())
+            {
+                if (Utils.SetMappedDrivesEnable())
+                {
+                    MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(this, "Enabling mapped drives was not successful.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void HandleAlwaysOnTopCommand()
+        {
+            if (WindowContextMenu.IsAlwaysOnTopChecked(Handle))
+            {
+                WindowContextMenu.SetAlwaysOnTopChecked(Handle, false);
+                Topmost = false;
+            }
+            else
+            {
+                WindowContextMenu.SetAlwaysOnTopChecked(Handle, true);
+                Topmost = true;
+            }
+        }
+
+        private void RemoveDriveItem(char driveLetter)
+        {
+            if (driveLetter != 0)
+            {
+                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+                {
+                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter == driveLetter)
+                    {
+                        driveSelectComboBox.Items.RemoveAt(i);
+                        DeviceCheckBoxClickHandler();
+                        break;
+                    }
+                }
+                if (driveSelectComboBox.Items.Count == 1)
+                {
+                    driveSelectComboBox.Items.Clear();
+                }
+            }
         }
     }
 }
