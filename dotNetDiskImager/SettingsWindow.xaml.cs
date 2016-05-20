@@ -22,8 +22,9 @@ namespace dotNetDiskImager
     {
         CustomPlacesWindow customPlacesWindow = null;
 
-        public SettingsWindow()
+        public SettingsWindow(Window owner)
         {
+            Owner = owner;
             InitializeComponent();
 
             LoadAppSettingsToGUI();

@@ -1244,7 +1244,7 @@ namespace dotNetDiskImager
         {
             if (settingsWindow == null)
             {
-                settingsWindow = new SettingsWindow();
+                settingsWindow = new SettingsWindow(this);
                 settingsWindow.Closed += (s, e) => settingsWindow = null;
             }
             settingsWindow.Show();
@@ -1255,7 +1255,7 @@ namespace dotNetDiskImager
         {
             if (aboutWindow == null)
             {
-                aboutWindow = new AboutWindow();
+                aboutWindow = new AboutWindow(this);
                 aboutWindow.Closed += (s, e) => aboutWindow = null;
             }
             aboutWindow.Show();

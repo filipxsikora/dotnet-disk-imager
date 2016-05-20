@@ -21,8 +21,9 @@ namespace dotNetDiskImager
     /// </summary>
     public partial class AboutWindow : Window
     {
-        public AboutWindow()
+        public AboutWindow(Window owner)
         {
+            Owner = owner;
             InitializeComponent();
             var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
             versionLabel.Content = string.Format("version {0}.{1} (b{2}.{3})", appVersion.Major, appVersion.Minor, appVersion.Build, appVersion.Revision);
