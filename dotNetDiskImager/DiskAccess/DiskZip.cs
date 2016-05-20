@@ -210,14 +210,24 @@ namespace dotNetDiskImager.DiskAccess
 
             Dispose();
 
-            volumeHandles[0] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[0], NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandles[0]);
-            NativeDiskWrapper.UnmountVolume(volumeHandles[0]);
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                volumeHandles[i] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[i], NativeDisk.GENERIC_WRITE);
+                NativeDiskWrapper.GetLockOnVolume(volumeHandles[i]);
+                NativeDiskWrapper.UnmountVolume(volumeHandles[i]);
+            }
 
             fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
-            deviceHandles[0] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[0], NativeDisk.GENERIC_READ);
 
-            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_READ);
+            }
+
+            if (!IsZipFile())
+            {
+                throw new FileFormatException(string.Format("File {0} isn't valid zip file.", new FileInfo(_imagePath).Name));
+            }
 
             _imagePath = imagePath;
 
@@ -225,10 +235,17 @@ namespace dotNetDiskImager.DiskAccess
             {
                 numSectors = GetLastUsedPartition();
             }
-
-            if (!VerifyZipFile())
+            else
             {
-                throw new FileFormatException(string.Format("File {0} isn't valid zip file.", new FileInfo(_imagePath).Name));
+                numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
+                for (int i = 0; i < deviceHandles.Length; i++)
+                {
+                    var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
+                    if(sectors < numSectors)
+                    {
+                        numSectors = sectors;
+                    }
+                }
             }
 
             bool entryFound = false;
@@ -267,6 +284,7 @@ namespace dotNetDiskImager.DiskAccess
             availibleSectors = 0;
             sectorSize = 0;
             numSectors = 0;
+            int smallestDeviceIndex = 0;
 
             Dispose();
 
@@ -279,9 +297,19 @@ namespace dotNetDiskImager.DiskAccess
 
             availibleSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
 
+            for (int i = 1; i < deviceHandles.Length; i++)
+            {
+                var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
+                if (sectors < availibleSectors)
+                {
+                    availibleSectors = sectors;
+                    smallestDeviceIndex = i;
+                }
+            }
+
             _imagePath = imagePath;
 
-            if (!VerifyZipFile())
+            if (!IsZipFile())
             {
                 throw new FileFormatException(string.Format("File {0} isn't valid zip file.", new FileInfo(_imagePath).Name));
             }
@@ -331,7 +359,7 @@ namespace dotNetDiskImager.DiskAccess
                                 }
                             }
 
-                            return new InitOperationResult(false, numSectors * sectorSize, availibleSectors * sectorSize, dataFound);
+                            return new InitOperationResult(false, numSectors * sectorSize, availibleSectors * sectorSize, dataFound, DriveLetters[smallestDeviceIndex]);
                         }
                         break;
                     }
@@ -366,7 +394,7 @@ namespace dotNetDiskImager.DiskAccess
             using (FileStream fileStream = new FileStream(new SafeFileHandle(fileHandle, false), FileAccess.ReadWrite))
             using (ZipArchive archive = new ZipArchive(fileStream, ZipArchiveMode.Create))
             {
-                switch(AppSettings.Settings.CompressionMethod)
+                switch (AppSettings.Settings.CompressionMethod)
                 {
                     case CompressionMethod.Fast:
                         compressionLevel = CompressionLevel.Fastest;
@@ -459,7 +487,7 @@ namespace dotNetDiskImager.DiskAccess
                             return false;
 
                         readedFromZip = zipReader.Read(fileData, 0, (int)(((numSectors - i >= 1024) ? 1024 : (numSectors - i)) * sectorSize));
-                        foreach(var deviceHandle in deviceHandles)
+                        foreach (var deviceHandle in deviceHandles)
                         {
                             taskList.Add(Task.Run(() =>
                             {
@@ -478,7 +506,7 @@ namespace dotNetDiskImager.DiskAccess
 
                         await Task.WhenAll(taskList.ToArray());
 
-                        foreach(var task in taskList)
+                        foreach (var task in taskList)
                         {
                             if (!task.Result)
                                 return false;
@@ -593,7 +621,7 @@ namespace dotNetDiskImager.DiskAccess
             return true;
         }
 
-        bool VerifyZipFile()
+        bool IsZipFile()
         {
             var data = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, 0, 1, sectorSize);
 

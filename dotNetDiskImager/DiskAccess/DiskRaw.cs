@@ -17,7 +17,7 @@ namespace dotNetDiskImager.DiskAccess
         public override event OperationProgressChangedEventHandler OperationProgressChanged;
         public override event OperationProgressReportEventHandler OperationProgressReport;
 
-        public DiskRaw(char[] driveLetter) : base(driveLetter)
+        public DiskRaw(char[] driveLetters) : base(driveLetters)
         {
 
         }
@@ -114,17 +114,35 @@ namespace dotNetDiskImager.DiskAccess
             availibleSectors = 0;
             sectorSize = 0;
             numSectors = 0;
+            int smallestDeviceIndex = 0;
 
             Dispose();
 
-            volumeHandles[0] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[0], NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandles[0]);
-            NativeDiskWrapper.UnmountVolume(volumeHandles[0]);
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                volumeHandles[i] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[i], NativeDisk.GENERIC_WRITE);
+                NativeDiskWrapper.GetLockOnVolume(volumeHandles[i]);
+                NativeDiskWrapper.UnmountVolume(volumeHandles[i]);
+            }
 
             fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
-            deviceHandles[0] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[0], NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
+            }
 
             availibleSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
+
+            for (int i = 1; i < deviceHandles.Length; i++)
+            {
+                var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
+                if(sectors < availibleSectors)
+                {
+                    availibleSectors = sectors;
+                    smallestDeviceIndex = i;
+                }
+            }
+
             numSectors = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
 
             _imagePath = imagePath;
@@ -152,7 +170,7 @@ namespace dotNetDiskImager.DiskAccess
                     i += nextChunkSize;
                 }
 
-                return new InitOperationResult(false, numSectors * sectorSize, availibleSectors * sectorSize, dataFound);
+                return new InitOperationResult(false, numSectors * sectorSize, availibleSectors * sectorSize, dataFound, DriveLetters[smallestDeviceIndex]);
             }
 
             return new InitOperationResult(true, numSectors * sectorSize, availibleSectors * sectorSize, false);
@@ -213,20 +231,37 @@ namespace dotNetDiskImager.DiskAccess
 
             Dispose();
 
-            volumeHandles[0] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[0], NativeDisk.GENERIC_WRITE);
-            NativeDiskWrapper.GetLockOnVolume(volumeHandles[0]);
-            NativeDiskWrapper.UnmountVolume(volumeHandles[0]);
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                volumeHandles[i] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[i], NativeDisk.GENERIC_WRITE);
+                NativeDiskWrapper.GetLockOnVolume(volumeHandles[i]);
+                NativeDiskWrapper.UnmountVolume(volumeHandles[i]);
+            }
 
             fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
-            deviceHandles[0] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[0], NativeDisk.GENERIC_READ);
 
-            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_READ);
+            }
 
             _imagePath = imagePath;
 
             if (skipUnallocated)
             {
                 numSectors = GetLastUsedPartition();
+            }
+            else
+            {
+                numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
+                for (int i = 0; i < deviceHandles.Length; i++)
+                {
+                    var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
+                    if (sectors < numSectors)
+                    {
+                        numSectors = sectors;
+                    }
+                }
             }
 
             fileSize = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
