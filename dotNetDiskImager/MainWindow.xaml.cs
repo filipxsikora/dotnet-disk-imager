@@ -605,6 +605,7 @@ namespace dotNetDiskImager
             checksumProgressBar.Value = 0;
             checksumProgressBar.Visibility = Visibility.Visible;
             programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
+            DisplayInfoPart(false);
             SetUIState(false, false);
         }
 
