@@ -51,7 +51,7 @@ namespace dotNetDiskImager.Models
                     {
                         Settings.EnableSoundNotify = true;
                     }
-                    if(Settings.IsTopMost == null)
+                    if (Settings.IsTopMost == null)
                     {
                         Settings.IsTopMost = false;
                     }
@@ -80,7 +80,8 @@ namespace dotNetDiskImager.Models
         public bool? IsTopMost { get; set; }
 
         public static SettingsInternal Default
-        {   get
+        {
+            get
             {
                 return new SettingsInternal()
                 {
@@ -97,6 +98,6 @@ namespace dotNetDiskImager.Models
                     IsTopMost = false
                 };
             }
-        } 
+        }
     }
 }

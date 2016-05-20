@@ -209,7 +209,7 @@ namespace dotNetDiskImager
                         handled = true;
                         break;
                     case WindowContextMenu.AlwaysOnTopCommand:
-                        if(WindowContextMenu.IsAlwaysOnTopChecked(Handle))
+                        if (WindowContextMenu.IsAlwaysOnTopChecked(Handle))
                         {
                             WindowContextMenu.SetAlwaysOnTopChecked(Handle, false);
                             Topmost = false;
@@ -218,7 +218,7 @@ namespace dotNetDiskImager
                         {
                             WindowContextMenu.SetAlwaysOnTopChecked(Handle, true);
                             Topmost = true;
-                        }                        
+                        }
                         break;
                     case WindowContextMenu.AboutCommand:
                         ShowAboutWindow();
@@ -675,7 +675,7 @@ namespace dotNetDiskImager
 
             try
             {
-                if(GetSelectedDevices().Length > 1)
+                if (GetSelectedDevices().Length > 1)
                 {
                     throw new ArgumentException("Cannot read from multiple devices at once.\nPlease select only one device");
                 }
@@ -1098,11 +1098,11 @@ namespace dotNetDiskImager
                 throw new ArgumentException("Device was not selected.");
             foreach (var driveLetter in GetSelectedDevices())
             {
-                if(imagePathTextBox.Text[0] == driveLetter)
+                if (imagePathTextBox.Text[0] == driveLetter)
                 {
                     throw new ArgumentException("Image file cannot be located on the device.");
                 }
-            }                
+            }
         }
 
         private static string CreateInfoMessage(OperationFinishedEventArgs e)

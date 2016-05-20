@@ -136,7 +136,7 @@ namespace dotNetDiskImager.DiskAccess
             for (int i = 1; i < deviceHandles.Length; i++)
             {
                 var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
-                if(sectors < availibleSectors)
+                if (sectors < availibleSectors)
                 {
                     availibleSectors = sectors;
                     smallestDeviceIndex = i;

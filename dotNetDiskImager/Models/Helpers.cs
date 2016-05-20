@@ -131,7 +131,7 @@ namespace dotNetDiskImager.Models
             for (int i = 0; i < deviceLetters.Length; i++)
             {
                 sb.Append(string.Format("[{0}:\\]", deviceLetters[i]));
-                if(i < deviceLetters.Length - 1)
+                if (i < deviceLetters.Length - 1)
                 {
                     sb.Append(", ");
                 }

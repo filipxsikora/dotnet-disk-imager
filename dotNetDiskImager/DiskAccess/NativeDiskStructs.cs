@@ -279,7 +279,7 @@ namespace dotNetDiskImager.DiskAccess
         /// Indicates the number of drives.
         /// </summary>
         internal ushort NumberDrives;
-    }    
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     internal struct DISK_PARTITION_INFO
