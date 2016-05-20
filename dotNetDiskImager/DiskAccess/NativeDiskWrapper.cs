@@ -109,6 +109,31 @@ namespace dotNetDiskImager.DiskAccess
             return !result;
         }
 
+        internal static byte[] ReadSectorDataFromHandle(IntPtr handle, ulong startSector, ulong numSectors, ulong sectorSize)
+        {
+            uint bytesRead;
+            LARGE_INTEGER li;
+            byte[] data = new byte[numSectors * sectorSize];
+            li.LowPart = 0;
+            li.QuadPart = (long)(startSector * sectorSize);
+
+            NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
+            if (!NativeDisk.ReadFile(handle, data, (uint)(sectorSize * numSectors), out bytesRead, IntPtr.Zero))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            if (bytesRead < (sectorSize * numSectors))
+            {
+                for (uint i = bytesRead; i < (sectorSize * numSectors); i++)
+                {
+                    data[i] = 0;
+                }
+            }
+
+            return data;
+        }
+
         internal static int ReadSectorDataFromHandle(IntPtr handle, byte[] data, ulong startSector, ulong numSectors, ulong sectorSize)
         {
             uint bytesRead;
