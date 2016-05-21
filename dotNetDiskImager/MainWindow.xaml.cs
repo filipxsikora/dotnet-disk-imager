@@ -472,6 +472,26 @@ namespace dotNetDiskImager
             checksumTextBox.SelectAll();
         }
 
+        private void imagePathTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(imagePathTextBox.Text))
+                {
+                    var fileInfo = new FileInfo(imagePathTextBox.Text);
+                    if (fileInfo.Extension == ".zip")
+                    {
+                        onTheFlyZipCheckBox.IsChecked = true;
+                    }
+                    else
+                    {
+                        onTheFlyZipCheckBox.IsChecked = false;
+                    }
+                }
+            }
+            catch { }
+        }
+
         private void HandleCalculateChecksum()
         {
             if (string.IsNullOrEmpty(imagePathTextBox.Text))
@@ -1411,15 +1431,15 @@ namespace dotNetDiskImager
         {
             var devices = GetSelectedDevices();
 
-            if(devices.Length == 0)
+            if (devices.Length == 0)
             {
                 MessageBox.Show(this, "No device selected.\nPlease select at least one device.", "No device selected", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            foreach(var device in devices)
+            foreach (var device in devices)
             {
-                if(Disk.IsDriveReadOnly(string.Format(@"{0}:\", device)))
+                if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", device)))
                 {
                     MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device))
                             , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);

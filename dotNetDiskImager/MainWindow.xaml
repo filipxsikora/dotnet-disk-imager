@@ -18,7 +18,7 @@
             <RowDefinition x:Name="progressPartRow" Height="0"/>
         </Grid.RowDefinitions>
         <ComboBox TabIndex="2" x:Name="driveSelectComboBox" Margin="10,74,10,0" VerticalAlignment="Top" Height="23" Grid.Row="1"/>
-        <TextBox TabIndex="0" x:Name="imagePathTextBox" Height="23" Margin="10,26,55,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
+        <TextBox TabIndex="0" x:Name="imagePathTextBox" Height="23" Margin="10,26,55,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" TextChanged="imagePathTextBox_TextChanged"/>
         <Button TabIndex="1" x:Name="fileSelectDialogButton" ToolTip="Open dialog to select image file" Content="{StaticResource openImageIcon}" HorizontalAlignment="Right" Margin="0,26,10,0" VerticalAlignment="Top" Width="40" Click="fileSelectDialogButton_Click" Height="23" Grid.Row="1"/>
         <Label Content="Image file:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <Grid x:Name="progressPartGrid" Grid.Row="2" Visibility="Collapsed">
