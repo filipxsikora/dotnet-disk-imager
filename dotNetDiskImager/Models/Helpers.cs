@@ -29,7 +29,12 @@ namespace dotNetDiskImager.Models
             double result = 0;
             string unit = "";
 
-            if (bytes >= 966367641)
+            if (bytes >= 989560464384)
+            {
+                unit = "TB";
+                result = bytes / 1099511627776.0;
+            }
+            else if (bytes >= 966367641)
             {
                 unit = "GB";
                 result = bytes / 1073741824.0;
