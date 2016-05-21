@@ -63,25 +63,25 @@
             </StackPanel>
         </Button>
         <StackPanel Margin="10,212,76,0" Grid.Row="1" Height="23" VerticalAlignment="Top" Orientation="Horizontal">
-            <Button TabIndex="9" x:Name="readButton" ToolTip="Reads data from device to image file" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" Click="readButton_Click" Height="23" VerticalAlignment="Top">
+            <Button TabIndex="9" x:Name="readButton" ToolTip="Reads data from selected device to image file" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" Click="readButton_Click" Height="23" VerticalAlignment="Top">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{StaticResource readImageIcon}" Padding="0,0,3,0"/>
                     <TextBlock Text="Read from Device"/>
                 </StackPanel>
             </Button>
-            <Button TabIndex="10" x:Name="writeButton" ToolTip="Writes data from image to device" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23">
+            <Button TabIndex="10" x:Name="writeButton" ToolTip="Writes data from image to selected device(s)" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{StaticResource writeImageIcon}" Padding="0,0,3,0"/>
                     <TextBlock Text="Write to Device"/>
                 </StackPanel>
             </Button>
-            <Button TabIndex="11" x:Name="verifyImageButton" ToolTip="Verifies image data against data at device" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" VerticalAlignment="Top" Height="23" Click="verifyImageButton_Click">
+            <Button TabIndex="11" x:Name="verifyImageButton" ToolTip="Verifies image data against data at selected device(s)" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" VerticalAlignment="Top" Height="23" Click="verifyImageButton_Click">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{StaticResource verifyImageIcon}" Padding="0,0,3,0"/>
                     <TextBlock Text="Verify image"/>
                 </StackPanel>
             </Button>
-            <Button TabIndex="12" x:Name="wipeDeviceButton" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5,0" Margin="0,0,5,0" Click="wipeDeviceButton_Click" Height="23">
+            <Button TabIndex="12" x:Name="wipeDeviceButton" ToolTip="Wipes the selected device(s) filesystem and partitions" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5,0" Margin="0,0,5,0" Click="wipeDeviceButton_Click" Height="23">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{StaticResource wipeDeviceIcon}" Padding="0,0,3,0"/>
                     <TextBlock Text="Wipe Device"/>
