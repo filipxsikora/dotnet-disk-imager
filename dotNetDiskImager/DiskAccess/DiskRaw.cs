@@ -400,7 +400,7 @@ namespace dotNetDiskImager.DiskAccess
                     taskList.Add(NativeDiskWrapper.WriteSectorDataToHandleAsync(deviceHandle, imageData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize));
                 }
 
-                await Task.WhenAll(taskList.ToArray());
+                await Task.WhenAll(taskList);
 
                 totalBytesWritten += (ulong)readed;
                 bytesWritten += (ulong)readed;
@@ -472,7 +472,7 @@ namespace dotNetDiskImager.DiskAccess
                     }));
                 }
 
-                await Task.WhenAll(taskList.ToArray());
+                await Task.WhenAll(taskList);
 
                 foreach (var task in taskList)
                 {
