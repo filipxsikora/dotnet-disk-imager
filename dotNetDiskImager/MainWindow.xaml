@@ -7,7 +7,7 @@
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
         x:Name="window"
-        Title="dotNet Disk Imager" Height="290" Width="525" ResizeMode="CanMinimize" Background="White" AllowDrop="True" Icon="icon.ico" WindowStartupLocation="CenterOwner" PreviewKeyDown="window_PreviewKeyDown" Drop="program_Drop" PreviewDragEnter="program_DragEnter" PreviewDragLeave="program_DragLeave">
+        Title="dotNet Disk Imager" Height="290" Width="575" ResizeMode="CanMinimize" Background="White" AllowDrop="True" Icon="icon.ico" WindowStartupLocation="CenterOwner" PreviewKeyDown="window_PreviewKeyDown" Drop="program_Drop" PreviewDragEnter="program_DragEnter" PreviewDragLeave="program_DragLeave">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="programTaskbar" Description="dotNet Disk Imager" ProgressState="Normal"/>
     </Window.TaskbarItemInfo>
@@ -51,7 +51,7 @@
         <TextBox TabIndex="3" x:Name="checksumTextBox" Height="23" Margin="10,123,169,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" GotKeyboardFocus="checksumTextBox_GotFocus" GotMouseCapture="checksumTextBox_GotFocus"/>
         <ProgressBar x:Name="checksumProgressBar" Visibility="Collapsed" Height="23" Margin="10,123,169,0"  VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
         <Label Content="Checksum:" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <ComboBox TabIndex="4" x:Name="checksumComboBox" Margin="345,123,94,0" Grid.Row="1" VerticalAlignment="Top" Height="23" SelectedIndex="0">
+        <ComboBox TabIndex="4" x:Name="checksumComboBox" Margin="395,123,94,0" Grid.Row="1" VerticalAlignment="Top" Height="23" SelectedIndex="0">
             <ComboBoxItem Content="MD5"/>
             <ComboBoxItem Content="SHA1"/>
             <ComboBoxItem Content="SHA256"/>
@@ -62,7 +62,7 @@
                 <TextBlock Text="Calculate"/>
             </StackPanel>
         </Button>
-        <StackPanel Margin="10,212,10,0" Grid.Row="1" Height="23" VerticalAlignment="Top" Orientation="Horizontal">
+        <StackPanel Margin="10,212,76,0" Grid.Row="1" Height="23" VerticalAlignment="Top" Orientation="Horizontal">
             <Button TabIndex="9" x:Name="readButton" ToolTip="Reads data from device to image file" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" Click="readButton_Click" Height="23" VerticalAlignment="Top">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{StaticResource readImageIcon}" Padding="0,0,3,0"/>
@@ -81,13 +81,19 @@
                     <TextBlock Text="Verify image"/>
                 </StackPanel>
             </Button>
-            <Button TabIndex="12" x:Name="cancelButton" ToolTip="Cancel current operation" HorizontalAlignment="Left" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23">
+            <Button TabIndex="12" x:Name="wipeDeviceButton" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5,0" Margin="0,0,5,0" Click="wipeDeviceButton_Click" Height="23">
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="{StaticResource cancelIcon}" Padding="0,0,3,0"/>
-                    <TextBlock Text="Cancel"/>
+                    <Label Content="{StaticResource wipeDeviceIcon}" Padding="0,0,3,0"/>
+                    <TextBlock Text="Wipe Device"/>
                 </StackPanel>
             </Button>
         </StackPanel>
         <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0" AllowDrop="True">Drop File or Drive here</Label>
+        <Button TabIndex="13" x:Name="cancelButton" ToolTip="Cancel current operation" HorizontalAlignment="Right" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Margin="0,212,10,0" Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{StaticResource cancelIcon}" Padding="0,0,3,0"/>
+                <TextBlock Text="Cancel"/>
+            </StackPanel>
+        </Button>
     </Grid>
 </Window>
