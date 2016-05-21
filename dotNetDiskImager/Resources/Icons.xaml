@@ -344,4 +344,23 @@
             </Rectangle.Fill>
         </Rectangle>
     </Viewbox>
+
+    <Canvas x:Shared="false" x:Key="wipeDeviceIcon" Height="16" SnapsToDevicePixels="True" UseLayoutRounding="False" Width="16">
+        <Canvas Height="16" Canvas.Left="0" Canvas.Top="0" Width="16">
+            <Path Data="F1M16,16L0,16 0,0 16,0z" Fill="#FFF6F6F6" Height="16" Canvas.Left="0" Opacity="0" Canvas.Top="0" Width="16"/>
+            <Path Data="F1M0,0L0,5.999 1,5.999 1,7 5,7 5,5.999 11,5.999 11,7 15,7 15,5.999 16,5.999 16,0z" Fill="#FFF6F6F6" Height="7" Canvas.Left="0" Canvas.Top="5" Width="16"/>
+        </Canvas>
+        <Canvas Height="5" Canvas.Left="1" Canvas.Top="6" Width="14">
+            <Path Data="F1M2,2L1,2 1,1 2,1z M0,0L0,4 1,4 1,5 3,5 3,4 11,4 11,5 13,5 13,4 14,4 14,0z" Fill="#FF414141" Height="5" Canvas.Left="0" Canvas.Top="0" Width="14"/>
+        </Canvas>
+        <Canvas Height="1" Canvas.Left="2" Canvas.Top="7" Width="1">
+            <Path Data="F1M0,1L1,1 1,0 0,0z" Fill="#FFF0EFF1" Height="1" Canvas.Left="0" Canvas.Top="0" Width="1"/>
+        </Canvas>
+        <Canvas x:Name="outline" Height="9.032" Canvas.Right="0" Canvas.Top="1" Width="11.086">
+            <Path Data="F1M1.779,9.032C1.306,9.032 0.861,8.846 0.524,8.511 0.185,8.172 -0.001,7.725 0,7.253 0,6.78 0.186,6.334 0.524,5.998L2.749,4.064 1.652,3.054C1.282,2.686 1.097,2.238 1.099,1.765 1.101,1.294 1.294,0.835 1.629,0.507 1.946,0.189 2.41,0.004 2.897,0.004 3.395,0.004 3.86,0.204 4.173,0.553L5.218,1.932 7.713,0 10.685,0 7.134,4.109 11.086,9.027 8.229,9.027 5.111,6.295 3.059,8.486C2.696,8.847,2.25,9.032,1.779,9.032" Fill="#FFF6F6F6" Height="9.032" Canvas.Left="0" Canvas.Top="0" Width="11.086"/>
+        </Canvas>
+        <Canvas x:Name="icon_bg" Height="7.032" Canvas.Right="1.914" Canvas.Top="2" Width="8">
+            <Path Data="F1M8,7.027L7.605,7.027 4.043,3.904 1.33,6.802C1.021,7.108 0.537,7.108 0.23,6.802 -0.077,6.496 -0.077,6.011 0.23,5.706L3.25,3.086 1.33,1.318C0.996,0.984 1.05,0.494 1.33,0.22 1.597,-0.048 2.152,-0.088 2.427,0.22L4.033,2.341 7.055,0 7.5,0 4.834,3.086z" Fill="#FFA1250C" Height="7.032" Canvas.Left="0" Canvas.Top="0" Width="8"/>
+        </Canvas>
+    </Canvas>
 </ResourceDictionary>
