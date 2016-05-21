@@ -26,7 +26,7 @@
             <oxy:PlotView x:Name="speedGraph" DataContext="{Binding ElementName=window}" Margin="20,36,20,66" Model="{Binding GraphModel.Model}" DefaultTrackerTemplate="{x:Null}" BorderThickness="1" BorderBrush="#bbbbbb"/>
             <Label x:Name="progressText" Content="" HorizontalAlignment="Left" Margin="20,5,0,0" FontSize="16" Height="31" VerticalAlignment="Top"/>
             <Label x:Name="transferredText" Content="" HorizontalAlignment="Left" Margin="20,0,0,40" Height="26" VerticalAlignment="Bottom"/>
-            <Label x:Name="stepText" Content="" Margin="0,0,20,184" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+            <Label x:Name="stepText" Content="" Margin="0,0,20,199" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
             <Label x:Name="timeRemainingText" Content="" HorizontalAlignment="Left" Margin="20,0,0,17" Height="26" VerticalAlignment="Bottom"/>
         </Grid>
         <Label Content="Device(s):" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>

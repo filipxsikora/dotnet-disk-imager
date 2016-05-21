@@ -43,7 +43,7 @@ namespace dotNetDiskImager
         const int windowHeight = 290;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
-        const int progressPartHeight = 220;
+        const int progressPartHeight = 235;
         const int applicationPartHeight = 250;
         const int windowInnerOffset = 10;
 
@@ -1166,7 +1166,7 @@ namespace dotNetDiskImager
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project's website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
                             {
                                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
                             }
