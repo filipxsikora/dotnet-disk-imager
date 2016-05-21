@@ -389,6 +389,18 @@ namespace dotNetDiskImager
             checksum?.Cancel();
         }
 
+        private async void wipeDeviceButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                await HandleWipeButtonClick();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Unknown error");
+            }
+        }
+
         private void calculateChecksumButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -757,7 +769,7 @@ namespace dotNetDiskImager
             if (result.Result)
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(this, string.Format("Writing to the {0}\n can corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices()))
+                if (MessageBox.Show(this, string.Format("Writing to the {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices()))
                         , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                 {
                     disk?.Dispose();
@@ -983,6 +995,7 @@ namespace dotNetDiskImager
             readButton.IsEnabled = enabled;
             writeButton.IsEnabled = enabled;
             verifyImageButton.IsEnabled = enabled;
+            wipeDeviceButton.IsEnabled = enabled;
             onTheFlyZipCheckBox.IsEnabled = enabled;
             imagePathTextBox.IsEnabled = enabled;
             driveSelectComboBox.IsEnabled = enabled;
@@ -1019,7 +1032,7 @@ namespace dotNetDiskImager
             if (driveSelectComboBox.Items.Count == 0)
                 throw new ArgumentException("No supported device found.");
             if (GetSelectedDevices().Length == 0)
-                throw new ArgumentException("Device was not selected.");
+                throw new ArgumentException("No device selected.\nPlease select at least one device.");
             foreach (var driveLetter in GetSelectedDevices())
             {
                 if (imagePathTextBox.Text[0] == driveLetter)
@@ -1392,6 +1405,42 @@ namespace dotNetDiskImager
                     driveSelectComboBox.Items.Clear();
                 }
             }
+        }
+
+        private async Task HandleWipeButtonClick()
+        {
+            var devices = GetSelectedDevices();
+
+            if(devices.Length == 0)
+            {
+                MessageBox.Show(this, "No device selected.\nPlease select at least one device.", "No device selected", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            foreach(var device in devices)
+            {
+                if(Disk.IsDriveReadOnly(string.Format(@"{0}:\", device)))
+                {
+                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device))
+                            , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            if (MessageBox.Show(this, string.Format("Wiping {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices()))
+                        , "Confirm wipe", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            SetUIState(false, false);
+            Mouse.OverrideCursor = Cursors.Wait;
+            disk = new DiskRaw(devices);
+            await disk.WipeFileSystemAndPartitions();
+            disk.Dispose();
+            disk = null;
+            SetUIState(true, false);
+            Mouse.OverrideCursor = null;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dotNetDiskImager.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
@@ -282,6 +283,50 @@ namespace dotNetDiskImager.DiskAccess
             NativeDisk.CloseHandle(deviceHandle);
 
             return length;
+        }
+
+        public async Task WipeFileSystemAndPartitions()
+        {
+            byte[] emptyMBR = new byte[512];
+            byte[] emptyData = new byte[512 * 1024];
+            List<Task> taskList = new List<Task>(volumeHandles.Length);
+
+            emptyData.Fill(0xFF);
+            emptyMBR.Fill(0x00);
+
+            emptyMBR[440] = 1;
+            emptyMBR[510] = 85;
+            emptyMBR[511] = 170;
+
+            Dispose();
+
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                volumeHandles[i] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[i], NativeDisk.GENERIC_WRITE);
+                NativeDiskWrapper.GetLockOnVolume(volumeHandles[i]);
+                NativeDiskWrapper.UnmountVolume(volumeHandles[i]);
+            }
+
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_WRITE);
+            }
+
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                taskList.Add(NativeDiskWrapper.WriteSectorDataToHandleAsync(deviceHandles[i], emptyMBR, 0, 1, 512));
+            }
+
+            await Task.WhenAll(taskList);
+
+            taskList.Clear();
+
+            for (int i = 0; i < volumeHandles.Length; i++)
+            {
+                taskList.Add(NativeDiskWrapper.WriteSectorDataToHandleAsync(deviceHandles[i], emptyData, 0, 1, (ulong)emptyData.Length));
+            }
+
+            await Task.WhenAll(taskList);
         }
     }
 }
