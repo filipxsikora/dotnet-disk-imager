@@ -87,7 +87,7 @@ namespace dotNetDiskImager
                 if (disk != null)
                 {
                     if (MessageBox.Show(this, "Exiting now will result in corruption at the target.\nDo you really want to exit application ?",
-                    "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                        "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     {
                         e.Cancel = true;
                         return;
@@ -650,8 +650,8 @@ namespace dotNetDiskImager
                 if (fileInfo.Length > 0)
                 {
                     DisplayInfoPart(false);
-                    if (MessageBox.Show(this, string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length))
-                        , "File already exists", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                    if (MessageBox.Show(this, string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length)),
+                        "File already exists", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     {
                         return;
                     }
@@ -741,16 +741,16 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
-                        , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name),
+                        "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
             }
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
-                        , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last()),
+                    "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -759,8 +759,8 @@ namespace dotNetDiskImager
                 if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", driveLetter)))
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", driveLetter, Disk.GetModelFromDrive(driveLetter))
-                            , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", driveLetter, Disk.GetModelFromDrive(driveLetter)),
+                        "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
             }
@@ -789,8 +789,8 @@ namespace dotNetDiskImager
             if (result.Result)
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(this, string.Format("Writing to the {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices()))
-                        , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                if (MessageBox.Show(this, string.Format("Writing to the {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
+                    "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                 {
                     disk?.Dispose();
                     disk = null;
@@ -831,8 +831,8 @@ namespace dotNetDiskImager
                     Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), result.DataFound ? "DOES" : "does not"),
                     "Not enough capacity", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    if (MessageBox.Show(this, string.Format("Writing to the {0}\n can corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices()))
-                        , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    if (MessageBox.Show(this, string.Format("Writing to the {0}\n can corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
+                        "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     {
                         disk?.Dispose();
                         disk = null;
@@ -1444,14 +1444,14 @@ namespace dotNetDiskImager
             {
                 if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", device)))
                 {
-                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device))
-                            , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device)),
+                        "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
             }
 
-            if (MessageBox.Show(this, string.Format("Wiping {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices()))
-                        , "Confirm wipe", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            if (MessageBox.Show(this, string.Format("Wiping {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
+                "Confirm wipe", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
             {
                 return;
             }
@@ -1464,6 +1464,8 @@ namespace dotNetDiskImager
             disk = null;
             SetUIState(true, false);
             Mouse.OverrideCursor = null;
+            MessageBox.Show(this, "Device(s) wiped successfully.\nNow you need to reformat them using Windows format dialog or any other formatting software\nto filesystem of your selection.",
+                "Wipe successful", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }
