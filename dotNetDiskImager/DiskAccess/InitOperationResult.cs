@@ -12,6 +12,7 @@ namespace dotNetDiskImager.DiskAccess
         public ulong RequiredSpace { get; }
         public ulong AvailibleSpace { get; }
         public bool DataFound { get; }
+        public char AffectedDevice { get; }
 
         public InitOperationResult(bool result, ulong requiredSpace, ulong availibleSpace, bool dataFound)
         {
@@ -19,6 +20,15 @@ namespace dotNetDiskImager.DiskAccess
             RequiredSpace = requiredSpace;
             AvailibleSpace = availibleSpace;
             DataFound = dataFound;
+        }
+
+        public InitOperationResult(bool result, ulong requiredSpace, ulong availibleSpace, bool dataFound, char affectedDevice)
+        {
+            Result = result;
+            RequiredSpace = requiredSpace;
+            AvailibleSpace = availibleSpace;
+            DataFound = dataFound;
+            AffectedDevice = affectedDevice;
         }
     }
 

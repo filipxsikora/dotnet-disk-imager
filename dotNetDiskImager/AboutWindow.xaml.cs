@@ -21,12 +21,13 @@ namespace dotNetDiskImager
     /// </summary>
     public partial class AboutWindow : Window
     {
-        public AboutWindow()
+        public AboutWindow(Window owner)
         {
+            Owner = owner;
             InitializeComponent();
             var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
             versionLabel.Content = string.Format("version {0}.{1} (b{2}.{3})", appVersion.Major, appVersion.Minor, appVersion.Build, appVersion.Revision);
-            if(DateTime.Now.Year > 2016)
+            if (DateTime.Now.Year > 2016)
             {
                 copyrightLabel.Content = string.Format("© FxS 2016 - {0}", DateTime.Now.Year);
             }
@@ -40,7 +41,7 @@ namespace dotNetDiskImager
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key == Key.Escape)
+            if (e.Key == Key.Escape)
             {
                 Close();
                 e.Handled = true;

@@ -70,15 +70,15 @@ namespace dotNetDiskImager
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if(Keyboard.Modifiers == ModifierKeys.None)
+            if (Keyboard.Modifiers == ModifierKeys.None)
             {
-                if(e.Key == Key.Escape)
+                if (e.Key == Key.Escape)
                 {
                     DialogResult = false;
                     e.Handled = true;
                     Close();
                 }
-                if(e.Key == Key.Enter)
+                if (e.Key == Key.Enter)
                 {
                     if (pathTextBox.Text.Length > 0)
                     {

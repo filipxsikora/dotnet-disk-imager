@@ -112,8 +112,8 @@ namespace dotNetDiskImager.DiskAccess
         internal static byte[] ReadSectorDataFromHandle(IntPtr handle, ulong startSector, ulong numSectors, ulong sectorSize)
         {
             uint bytesRead;
-            byte[] data = new byte[sectorSize * numSectors];
             LARGE_INTEGER li;
+            byte[] data = new byte[numSectors * sectorSize];
             li.LowPart = 0;
             li.QuadPart = (long)(startSector * sectorSize);
 
@@ -132,6 +132,57 @@ namespace dotNetDiskImager.DiskAccess
             }
 
             return data;
+        }
+
+        internal static int ReadSectorDataFromHandle(IntPtr handle, byte[] data, ulong startSector, ulong numSectors, ulong sectorSize)
+        {
+            uint bytesRead;
+            LARGE_INTEGER li;
+            li.LowPart = 0;
+            li.QuadPart = (long)(startSector * sectorSize);
+
+            NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
+            if (!NativeDisk.ReadFile(handle, data, (uint)(sectorSize * numSectors), out bytesRead, IntPtr.Zero))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            if (bytesRead < (sectorSize * numSectors))
+            {
+                for (uint i = bytesRead; i < (sectorSize * numSectors); i++)
+                {
+                    data[i] = 0;
+                }
+            }
+
+            return (int)bytesRead;
+        }
+
+        internal static Task<int> ReadSectorDataFromHandleAsync(IntPtr handle, byte[] data, ulong startSector, ulong numSectors, ulong sectorSize)
+        {
+            return Task.Run(() =>
+            {
+                uint bytesRead;
+                LARGE_INTEGER li;
+                li.LowPart = 0;
+                li.QuadPart = (long)(startSector * sectorSize);
+
+                NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
+                if (!NativeDisk.ReadFile(handle, data, (uint)(sectorSize * numSectors), out bytesRead, IntPtr.Zero))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+
+                if (bytesRead < (sectorSize * numSectors))
+                {
+                    for (uint i = bytesRead; i < (sectorSize * numSectors); i++)
+                    {
+                        data[i] = 0;
+                    }
+                }
+
+                return (int)bytesRead;
+            });
         }
 
         internal static unsafe byte* ReadSectorDataPointerFromHandle(IntPtr handle, ulong startSector, ulong numSectors, ulong sectorSize)
@@ -176,6 +227,26 @@ namespace dotNetDiskImager.DiskAccess
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             }
+        }
+
+        internal static Task WriteSectorDataToHandleAsync(IntPtr handle, byte[] data, ulong startSector, ulong numSectors, ulong sectorSize)
+        {
+            return Task.Run(() =>
+            {
+                uint bytesWritten;
+                bool result;
+                LARGE_INTEGER li;
+                li.LowPart = 0;
+                li.QuadPart = (long)(startSector * sectorSize);
+
+                NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
+                result = NativeDisk.WriteFile(handle, data, (uint)(sectorSize * numSectors), out bytesWritten, IntPtr.Zero);
+
+                if (!result)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+            });
         }
 
         internal static ulong GetNumberOfSectors(IntPtr handle, ref ulong sectorSize)

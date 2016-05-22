@@ -51,6 +51,10 @@ namespace dotNetDiskImager.Models
                     {
                         Settings.EnableSoundNotify = true;
                     }
+                    if (Settings.IsTopMost == null)
+                    {
+                        Settings.IsTopMost = false;
+                    }
                 }
             }
             catch
@@ -73,10 +77,11 @@ namespace dotNetDiskImager.Models
         public List<string> CustomPlaces { get; set; }
         public bool? EnableSoundNotify { get; set; }
         public CompressionMethod CompressionMethod { get; set; }
-
+        public bool? IsTopMost { get; set; }
 
         public static SettingsInternal Default
-        {   get
+        {
+            get
             {
                 return new SettingsInternal()
                 {
@@ -89,9 +94,10 @@ namespace dotNetDiskImager.Models
                     CheckForUpdatesOnStartup = true,
                     CustomPlaces = new List<string>(),
                     EnableSoundNotify = true,
-                    CompressionMethod = CompressionMethod.Fast
+                    CompressionMethod = CompressionMethod.Fast,
+                    IsTopMost = false
                 };
             }
-        } 
+        }
     }
 }

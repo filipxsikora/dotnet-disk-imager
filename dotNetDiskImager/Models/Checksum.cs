@@ -59,45 +59,42 @@ namespace dotNetDiskImager.Models
 
                 try
                 {
-
+                    while (totalReaded < checksumStream.Length)
                     {
-                        while (totalReaded < checksumStream.Length)
-                        {
-                            if (cancelPending)
-                                break;
-
-                            readed = checksumStream.Read(fileData, 0, 524288);
-                            totalReaded += readed;
-                            if (totalReaded >= checksumStream.Length)
-                            {
-                                checksum.TransformFinalBlock(fileData, 0, readed);
-                                break;
-                            }
-
-                            checksum.TransformBlock(fileData, 0, readed, null, 0);
-                            percent = (int)(totalReaded / (checksumStream.Length / 100.0)) + 1;
-                            if (lastPercent != percent)
-                            {
-                                lastPercent = percent;
-                                ChecksumProgressChanged?.Invoke(this, new ChecksumProgressChangedEventArgs(percent));
-                            }
-                        }
-
                         if (cancelPending)
+                            break;
+
+                        readed = checksumStream.Read(fileData, 0, 524288);
+                        totalReaded += readed;
+                        if (totalReaded >= checksumStream.Length)
                         {
-                            ChecksumDone?.Invoke(this, new ChecksumDoneEventArgs("", false));
-                            return;
+                            checksum.TransformFinalBlock(fileData, 0, readed);
+                            break;
                         }
 
-                        StringBuilder result = new StringBuilder(checksum.Hash.Length * 2);
-
-                        for (int i = 0; i < checksum.Hash.Length; i++)
+                        checksum.TransformBlock(fileData, 0, readed, null, 0);
+                        percent = (int)(totalReaded / (checksumStream.Length / 100.0)) + 1;
+                        if (lastPercent != percent)
                         {
-                            result.Append(checksum.Hash[i].ToString("x2"));
+                            lastPercent = percent;
+                            ChecksumProgressChanged?.Invoke(this, new ChecksumProgressChangedEventArgs(percent));
                         }
-
-                        ChecksumDone?.Invoke(this, new ChecksumDoneEventArgs(result.ToString(), true));
                     }
+
+                    if (cancelPending)
+                    {
+                        ChecksumDone?.Invoke(this, new ChecksumDoneEventArgs("", false));
+                        return;
+                    }
+
+                    StringBuilder result = new StringBuilder(checksum.Hash.Length * 2);
+
+                    for (int i = 0; i < checksum.Hash.Length; i++)
+                    {
+                        result.Append(checksum.Hash[i].ToString("x2"));
+                    }
+
+                    ChecksumDone?.Invoke(this, new ChecksumDoneEventArgs(result.ToString(), true));
                 }
                 catch
                 {

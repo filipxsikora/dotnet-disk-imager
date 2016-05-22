@@ -43,7 +43,7 @@ namespace dotNetDiskImager
         const int windowHeight = 290;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
-        const int progressPartHeight = 220;
+        const int progressPartHeight = 235;
         const int applicationPartHeight = 250;
         const int windowInnerOffset = 10;
 
@@ -69,11 +69,11 @@ namespace dotNetDiskImager
         {
             InitializeComponent();
             OxyPlot.Wpf.LineAnnotation.PlotViewProperty = speedGraph;
+            Topmost = AppSettings.Settings.IsTopMost.Value;
 
-            foreach (var drive in Disk.GetLogicalDrives())
-            {
-                driveSelectComboBox.Items.Add(new ComboBoxDeviceItem(drive));
-            }
+            driveSelectComboBox.SelectionChanged += (s, e) => driveSelectComboBox.SelectedIndex = 0;
+
+            LoadDriveSelectItems();
 
             Loaded += (s, e) =>
             {
@@ -87,7 +87,7 @@ namespace dotNetDiskImager
                 if (disk != null)
                 {
                     if (MessageBox.Show(this, "Exiting now will result in corruption at the target.\nDo you really want to exit application ?",
-                    "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                        "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     {
                         e.Cancel = true;
                         return;
@@ -97,6 +97,7 @@ namespace dotNetDiskImager
                 closed = true;
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
+                AppSettings.Settings.IsTopMost = WindowContextMenu.IsAlwaysOnTopChecked(Handle);
                 AppSettings.SaveSettings();
             };
 
@@ -121,7 +122,14 @@ namespace dotNetDiskImager
                             char driveLetter = Disk.GetFirstDriveLetterFromMask(dbv.dbch_Unitmask);
                             if (driveLetter != 0)
                             {
-                                driveSelectComboBox.Items.Add(new ComboBoxDeviceItem(driveLetter));
+                                if (driveSelectComboBox.Items.Count == 0)
+                                {
+                                    LoadDriveSelectItems();
+                                }
+                                else
+                                {
+                                    InsertDriveItem(driveLetter);
+                                }
                             }
                         }
                         break;
@@ -130,17 +138,7 @@ namespace dotNetDiskImager
                         {
                             DEV_BROADCAST_VOLUME dbv = Marshal.PtrToStructure<DEV_BROADCAST_VOLUME>(lParam);
                             char driveLetter = Disk.GetFirstDriveLetterFromMask(dbv.dbch_Unitmask, false);
-                            if (driveLetter != 0)
-                            {
-                                foreach (var item in driveSelectComboBox.Items)
-                                {
-                                    if ((item as ComboBoxDeviceItem).DriveLetter == driveLetter)
-                                    {
-                                        driveSelectComboBox.Items.Remove(item);
-                                        break;
-                                    }
-                                }
-                            }
+                            RemoveDriveItem(driveLetter);
                         }
                         break;
                 }
@@ -154,29 +152,21 @@ namespace dotNetDiskImager
                         ShowSettingsWindow();
                         handled = true;
                         break;
+                    case WindowContextMenu.AlwaysOnTopCommand:
+                        HandleAlwaysOnTopCommand();
+                        handled = true;
+                        break;
                     case WindowContextMenu.AboutCommand:
                         ShowAboutWindow();
                         handled = true;
                         break;
-                    case WindowContextMenu.EnableLinkedConn:
-                        if (!Utils.CheckMappedDrivesEnable())
-                        {
-                            if (Utils.SetMappedDrivesEnable())
-                            {
-                                MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
-                            }
-                            else
-                            {
-                                MessageBox.Show(this, "Enabling mapped drives was not successful.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
+                    case WindowContextMenu.EnableLinkedConnectionCommand:
+                        HandleEnableLinkedConnectionCommand();
+                        handled = true;
                         break;
                     case WindowContextMenu.CheckUpdatesCommand:
                         CheckUpdates(true);
+                        handled = true;
                         break;
                 }
             }
@@ -399,6 +389,18 @@ namespace dotNetDiskImager
             checksum?.Cancel();
         }
 
+        private async void wipeDeviceButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                await HandleWipeButtonClick();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Unknown error");
+            }
+        }
+
         private void calculateChecksumButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -470,9 +472,29 @@ namespace dotNetDiskImager
             checksumTextBox.SelectAll();
         }
 
+        private void imagePathTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(imagePathTextBox.Text))
+                {
+                    var fileInfo = new FileInfo(imagePathTextBox.Text);
+                    if (fileInfo.Extension == ".zip")
+                    {
+                        onTheFlyZipCheckBox.IsChecked = true;
+                    }
+                    else
+                    {
+                        onTheFlyZipCheckBox.IsChecked = false;
+                    }
+                }
+            }
+            catch { }
+        }
+
         private void HandleCalculateChecksum()
         {
-            if(string.IsNullOrEmpty(imagePathTextBox.Text))
+            if (string.IsNullOrEmpty(imagePathTextBox.Text))
             {
                 MessageBox.Show("No file selected.\nPlease select file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -514,7 +536,7 @@ namespace dotNetDiskImager
 
             ChecksumType checksumType = ChecksumType.MD5;
 
-            switch(checksumComboBox.SelectedIndex)
+            switch (checksumComboBox.SelectedIndex)
             {
                 case 0:
                     checksumType = ChecksumType.MD5;
@@ -539,6 +561,7 @@ namespace dotNetDiskImager
             checksumProgressBar.Value = 0;
             checksumProgressBar.Visibility = Visibility.Visible;
             programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
+            DisplayInfoPart(false);
             SetUIState(false, false);
         }
 
@@ -608,6 +631,10 @@ namespace dotNetDiskImager
 
             try
             {
+                if (GetSelectedDevices().Length > 1)
+                {
+                    throw new ArgumentException("Cannot read from multiple devices at once.\nPlease select only one device");
+                }
                 ValidateInputs();
             }
             catch (ArgumentException ex)
@@ -623,8 +650,8 @@ namespace dotNetDiskImager
                 if (fileInfo.Length > 0)
                 {
                     DisplayInfoPart(false);
-                    if (MessageBox.Show(this, string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length))
-                        , "File already exists", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                    if (MessageBox.Show(this, string.Format("File {0} already exists and it's size is {1}.\nWould you like to overwrite it ?", fileInfo.Name, Helpers.BytesToXbytes((ulong)fileInfo.Length)),
+                        "File already exists", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     {
                         return;
                     }
@@ -634,11 +661,11 @@ namespace dotNetDiskImager
             {
                 if (onTheFlyZipCheckBox.IsChecked.Value)
                 {
-                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                    disk = new DiskZip(GetSelectedDevices());
                 }
                 else
                 {
-                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                    disk = new DiskRaw(GetSelectedDevices());
                 }
                 result = disk.InitReadImageFromDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
@@ -671,7 +698,7 @@ namespace dotNetDiskImager
                 switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
                     case TaskbarExtraInfo.ActiveDevice:
-                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetters[0]);
                         break;
                     case TaskbarExtraInfo.ImageFileName:
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -714,36 +741,39 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
-                        , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name),
+                        "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
             }
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
-                        , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last()),
+                    "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter)))
+            foreach (var driveLetter in GetSelectedDevices())
             {
-                DisplayInfoPart(false);
-                MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
-                        , "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", driveLetter)))
+                {
+                    DisplayInfoPart(false);
+                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", driveLetter, Disk.GetModelFromDrive(driveLetter)),
+                        "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
             }
 
             try
             {
                 if (onTheFlyZipCheckBox.IsChecked.Value)
                 {
-                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                    disk = new DiskZip(GetSelectedDevices());
                 }
                 else
                 {
-                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                    disk = new DiskRaw(GetSelectedDevices());
                 }
                 result = disk.InitWriteImageToDevice(imagePathTextBox.Text);
             }
@@ -759,8 +789,8 @@ namespace dotNetDiskImager
             if (result.Result)
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(this, string.Format("Writing to the [{0}:\\ - {1}] can corrupt the device.\nMake sure you have selected correct device and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
-                        , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                if (MessageBox.Show(this, string.Format("Writing to the {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
+                    "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                 {
                     disk?.Dispose();
                     disk = null;
@@ -783,7 +813,7 @@ namespace dotNetDiskImager
                 switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
                     case TaskbarExtraInfo.ActiveDevice:
-                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        Title = string.Format(@"{0} - dotNet Disk Imager", Helpers.GetDevicesListShort(disk.DriveLetters));
                         break;
                     case TaskbarExtraInfo.ImageFileName:
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -797,12 +827,12 @@ namespace dotNetDiskImager
             {
                 DisplayInfoPart(false);
                 if (MessageBox.Show(this, string.Format("Target device [{0}:\\] hasn't got enough capacity.\nSpace availible {1}\nSpace required {2}\n" +
-                    "The extra space {3} appears to contain any data.\nWould you like to continue anyway ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter,
+                    "The extra space {3} appear to contain any data.\nWould you like to write data up to device size ?", result.AffectedDevice,
                     Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), result.DataFound ? "DOES" : "does not"),
                     "Not enough capacity", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    if (MessageBox.Show(this, string.Format("Writing to the [{0}:\\ - {1}] can corrupt the device.\nMake sure you have selected correct device and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter, (driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).Model)
-                        , "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    if (MessageBox.Show(this, string.Format("Writing to the {0}\n can corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
+                        "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     {
                         disk?.Dispose();
                         disk = null;
@@ -825,7 +855,7 @@ namespace dotNetDiskImager
                     switch (AppSettings.Settings.TaskbarExtraInfo)
                     {
                         case TaskbarExtraInfo.ActiveDevice:
-                            Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                            Title = string.Format(@"{0} - dotNet Disk Imager", Helpers.GetDevicesListShort(disk.DriveLetters));
                             break;
                         case TaskbarExtraInfo.ImageFileName:
                             Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -881,11 +911,11 @@ namespace dotNetDiskImager
             {
                 if (onTheFlyZipCheckBox.IsChecked.Value)
                 {
-                    disk = new DiskZip((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                    disk = new DiskZip(GetSelectedDevices());
                 }
                 else
                 {
-                    disk = new DiskRaw((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter);
+                    disk = new DiskRaw(GetSelectedDevices());
                 }
                 result = disk.InitVerifyImageAndDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
@@ -918,7 +948,7 @@ namespace dotNetDiskImager
                 switch (AppSettings.Settings.TaskbarExtraInfo)
                 {
                     case TaskbarExtraInfo.ActiveDevice:
-                        Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                        Title = string.Format(@"{0} - dotNet Disk Imager", Helpers.GetDevicesListShort(disk.DriveLetters));
                         break;
                     case TaskbarExtraInfo.ImageFileName:
                         Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -953,7 +983,7 @@ namespace dotNetDiskImager
                     switch (AppSettings.Settings.TaskbarExtraInfo)
                     {
                         case TaskbarExtraInfo.ActiveDevice:
-                            Title = string.Format(@"[{0}:\] - dotNet Disk Imager", disk.DriveLetter);
+                            Title = string.Format(@"{0} - dotNet Disk Imager", Helpers.GetDevicesListShort(disk.DriveLetters));
                             break;
                         case TaskbarExtraInfo.ImageFileName:
                             Title = string.Format(@"[{0}] - dotNet Disk Imager", new FileInfo(imagePathTextBox.Text).Name);
@@ -982,9 +1012,10 @@ namespace dotNetDiskImager
                 DisplayProgressPart(displayProgressPart.Value);
             }
 
-            readButton.IsEnabled = true;
+            readButton.IsEnabled = enabled;
             writeButton.IsEnabled = enabled;
             verifyImageButton.IsEnabled = enabled;
+            wipeDeviceButton.IsEnabled = enabled;
             onTheFlyZipCheckBox.IsEnabled = enabled;
             imagePathTextBox.IsEnabled = enabled;
             driveSelectComboBox.IsEnabled = enabled;
@@ -1020,10 +1051,15 @@ namespace dotNetDiskImager
                 throw new ArgumentException("Image file was not selected.");
             if (driveSelectComboBox.Items.Count == 0)
                 throw new ArgumentException("No supported device found.");
-            if (driveSelectComboBox.SelectedIndex < 0)
-                throw new ArgumentException("Device was not selected.");
-            if ((driveSelectComboBox.SelectedItem as ComboBoxDeviceItem).DriveLetter == imagePathTextBox.Text[0])
-                throw new ArgumentException("Image file cannot be located on the device.");
+            if (GetSelectedDevices().Length == 0)
+                throw new ArgumentException("No device selected.\nPlease select at least one device.");
+            foreach (var driveLetter in GetSelectedDevices())
+            {
+                if (imagePathTextBox.Text[0] == driveLetter)
+                {
+                    throw new ArgumentException("Image file cannot be located on the device.");
+                }
+            }
         }
 
         private static string CreateInfoMessage(OperationFinishedEventArgs e)
@@ -1083,7 +1119,7 @@ namespace dotNetDiskImager
                         {
                             if (file[1] == ':' && file[2] == '\\')
                             {
-                                foreach (ComboBoxDeviceItem device in driveSelectComboBox.Items)
+                                foreach (CheckBoxDeviceItem device in driveSelectComboBox.Items)
                                 {
                                     if (device.DriveLetter == file[0])
                                     {
@@ -1130,7 +1166,7 @@ namespace dotNetDiskImager
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project's website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
                             {
                                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
                             }
@@ -1165,7 +1201,7 @@ namespace dotNetDiskImager
         {
             if (settingsWindow == null)
             {
-                settingsWindow = new SettingsWindow();
+                settingsWindow = new SettingsWindow(this);
                 settingsWindow.Closed += (s, e) => settingsWindow = null;
             }
             settingsWindow.Show();
@@ -1176,7 +1212,7 @@ namespace dotNetDiskImager
         {
             if (aboutWindow == null)
             {
-                aboutWindow = new AboutWindow();
+                aboutWindow = new AboutWindow(this);
                 aboutWindow.Closed += (s, e) => aboutWindow = null;
             }
             aboutWindow.Show();
@@ -1193,6 +1229,243 @@ namespace dotNetDiskImager
                     snd.Play();
                 }
             }
+        }
+
+        private void LoadDriveSelectItems()
+        {
+            var drives = Disk.GetLogicalDrives();
+            driveSelectComboBox.Items.Clear();
+            if (drives.Length > 0)
+            {
+                driveSelectComboBox.Items.Add(new ComboBoxItem() { Visibility = Visibility.Collapsed });
+
+                foreach (var drive in drives)
+                {
+                    var deviceCheckBox = new CheckBoxDeviceItem(drive)
+                    {
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        Height = 20,
+                        Width = 530,
+                        Margin = new Thickness(5, 0, 0, 0)
+                    };
+
+                    deviceCheckBox.Click += DeviceCheckBox_Click;
+
+                    driveSelectComboBox.Items.Add(new ComboBoxItem()
+                    {
+                        Padding = new Thickness(0),
+                        Content = deviceCheckBox
+                    });
+                }
+
+                driveSelectComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void InsertDriveItem(char driveLetter)
+        {
+            bool inserted = false;
+            for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+            {
+                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter > driveLetter)
+                {
+                    var deviceCheckBox = new CheckBoxDeviceItem(driveLetter)
+                    {
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        Height = 20,
+                        Width = 530,
+                        Margin = new Thickness(5, 0, 0, 0)
+                    };
+
+                    deviceCheckBox.Click += DeviceCheckBox_Click;
+
+                    driveSelectComboBox.Items.Insert(i,
+                        new ComboBoxItem()
+                        {
+                            Padding = new Thickness(0),
+                            Content = deviceCheckBox
+                        });
+                    inserted = true;
+                    break;
+                }
+            }
+
+            if (!inserted)
+            {
+                var deviceCheckBox = new CheckBoxDeviceItem(driveLetter)
+                {
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Height = 20,
+                    Width = 530,
+                    Margin = new Thickness(5, 0, 0, 0)
+                };
+
+                deviceCheckBox.Click += DeviceCheckBox_Click;
+
+                driveSelectComboBox.Items.Add(new ComboBoxItem()
+                {
+                    Padding = new Thickness(0),
+                    Content = deviceCheckBox
+                });
+            }
+        }
+
+        private void DeviceCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            DeviceCheckBoxClickHandler();
+        }
+
+        private void DeviceCheckBoxClickHandler()
+        {
+            string str = "";
+            bool first = true;
+            bool hasMultiple = false;
+
+            for (int i = 1, count = 0; i < driveSelectComboBox.Items.Count; i++)
+            {
+                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBox).IsChecked.Value)
+                {
+                    if (++count == 2)
+                    {
+                        hasMultiple = true;
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+            {
+                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBox).IsChecked.Value)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        str += ", ";
+                    }
+                    if (hasMultiple)
+                    {
+                        str += ((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).ShortName;
+                    }
+                    else
+                    {
+                        str += ((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).Content;
+                    }
+                }
+
+                (driveSelectComboBox.Items[0] as ComboBoxItem).Content = str;
+            }
+        }
+
+        private char[] GetSelectedDevices()
+        {
+            List<char> selectedDevices = new List<char>();
+
+            if (driveSelectComboBox.Items.Count != 0)
+            {
+                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+                {
+                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).IsChecked.Value)
+                    {
+                        selectedDevices.Add(((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter);
+                    }
+                }
+            }
+
+            return selectedDevices.ToArray();
+        }
+
+        private void HandleEnableLinkedConnectionCommand()
+        {
+            if (!Utils.CheckMappedDrivesEnable())
+            {
+                if (Utils.SetMappedDrivesEnable())
+                {
+                    MessageBox.Show(this, "Enabling mapped drives was successful.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(this, "Enabling mapped drives was not successful.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show(this, "Mapped drives are already enabled.\nComputer restart is required to make the feature work.", "Mapped drives", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void HandleAlwaysOnTopCommand()
+        {
+            if (WindowContextMenu.IsAlwaysOnTopChecked(Handle))
+            {
+                WindowContextMenu.SetAlwaysOnTopChecked(Handle, false);
+                Topmost = false;
+            }
+            else
+            {
+                WindowContextMenu.SetAlwaysOnTopChecked(Handle, true);
+                Topmost = true;
+            }
+        }
+
+        private void RemoveDriveItem(char driveLetter)
+        {
+            if (driveLetter != 0)
+            {
+                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+                {
+                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter == driveLetter)
+                    {
+                        driveSelectComboBox.Items.RemoveAt(i);
+                        DeviceCheckBoxClickHandler();
+                        break;
+                    }
+                }
+                if (driveSelectComboBox.Items.Count == 1)
+                {
+                    driveSelectComboBox.Items.Clear();
+                }
+            }
+        }
+
+        private async Task HandleWipeButtonClick()
+        {
+            var devices = GetSelectedDevices();
+
+            if (devices.Length == 0)
+            {
+                MessageBox.Show(this, "No device selected.\nPlease select at least one device.", "No device selected", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            foreach (var device in devices)
+            {
+                if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", device)))
+                {
+                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device)),
+                        "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            if (MessageBox.Show(this, string.Format("Wiping {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
+                "Confirm wipe", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            SetUIState(false, false);
+            Mouse.OverrideCursor = Cursors.Wait;
+            disk = new DiskRaw(devices);
+            await disk.WipeFileSystemAndPartitions();
+            disk.Dispose();
+            disk = null;
+            SetUIState(true, false);
+            Mouse.OverrideCursor = null;
+            MessageBox.Show(this, "Device(s) wiped successfully.\nNow you need to reformat them using Windows format dialog or any other formatting software\nto filesystem of your selection.",
+                "Wipe successful", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

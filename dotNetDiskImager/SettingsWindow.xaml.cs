@@ -22,8 +22,9 @@ namespace dotNetDiskImager
     {
         CustomPlacesWindow customPlacesWindow = null;
 
-        public SettingsWindow()
+        public SettingsWindow(Window owner)
         {
+            Owner = owner;
             InitializeComponent();
 
             LoadAppSettingsToGUI();
@@ -77,7 +78,7 @@ namespace dotNetDiskImager
                     break;
             }
 
-            switch(AppSettings.Settings.CompressionMethod)
+            switch (AppSettings.Settings.CompressionMethod)
             {
                 case CompressionMethod.Fast:
                     compressionMethod.SelectedIndex = 0;
@@ -158,7 +159,7 @@ namespace dotNetDiskImager
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key == Key.Escape)
+            if (e.Key == Key.Escape)
             {
                 Close();
             }

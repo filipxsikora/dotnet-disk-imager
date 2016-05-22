@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dotNetDiskImager.DiskAccess;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,7 +29,12 @@ namespace dotNetDiskImager.Models
             double result = 0;
             string unit = "";
 
-            if (bytes >= 966367641)
+            if (bytes >= 989560464384)
+            {
+                unit = "TB";
+                result = bytes / 1099511627776.0;
+            }
+            else if (bytes >= 966367641)
             {
                 unit = "GB";
                 result = bytes / 1073741824.0;
@@ -58,32 +64,85 @@ namespace dotNetDiskImager.Models
             TimeSpan time;
             if (seconds > 86400)
             {
-                return shortFormat ? "More than one day" : ">1 Day";
+                return shortFormat ? ">1 Day" : "More than one day";
             }
 
-            string pre = shortFormat ? "~" : "About ";
-
-            if (seconds > 3600)
+            if (seconds >= 3570)
             {
                 time = TimeSpan.FromSeconds(((seconds / 300) + 1) * 300);
-                return string.Format("{0}{1} hour{2}{3}", pre, time.Hours, time.Hours != 1 ? "s" : "", time.Minutes != 0 ? string.Format(" and {0} minutes", time.Minutes) : "");
+                if (shortFormat)
+                {
+                    return string.Format("~{0}h:{1}m", time.Hours, time.Minutes);
+                }
+                else
+                {
+                    return string.Format("About {0} hour{1}{2}", time.Hours, time.Hours != 1 ? "s" : "", time.Minutes != 0 ? string.Format(" and {0} minutes", time.Minutes) : "");
+                }
             }
 
-            if (seconds > 600)
+            if (seconds >= 545)
             {
                 time = TimeSpan.FromSeconds(((seconds / 30) + 1) * 30);
-                return string.Format("{0}{1} minute{2}{3}", pre, time.Minutes, time.Minutes != 1 ? "s" : "", time.Seconds != 0 ? string.Format(" and {0} seconds", time.Seconds) : "");
+                if (shortFormat)
+                {
+                    return string.Format("~{0}m:{1}s", time.Minutes, time.Seconds);
+                }
+                else
+                {
+                    return string.Format("About {0} minute{1}{2}", time.Minutes, time.Minutes != 1 ? "s" : "", time.Seconds != 0 ? string.Format(" and {0} seconds", time.Seconds) : "");
+                }
             }
 
             if (seconds >= 55)
             {
                 time = TimeSpan.FromSeconds(((seconds / 15) + 1) * 15);
-                return string.Format("{0}{1} minute{2}{3}", pre, time.Minutes, time.Minutes != 1 ? "s" : "", time.Seconds != 0 ? string.Format(" and {0} seconds", time.Seconds) : "");
+                if (shortFormat)
+                {
+                    return string.Format("~{0}m:{1}s", time.Minutes, time.Seconds);
+                }
+                else
+                {
+                    return string.Format("About {0} minute{1}{2}", time.Minutes, time.Minutes != 1 ? "s" : "", time.Seconds != 0 ? string.Format(" and {0} seconds", time.Seconds) : "");
+                }
             }
 
             time = TimeSpan.FromSeconds(((seconds / 5) + 1) * 5);
-            return string.Format("{0}{1} seconds", pre, time.Seconds);
+            if (shortFormat)
+            {
+                return string.Format("~{0}s", time.Seconds);
+            }
+            else
+            {
+                return string.Format("About {0} seconds", time.Seconds);
+            }
+        }
 
+        public static string GetDevicesListWithModel(char[] deviceLetters)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var deviceLetter in deviceLetters)
+            {
+                sb.Append(string.Format("\n[{0}:\\ - {1}]", deviceLetter, Disk.GetModelFromDrive(deviceLetter)));
+            }
+
+            return sb.ToString();
+        }
+
+        public static string GetDevicesListShort(char[] deviceLetters)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < deviceLetters.Length; i++)
+            {
+                sb.Append(string.Format("[{0}:\\]", deviceLetters[i]));
+                if (i < deviceLetters.Length - 1)
+                {
+                    sb.Append(", ");
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }

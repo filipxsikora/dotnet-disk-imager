@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:dotNetDiskImager"
         mc:Ignorable="d"
-        Title="About - dotNet Disk Imager" Height="260" Width="450" Icon="icon.ico" ResizeMode="NoResize" PreviewKeyDown="Window_PreviewKeyDown">
+        Title="About - dotNet Disk Imager" Height="260" Width="450" Icon="icon.ico" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <Image HorizontalAlignment="Left" Height="96" Margin="10,0,0,0" VerticalAlignment="Top" Width="96" Source="icon.ico"/>
         <Label Content="dotNet Disk Imager" Margin="121,5,10,0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="18" FontWeight="Medium"/>

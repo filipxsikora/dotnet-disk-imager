@@ -9,13 +9,21 @@ using System.Windows.Controls;
 
 namespace dotNetDiskImager.Models
 {
-    public class ComboBoxDeviceItem : ComboBoxItem
+    public class CheckBoxDeviceItem : CheckBox
     {
         public char DriveLetter { get; }
         public string Model { get; private set; }
         public ulong DeviceLength { get; }
 
-        public ComboBoxDeviceItem(char driveLetter) : base()
+        public string ShortName
+        {
+            get
+            {
+                return string.Format(@"[{0}:\] ({1})", DriveLetter, Helpers.BytesToClosestXbytes(DeviceLength));
+            }
+        }
+
+        public CheckBoxDeviceItem(char driveLetter) : base()
         {
             DriveLetter = driveLetter;
             int deviceID = NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", DriveLetter));
