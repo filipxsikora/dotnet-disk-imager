@@ -1245,7 +1245,8 @@ namespace dotNetDiskImager
                     {
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Height = 20,
-                        Width = 485,
+                        Width = 530,
+                        Margin = new Thickness(5, 0, 0, 0)
                     };
 
                     deviceCheckBox.Click += DeviceCheckBox_Click;
