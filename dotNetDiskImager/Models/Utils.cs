@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,6 +10,11 @@ namespace dotNetDiskImager.Models
 {
     public class Utils
     {
+        [DllImport("kernel32.dll")]
+        static extern uint SetThreadExecutionState(uint esFlags);
+        const uint ES_CONTINUOUS = 0x80000000;
+        const uint ES_SYSTEM_REQUIRED = 0x00000001;
+
         public static bool CheckMappedDrivesEnable()
         {
             try
@@ -33,6 +39,16 @@ namespace dotNetDiskImager.Models
             }
             catch { }
             return false;
+        }
+
+        public static bool PreventComputerSleep()
+        {
+            return (SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED) != 0);
+        }
+
+        public static bool AllowComputerSleep()
+        {
+            return (SetThreadExecutionState(ES_CONTINUOUS) != 0);
         }
     }
 }

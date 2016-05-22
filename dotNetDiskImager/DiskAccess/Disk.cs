@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace dotNetDiskImager.DiskAccess
 {
@@ -50,6 +51,8 @@ namespace dotNetDiskImager.DiskAccess
                 volumeIDs[i] = DriveLetters[i] - 'A';
                 volumeHandles[i] = deviceHandles[i] = IntPtr.Zero;
             }
+
+            Utils.PreventComputerSleep();
         }
 
         public void Dispose()
@@ -82,6 +85,8 @@ namespace dotNetDiskImager.DiskAccess
                     deviceHandles[i] = IntPtr.Zero;
                 }
             }
+
+            Utils.AllowComputerSleep();
         }
 
         public void CancelOperation()
