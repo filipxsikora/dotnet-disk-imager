@@ -1245,16 +1245,31 @@ namespace dotNetDiskImager
                     {
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Height = 20,
-                        Width = 530,
+                        Width = 510,
                         Margin = new Thickness(5, 0, 0, 0)
                     };
 
                     deviceCheckBox.Click += DeviceCheckBox_Click;
 
+                    var deviceInfoButton = new DeviceButton(drive)
+                    {
+                        BorderThickness = new Thickness(0),
+                        Width = 20,
+                        Height = 20,
+                        Content = FindResource("infoIcon") as Viewbox,
+                        ToolTip = "Displays device info"
+                    };
+
+                    deviceInfoButton.Click += DeviceInfoButton_Click;
+
+                    var stackPanel = new StackPanel() { Orientation = Orientation.Horizontal };
+                    stackPanel.Children.Add(deviceCheckBox);
+                    stackPanel.Children.Add(deviceInfoButton);
+
                     driveSelectComboBox.Items.Add(new ComboBoxItem()
                     {
                         Padding = new Thickness(0),
-                        Content = deviceCheckBox
+                        Content = stackPanel
                     });
                 }
 
@@ -1273,17 +1288,32 @@ namespace dotNetDiskImager
                     {
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Height = 20,
-                        Width = 530,
+                        Width = 510,
                         Margin = new Thickness(5, 0, 0, 0)
                     };
 
                     deviceCheckBox.Click += DeviceCheckBox_Click;
 
+                    var deviceInfoButton = new DeviceButton(driveLetter)
+                    {
+                        BorderThickness = new Thickness(0),
+                        Width = 20,
+                        Height = 20,
+                        Content = FindResource("infoIcon") as Viewbox,
+                        ToolTip = "Displays device info"
+                    };
+
+                    deviceInfoButton.Click += DeviceInfoButton_Click;
+
+                    var stackPanel = new StackPanel() { Orientation = Orientation.Horizontal };
+                    stackPanel.Children.Add(deviceCheckBox);
+                    stackPanel.Children.Add(deviceInfoButton);
+
                     driveSelectComboBox.Items.Insert(i,
                         new ComboBoxItem()
                         {
                             Padding = new Thickness(0),
-                            Content = deviceCheckBox
+                            Content = stackPanel
                         });
                     inserted = true;
                     break;
@@ -1296,16 +1326,31 @@ namespace dotNetDiskImager
                 {
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Height = 20,
-                    Width = 530,
+                    Width = 510,
                     Margin = new Thickness(5, 0, 0, 0)
                 };
 
                 deviceCheckBox.Click += DeviceCheckBox_Click;
 
+                var deviceInfoButton = new DeviceButton(driveLetter)
+                {
+                    BorderThickness = new Thickness(0),
+                    Width = 20,
+                    Height = 20,
+                    Content = FindResource("infoIcon") as Viewbox,
+                    ToolTip = "Displays device info"
+                };
+
+                deviceInfoButton.Click += DeviceInfoButton_Click;
+
+                var stackPanel = new StackPanel() { Orientation = Orientation.Horizontal };
+                stackPanel.Children.Add(deviceCheckBox);
+                stackPanel.Children.Add(deviceInfoButton);
+
                 driveSelectComboBox.Items.Add(new ComboBoxItem()
                 {
                     Padding = new Thickness(0),
-                    Content = deviceCheckBox
+                    Content = stackPanel
                 });
             }
         }
@@ -1313,6 +1358,11 @@ namespace dotNetDiskImager
         private void DeviceCheckBox_Click(object sender, RoutedEventArgs e)
         {
             DeviceCheckBoxClickHandler();
+        }
+
+        private void DeviceInfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(string.Format("Device info {0}:\\", (sender as DeviceButton).DeviceLetter));
         }
 
         private void DeviceCheckBoxClickHandler()
