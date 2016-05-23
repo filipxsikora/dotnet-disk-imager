@@ -104,6 +104,7 @@
     <Compile Include="DiskAccess\DiskZip.cs" />
     <Compile Include="DiskAccess\OperationFinishedState.cs" />
     <Compile Include="Models\Checksum.cs" />
+    <Compile Include="Models\DeviceButton.cs" />
     <Compile Include="Models\Extensions.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Models\Updater.cs" />
