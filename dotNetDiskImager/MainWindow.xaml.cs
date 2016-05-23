@@ -1119,8 +1119,9 @@ namespace dotNetDiskImager
                         {
                             if (file[1] == ':' && file[2] == '\\')
                             {
-                                foreach (CheckBoxDeviceItem device in driveSelectComboBox.Items)
+                                foreach (var item in driveSelectComboBox.Items)
                                 {
+                                    var device = (((item as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem);
                                     if (device.DriveLetter == file[0])
                                     {
                                         driveSelectComboBox.SelectedIndex = driveSelectComboBox.Items.IndexOf(device);
@@ -1282,7 +1283,7 @@ namespace dotNetDiskImager
             bool inserted = false;
             for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
             {
-                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter > driveLetter)
+                if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).DriveLetter > driveLetter)
                 {
                     var deviceCheckBox = new CheckBoxDeviceItem(driveLetter)
                     {
@@ -1373,7 +1374,7 @@ namespace dotNetDiskImager
 
             for (int i = 1, count = 0; i < driveSelectComboBox.Items.Count; i++)
             {
-                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBox).IsChecked.Value)
+                if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBox).IsChecked.Value)
                 {
                     if (++count == 2)
                     {
@@ -1385,7 +1386,7 @@ namespace dotNetDiskImager
 
             for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
             {
-                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBox).IsChecked.Value)
+                if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBox).IsChecked.Value)
                 {
                     if (first)
                     {
@@ -1397,11 +1398,11 @@ namespace dotNetDiskImager
                     }
                     if (hasMultiple)
                     {
-                        str += ((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).ShortName;
+                        str += (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).ShortName;
                     }
                     else
                     {
-                        str += ((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).Content;
+                        str += (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).Content;
                     }
                 }
 
@@ -1417,9 +1418,9 @@ namespace dotNetDiskImager
             {
                 for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
                 {
-                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).IsChecked.Value)
+                    if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).IsChecked.Value)
                     {
-                        selectedDevices.Add(((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter);
+                        selectedDevices.Add((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).DriveLetter);
                     }
                 }
             }
@@ -1466,7 +1467,7 @@ namespace dotNetDiskImager
             {
                 for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
                 {
-                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter == driveLetter)
+                    if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).DriveLetter == driveLetter)
                     {
                         driveSelectComboBox.Items.RemoveAt(i);
                         DeviceCheckBoxClickHandler();
