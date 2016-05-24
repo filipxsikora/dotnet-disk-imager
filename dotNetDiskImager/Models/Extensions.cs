@@ -15,5 +15,16 @@ namespace dotNetDiskImager.Models
                 arr[i] = value;
             }
         }
+
+        public static ulong Sum(this List<ulong> list)
+        {
+            ulong sum = 0;
+            for (int i = 0; i < list.Count; i++)
+            {
+                sum += list[i];
+            }
+
+            return sum;
+        }
     }
 }
