@@ -101,6 +101,7 @@
     </Compile>
     <Compile Include="DiskAccess\Disk.cs" />
     <Compile Include="DiskAccess\DiskOperation.cs" />
+    <Compile Include="DiskAccess\DiskPartitionInfo.cs" />
     <Compile Include="DiskAccess\DiskZip.cs" />
     <Compile Include="DiskAccess\OperationFinishedState.cs" />
     <Compile Include="Models\Checksum.cs" />
