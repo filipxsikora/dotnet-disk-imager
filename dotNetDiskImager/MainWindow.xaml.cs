@@ -1363,7 +1363,7 @@ namespace dotNetDiskImager
 
         private void DeviceInfoButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(string.Format("Device info {0}:\\", (sender as DeviceButton).DeviceLetter));
+            var pi = Disk.GetDiskPartitionInfo((sender as DeviceButton).DeviceLetter);
         }
 
         private void DeviceCheckBoxClickHandler()
