@@ -434,6 +434,9 @@ namespace dotNetDiskImager
 
         private void program_Drop(object sender, DragEventArgs e)
         {
+            if (disk != null)
+                return;
+
             HandleDrop(e);
         }
 
