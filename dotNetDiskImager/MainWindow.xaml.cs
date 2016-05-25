@@ -1363,7 +1363,14 @@ namespace dotNetDiskImager
 
         private void DeviceInfoButton_Click(object sender, RoutedEventArgs e)
         {
-            var pi = Disk.GetDiskPartitionInfo((sender as DeviceButton).DeviceLetter);
+            try
+            {
+                new DeviceInfoWindow(this, (sender as DeviceButton).DeviceLetter).Show();
+            }
+            catch
+            {
+                MessageBox.Show(this, "Unable to get device information.\nCheck if device is inserted and accessible.", "Unable to get device information.", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void DeviceCheckBoxClickHandler()
