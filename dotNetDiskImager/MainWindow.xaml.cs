@@ -73,13 +73,15 @@ namespace dotNetDiskImager
 
             driveSelectComboBox.SelectionChanged += (s, e) => driveSelectComboBox.SelectedIndex = 0;
 
-            LoadDriveSelectItems();
+            LoadDriveSelectItems(true);
 
             Loaded += (s, e) =>
             {
                 WindowContextMenu.CreateWindowMenu(Handle);
                 HwndSource source = HwndSource.FromHwnd(Handle);
                 source.AddHook(WndProc);
+
+                ProcessCommandLineArguments();
             };
 
             Closing += (s, e) =>
@@ -124,7 +126,7 @@ namespace dotNetDiskImager
                             {
                                 if (driveSelectComboBox.Items.Count == 0)
                                 {
-                                    LoadDriveSelectItems();
+                                    LoadDriveSelectItems(false);
                                 }
                                 else
                                 {
@@ -1235,7 +1237,7 @@ namespace dotNetDiskImager
             }
         }
 
-        private void LoadDriveSelectItems()
+        private void LoadDriveSelectItems(bool getImmediate)
         {
             var drives = Disk.GetLogicalDrives();
             driveSelectComboBox.Items.Clear();
@@ -1245,7 +1247,7 @@ namespace dotNetDiskImager
 
                 foreach (var drive in drives)
                 {
-                    var deviceCheckBox = new CheckBoxDeviceItem(drive)
+                    var deviceCheckBox = new CheckBoxDeviceItem(drive, getImmediate)
                     {
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Height = 20,
@@ -1527,6 +1529,109 @@ namespace dotNetDiskImager
             Mouse.OverrideCursor = null;
             MessageBox.Show(this, "Device(s) wiped successfully.\nNow you need to reformat them using Windows format dialog or any other formatting software\nto filesystem of your selection.",
                 "Wipe successful", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        void ProcessCommandLineArguments()
+        {
+            CommandLineArguments args = null;
+            try
+            {
+                args = CommandLineArguments.Parse(Environment.GetCommandLineArgs());
+            }
+            catch
+            {
+                MessageBox.Show(this, "Arguments error", "Unable to parse command line arguments.\nMake sure you entered valid command line arguments.", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            imagePathTextBox.Text = args.ImagePath;
+
+            foreach (var device in args.Devices)
+            {
+                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+                {
+                    if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).DriveLetter == device)
+                    {
+                        (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).IsChecked = true;
+                        DeviceCheckBoxClickHandler();
+                        break;
+                    }
+                }
+            }
+
+            readOnlyAllocatedCheckBox.IsChecked = args.ReadOnlyAllocated;
+
+            if (args.Zip != null)
+            {
+                onTheFlyZipCheckBox.IsChecked = args.Zip.Value;
+            }
+
+            if (args.AutoStart)
+            {
+                if (args.Read && args.Write)
+                {
+                    MessageBox.Show(this, "Arguments error", "Write and read cannot be started together.\nSelect only one action.", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if ((args.Read || args.Write) && args.Verify)
+                {
+                    verifyCheckBox.IsChecked = true;
+                }
+
+                if(args.Read)
+                {
+                    verifyingAfterOperation = false;
+
+                    try
+                    {
+                        HandleReadButtonClick();
+                    }
+                    catch (Exception ex)
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        MessageBox.Show(this, ex.Message, "Unknown error");
+                    }
+                }
+
+                if(args.Write)
+                {
+                    verifyingAfterOperation = false;
+
+                    try
+                    {
+                        HandleWriteButtonClick();
+                    }
+                    catch (Exception ex)
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        MessageBox.Show(this, ex.Message, "Unknown error");
+                    }
+                }
+
+                if(args.Verify)
+                {
+                    verifyingAfterOperation = false;
+                    try
+                    {
+                        HandleVerifyButtonClick();
+                    }
+                    catch (Exception ex)
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        MessageBox.Show(this, ex.Message, "Unknown error");
+                    }
+                }
+            }
+            else
+            {
+                if (args.Verify)
+                {
+                    verifyCheckBox.IsChecked = true;
+                }
+            } 
         }
     }
 }
