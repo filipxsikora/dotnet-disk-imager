@@ -1,0 +1,19 @@
+﻿<Window x:Class="dotNetDiskImager.DeviceInfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:dotNetDiskImager"
+        mc:Ignorable="d"
+        Title="Device Info - dotNet Disk Imager" Height="230" Width="525" ResizeMode="CanMinimize" WindowStartupLocation="CenterOwner" Icon="icon.ico">
+    <Grid>
+        <Border BorderBrush="Black" BorderThickness="1" Height="50" Margin="10,70,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="489">
+            <StackPanel x:Name="partitionsHolder" Orientation="Horizontal"/>
+        </Border>
+        <StackPanel x:Name="partitionsInfoHolder" Orientation="Horizontal" Margin="10,125,0,0" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" Width="489">
+
+        </StackPanel>
+        <TextBlock x:Name="deviceNameTextBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Height="30" FontSize="20"/>
+        <TextBlock x:Name="deviceSizeAndInfoTextBlock" HorizontalAlignment="Left" Margin="10,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+    </Grid>
+</Window>

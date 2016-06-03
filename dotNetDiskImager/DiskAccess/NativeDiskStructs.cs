@@ -19,8 +19,7 @@ namespace dotNetDiskImager.DiskAccess
     [StructLayout(LayoutKind.Sequential)]
     internal struct PARTITION_INFORMATION_MBR
     {
-        [MarshalAs(UnmanagedType.U1)]
-        public PARTITION_TYPE PartitionType;
+        public byte PartitionType;
         [MarshalAs(UnmanagedType.U1)]
         public bool BootIndicator;
         [MarshalAs(UnmanagedType.U1)]
@@ -28,27 +27,41 @@ namespace dotNetDiskImager.DiskAccess
         public uint HiddenSectors;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode)]
     internal struct PARTITION_INFORMATION_GPT
     {
-        public Guid PartitionType;
-        public Guid PartitionId;
-        [MarshalAs(UnmanagedType.U8)]
-        public EFIPartitionAttributes Attributes;
+        // Strangely, this works as sequential if you build x86,
+        // But for x64 you must use explicit.
+        [FieldOffset(0)]
+        internal Guid PartitionType;
+        [FieldOffset(16)]
+        internal Guid PartitionId;
+        [FieldOffset(32)]
+        //DWord64
+        internal ulong Attributes;
+        [FieldOffset(40)]
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 36)]
-        public string Name;
+        internal string Name;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Explicit)]
     internal struct PARTITION_INFORMATION_EX
     {
-        [MarshalAs(UnmanagedType.U4)]
-        public PARTITION_STYLE PartitionStyle;
-        public long StartingOffset;
-        public long PartitionLength;
-        public int PartitionNumber;
-        public bool RewritePartition;
-        public PARTITION_INFORMATION_UNION DriveLayoutInformaiton;
+        [FieldOffset(0)]
+        internal PARTITION_STYLE PartitionStyle;
+        [FieldOffset(8)]
+        internal long StartingOffset;
+        [FieldOffset(16)]
+        internal long PartitionLength;
+        [FieldOffset(24)]
+        internal int PartitionNumber;
+        [FieldOffset(28)]
+        [MarshalAs(UnmanagedType.U1)]
+        internal bool RewritePartition;
+        [FieldOffset(32)]
+        internal PARTITION_INFORMATION_MBR Mbr;
+        [FieldOffset(32)]
+        internal PARTITION_INFORMATION_GPT Gpt;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -334,4 +347,69 @@ namespace dotNetDiskImager.DiskAccess
         [FieldOffset(8)]
         internal Guid DiskId;
     }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct DRIVE_LAYOUT_INFORMATION_EX
+    {
+        [FieldOffset(0)]
+        internal PARTITION_STYLE PartitionStyle;
+        [FieldOffset(4)]
+        internal int PartitionCount;
+        [FieldOffset(8)]
+        internal DRIVE_LAYOUT_INFORMATION_MBR Mbr;
+        [FieldOffset(8)]
+        internal DRIVE_LAYOUT_INFORMATION_GPT Gpt;
+        // Forget partition entry, we can't marshal it directly
+        // as we don't know how big it is.
+        [FieldOffset(48)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        internal PARTITION_INFORMATION_EX[] PartitionEntry;
+    }
+
+    internal struct DRIVE_LAYOUT_INFORMATION_MBR
+    {
+#pragma warning disable 649
+        internal uint Signature;
+#pragma warning restore
+    }
+
+    // Sequential ensures the fields are laid out in memory
+    // in the same order as we write them here. Without it,
+    // the runtime can arrange them however it likes, and the
+    // type may no longer be blittable to the C type.
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct DRIVE_LAYOUT_INFORMATION_GPT
+    {
+        internal Guid DiskId;
+        // C LARGE_INTEGER is 64 bit
+        internal long StartingUsableOffset;
+        internal long UsableLength;
+        // C ULONG is 32 bit
+        internal uint MaxPartitionCount;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct CREATE_DISK
+    {
+        [FieldOffset(0)]
+        internal PARTITION_STYLE PartitionStyle;
+        [FieldOffset(4)]
+        internal CREATE_DISK_MBR Mbr;
+        [FieldOffset(4)]
+        internal CREATE_DISK_GPT Gpt;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CREATE_DISK_GPT
+    {
+        internal Guid DiskId;
+        internal uint MaxPartitionCount;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CREATE_DISK_MBR
+    {
+        internal uint Signature;
+    }
+
 }

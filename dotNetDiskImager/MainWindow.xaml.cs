@@ -73,13 +73,15 @@ namespace dotNetDiskImager
 
             driveSelectComboBox.SelectionChanged += (s, e) => driveSelectComboBox.SelectedIndex = 0;
 
-            LoadDriveSelectItems();
+            LoadDriveSelectItems(true);
 
             Loaded += (s, e) =>
             {
                 WindowContextMenu.CreateWindowMenu(Handle);
                 HwndSource source = HwndSource.FromHwnd(Handle);
                 source.AddHook(WndProc);
+
+                ProcessCommandLineArguments();
             };
 
             Closing += (s, e) =>
@@ -124,7 +126,7 @@ namespace dotNetDiskImager
                             {
                                 if (driveSelectComboBox.Items.Count == 0)
                                 {
-                                    LoadDriveSelectItems();
+                                    LoadDriveSelectItems(false);
                                 }
                                 else
                                 {
@@ -399,6 +401,11 @@ namespace dotNetDiskImager
             {
                 MessageBox.Show(this, ex.Message, "Unknown error");
             }
+
+            disk?.Dispose();
+            disk = null;
+            SetUIState(true, false);
+            Mouse.OverrideCursor = null;
         }
 
         private void calculateChecksumButton_Click(object sender, RoutedEventArgs e)
@@ -434,6 +441,9 @@ namespace dotNetDiskImager
 
         private void program_Drop(object sender, DragEventArgs e)
         {
+            if (disk != null)
+                return;
+
             HandleDrop(e);
         }
 
@@ -1119,8 +1129,9 @@ namespace dotNetDiskImager
                         {
                             if (file[1] == ':' && file[2] == '\\')
                             {
-                                foreach (CheckBoxDeviceItem device in driveSelectComboBox.Items)
+                                foreach (var item in driveSelectComboBox.Items)
                                 {
+                                    var device = (((item as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem);
                                     if (device.DriveLetter == file[0])
                                     {
                                         driveSelectComboBox.SelectedIndex = driveSelectComboBox.Items.IndexOf(device);
@@ -1231,7 +1242,7 @@ namespace dotNetDiskImager
             }
         }
 
-        private void LoadDriveSelectItems()
+        private void LoadDriveSelectItems(bool getImmediate)
         {
             var drives = Disk.GetLogicalDrives();
             driveSelectComboBox.Items.Clear();
@@ -1241,20 +1252,35 @@ namespace dotNetDiskImager
 
                 foreach (var drive in drives)
                 {
-                    var deviceCheckBox = new CheckBoxDeviceItem(drive)
+                    var deviceCheckBox = new CheckBoxDeviceItem(drive, getImmediate)
                     {
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Height = 20,
-                        Width = 530,
+                        Width = 510,
                         Margin = new Thickness(5, 0, 0, 0)
                     };
 
                     deviceCheckBox.Click += DeviceCheckBox_Click;
 
+                    var deviceInfoButton = new DeviceButton(drive)
+                    {
+                        BorderThickness = new Thickness(0),
+                        Width = 20,
+                        Height = 20,
+                        Content = FindResource("infoIcon") as Viewbox,
+                        ToolTip = "Displays device info"
+                    };
+
+                    deviceInfoButton.Click += DeviceInfoButton_Click;
+
+                    var stackPanel = new StackPanel() { Orientation = Orientation.Horizontal };
+                    stackPanel.Children.Add(deviceCheckBox);
+                    stackPanel.Children.Add(deviceInfoButton);
+
                     driveSelectComboBox.Items.Add(new ComboBoxItem()
                     {
                         Padding = new Thickness(0),
-                        Content = deviceCheckBox
+                        Content = stackPanel
                     });
                 }
 
@@ -1267,23 +1293,38 @@ namespace dotNetDiskImager
             bool inserted = false;
             for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
             {
-                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter > driveLetter)
+                if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).DriveLetter > driveLetter)
                 {
                     var deviceCheckBox = new CheckBoxDeviceItem(driveLetter)
                     {
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Height = 20,
-                        Width = 530,
+                        Width = 510,
                         Margin = new Thickness(5, 0, 0, 0)
                     };
 
                     deviceCheckBox.Click += DeviceCheckBox_Click;
 
+                    var deviceInfoButton = new DeviceButton(driveLetter)
+                    {
+                        BorderThickness = new Thickness(0),
+                        Width = 20,
+                        Height = 20,
+                        Content = FindResource("infoIcon") as Viewbox,
+                        ToolTip = "Displays device info"
+                    };
+
+                    deviceInfoButton.Click += DeviceInfoButton_Click;
+
+                    var stackPanel = new StackPanel() { Orientation = Orientation.Horizontal };
+                    stackPanel.Children.Add(deviceCheckBox);
+                    stackPanel.Children.Add(deviceInfoButton);
+
                     driveSelectComboBox.Items.Insert(i,
                         new ComboBoxItem()
                         {
                             Padding = new Thickness(0),
-                            Content = deviceCheckBox
+                            Content = stackPanel
                         });
                     inserted = true;
                     break;
@@ -1296,16 +1337,31 @@ namespace dotNetDiskImager
                 {
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Height = 20,
-                    Width = 530,
+                    Width = 510,
                     Margin = new Thickness(5, 0, 0, 0)
                 };
 
                 deviceCheckBox.Click += DeviceCheckBox_Click;
 
+                var deviceInfoButton = new DeviceButton(driveLetter)
+                {
+                    BorderThickness = new Thickness(0),
+                    Width = 20,
+                    Height = 20,
+                    Content = FindResource("infoIcon") as Viewbox,
+                    ToolTip = "Displays device info"
+                };
+
+                deviceInfoButton.Click += DeviceInfoButton_Click;
+
+                var stackPanel = new StackPanel() { Orientation = Orientation.Horizontal };
+                stackPanel.Children.Add(deviceCheckBox);
+                stackPanel.Children.Add(deviceInfoButton);
+
                 driveSelectComboBox.Items.Add(new ComboBoxItem()
                 {
                     Padding = new Thickness(0),
-                    Content = deviceCheckBox
+                    Content = stackPanel
                 });
             }
         }
@@ -1313,6 +1369,18 @@ namespace dotNetDiskImager
         private void DeviceCheckBox_Click(object sender, RoutedEventArgs e)
         {
             DeviceCheckBoxClickHandler();
+        }
+
+        private void DeviceInfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                new DeviceInfoWindow(this, (sender as DeviceButton).DeviceLetter).Show();
+            }
+            catch
+            {
+                MessageBox.Show(this, "Unable to get device information.\nCheck if device is inserted and accessible.", "Unable to get device information.", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void DeviceCheckBoxClickHandler()
@@ -1323,7 +1391,7 @@ namespace dotNetDiskImager
 
             for (int i = 1, count = 0; i < driveSelectComboBox.Items.Count; i++)
             {
-                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBox).IsChecked.Value)
+                if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBox).IsChecked.Value)
                 {
                     if (++count == 2)
                     {
@@ -1335,7 +1403,7 @@ namespace dotNetDiskImager
 
             for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
             {
-                if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBox).IsChecked.Value)
+                if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBox).IsChecked.Value)
                 {
                     if (first)
                     {
@@ -1347,11 +1415,11 @@ namespace dotNetDiskImager
                     }
                     if (hasMultiple)
                     {
-                        str += ((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).ShortName;
+                        str += (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).ShortName;
                     }
                     else
                     {
-                        str += ((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).Content;
+                        str += (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).Content;
                     }
                 }
 
@@ -1367,9 +1435,9 @@ namespace dotNetDiskImager
             {
                 for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
                 {
-                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).IsChecked.Value)
+                    if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).IsChecked.Value)
                     {
-                        selectedDevices.Add(((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter);
+                        selectedDevices.Add((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).DriveLetter);
                     }
                 }
             }
@@ -1416,7 +1484,7 @@ namespace dotNetDiskImager
             {
                 for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
                 {
-                    if (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as CheckBoxDeviceItem).DriveLetter == driveLetter)
+                    if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).DriveLetter == driveLetter)
                     {
                         driveSelectComboBox.Items.RemoveAt(i);
                         DeviceCheckBoxClickHandler();
@@ -1460,12 +1528,115 @@ namespace dotNetDiskImager
             Mouse.OverrideCursor = Cursors.Wait;
             disk = new DiskRaw(devices);
             await disk.WipeFileSystemAndPartitions();
-            disk.Dispose();
-            disk = null;
-            SetUIState(true, false);
-            Mouse.OverrideCursor = null;
+
             MessageBox.Show(this, "Device(s) wiped successfully.\nNow you need to reformat them using Windows format dialog or any other formatting software\nto filesystem of your selection.",
                 "Wipe successful", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        void ProcessCommandLineArguments()
+        {
+            CommandLineArguments args = null;
+            try
+            {
+                args = CommandLineArguments.Parse(Environment.GetCommandLineArgs());
+            }
+            catch
+            {
+                MessageBox.Show(this, "Arguments error", "Unable to parse command line arguments.\nMake sure you entered valid command line arguments.", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            imagePathTextBox.Text = args.ImagePath;
+
+            foreach (var device in args.Devices)
+            {
+                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
+                {
+                    if ((((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).DriveLetter == device)
+                    {
+                        (((driveSelectComboBox.Items[i] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).IsChecked = true;
+                        DeviceCheckBoxClickHandler();
+                        break;
+                    }
+                }
+            }
+
+            readOnlyAllocatedCheckBox.IsChecked = args.ReadOnlyAllocated;
+
+            if (args.Zip != null)
+            {
+                onTheFlyZipCheckBox.IsChecked = args.Zip.Value;
+            }
+
+            if (args.AutoStart)
+            {
+                if (args.Read && args.Write)
+                {
+                    MessageBox.Show(this, "Arguments error", "Write and read cannot be started together.\nSelect only one action.", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if ((args.Read || args.Write) && args.Verify)
+                {
+                    verifyCheckBox.IsChecked = true;
+                }
+
+                if(args.Read)
+                {
+                    verifyingAfterOperation = false;
+
+                    try
+                    {
+                        HandleReadButtonClick();
+                    }
+                    catch (Exception ex)
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        MessageBox.Show(this, ex.Message, "Unknown error");
+                    }
+                    return;
+                }
+
+                if(args.Write)
+                {
+                    verifyingAfterOperation = false;
+
+                    try
+                    {
+                        HandleWriteButtonClick();
+                    }
+                    catch (Exception ex)
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        MessageBox.Show(this, ex.Message, "Unknown error");
+                    }
+                    return;
+                }
+
+                if(args.Verify)
+                {
+                    verifyingAfterOperation = false;
+                    try
+                    {
+                        HandleVerifyButtonClick();
+                    }
+                    catch (Exception ex)
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        MessageBox.Show(this, ex.Message, "Unknown error");
+                    }
+                    return;
+                }
+            }
+            else
+            {
+                if (args.Verify)
+                {
+                    verifyCheckBox.IsChecked = true;
+                }
+            } 
         }
     }
 }

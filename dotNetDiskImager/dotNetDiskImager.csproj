@@ -99,11 +99,17 @@
     <Compile Include="CustomPlacesWindow.xaml.cs">
       <DependentUpon>CustomPlacesWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DeviceInfoWindow.xaml.cs">
+      <DependentUpon>DeviceInfoWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DiskAccess\Disk.cs" />
     <Compile Include="DiskAccess\DiskOperation.cs" />
+    <Compile Include="DiskAccess\DiskPartitionInfo.cs" />
     <Compile Include="DiskAccess\DiskZip.cs" />
     <Compile Include="DiskAccess\OperationFinishedState.cs" />
     <Compile Include="Models\Checksum.cs" />
+    <Compile Include="Models\CommandLineArguments.cs" />
+    <Compile Include="Models\DeviceButton.cs" />
     <Compile Include="Models\Extensions.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Models\Updater.cs" />
@@ -131,6 +137,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="DeviceInfoWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -153,6 +163,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Resources\Brushes.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Icons.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

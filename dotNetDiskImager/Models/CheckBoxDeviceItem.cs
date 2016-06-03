@@ -23,13 +23,31 @@ namespace dotNetDiskImager.Models
             }
         }
 
-        public CheckBoxDeviceItem(char driveLetter) : base()
+        public CheckBoxDeviceItem(char driveLetter, bool getImmediate = false) : base()
         {
             DriveLetter = driveLetter;
             int deviceID = NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", DriveLetter));
             DeviceLength = Disk.GetDeviceLength(deviceID);
 
-            Content = string.Format(@"[{0}:\] ({1}) - getting device information", driveLetter, Helpers.BytesToClosestXbytes(DeviceLength));
+            if (getImmediate)
+            {
+                try
+                {
+                    string model = Disk.GetModelFromDrive(DriveLetter);
+                    Content = string.Format(@"[{0}:\] ({1}) - {2}", DriveLetter, Helpers.BytesToClosestXbytes(DeviceLength), model);
+                    Model = model;
+                    return;
+                }
+                catch
+                {
+                    Content = string.Format(@"[{0}:\] ({1}) - getting device information", driveLetter, Helpers.BytesToClosestXbytes(DeviceLength));
+                }
+            }
+            else
+            {
+                Content = string.Format(@"[{0}:\] ({1}) - getting device information", driveLetter, Helpers.BytesToClosestXbytes(DeviceLength));
+            }
+
             IsEnabled = false;
 
             new Thread(() =>
@@ -44,7 +62,10 @@ namespace dotNetDiskImager.Models
                     {
                         model = Disk.GetModelFromDrive(DriveLetter);
                     }
-                    catch { continue; }
+                    catch
+                    {
+                        continue;
+                    }
 
                     Dispatcher.Invoke(() =>
                     {

@@ -282,7 +282,7 @@ namespace dotNetDiskImager.DiskAccess
                 int returnLength = 0;
                 IntPtr lengthPtr = new IntPtr(&length);
 
-                NativeDisk.DeviceIoControl(deviceHandle, NativeDisk.IOCTL_DISK_GET_LENGTH_INFO, IntPtr.Zero, 0, lengthPtr, 8, ref returnLength, IntPtr.Zero);
+                NativeDisk.DeviceIoControl(deviceHandle, NativeDisk.IOCTL_DISK_GET_LENGTH_INFO, IntPtr.Zero, 0, lengthPtr, sizeof(ulong), ref returnLength, IntPtr.Zero);
             }
 
             NativeDisk.CloseHandle(deviceHandle);
@@ -290,48 +290,129 @@ namespace dotNetDiskImager.DiskAccess
             return length;
         }
 
+        public static ulong GetDeviceLength(IntPtr handle)
+        {
+            ulong length = 0;
+
+            unsafe
+            {
+                int returnLength = 0;
+                IntPtr lengthPtr = new IntPtr(&length);
+
+                NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_DISK_GET_LENGTH_INFO, IntPtr.Zero, 0, lengthPtr, sizeof(ulong), ref returnLength, IntPtr.Zero);
+            }
+
+            return length;
+        }
+
         public async Task WipeFileSystemAndPartitions()
         {
-            byte[] emptyMBR = new byte[512];
-            byte[] emptyData = new byte[512 * 1024];
             List<Task> taskList = new List<Task>(volumeHandles.Length);
-
-            emptyData.Fill(0xFF);
-            emptyMBR.Fill(0x00);
-
-            emptyMBR[440] = 1;
-            emptyMBR[510] = 85;
-            emptyMBR[511] = 170;
 
             Dispose();
 
             for (int i = 0; i < volumeHandles.Length; i++)
             {
-                volumeHandles[i] = NativeDiskWrapper.GetHandleOnVolume(volumeIDs[i], NativeDisk.GENERIC_WRITE);
-                NativeDiskWrapper.GetLockOnVolume(volumeHandles[i]);
-                NativeDiskWrapper.UnmountVolume(volumeHandles[i]);
-            }
+                int x = i;
+                var task = Task.Run(() =>
+                {
+                    ReCreateMbr(x);
+                });
 
-            for (int i = 0; i < volumeHandles.Length; i++)
-            {
-                deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_WRITE);
-            }
-
-            for (int i = 0; i < volumeHandles.Length; i++)
-            {
-                taskList.Add(NativeDiskWrapper.WriteSectorDataToHandleAsync(deviceHandles[i], emptyMBR, 0, 1, 512));
+                taskList.Add(task);
             }
 
             await Task.WhenAll(taskList);
+        }
 
-            taskList.Clear();
+        void ReCreateMbr(int x)
+        {
+            deviceHandles[x] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[x], NativeDisk.GENERIC_READ | NativeDisk.GENERIC_WRITE);
+            var driveLayout = NativeDiskWrapper.DiskGetDriveLayoutEx(deviceHandles[x]);
+            NativeDiskWrapper.DiskCreateDiskMBR(deviceHandles[x], 0xA5A5A5);
+            NativeDiskWrapper.DiskUpdateProperties(deviceHandles[x]);
+            driveLayout = NativeDiskWrapper.DiskGetDriveLayoutEx(deviceHandles[x]);
+            driveLayout.PartitionEntry[0].PartitionNumber = 1;
+            driveLayout.PartitionEntry[0].StartingOffset = 4 * 512;
+            driveLayout.PartitionEntry[0].PartitionLength = (long)GetDeviceLength(deviceHandles[x]) - driveLayout.PartitionEntry[0].StartingOffset;
+            driveLayout.PartitionEntry[0].RewritePartition = true;
+            driveLayout.PartitionEntry[0].Mbr.PartitionType = (byte)PARTITION_TYPE.PARTITION_FAT32;
+            NativeDiskWrapper.DiskSetDriveLayoutEx(deviceHandles[x], driveLayout);
+            NativeDiskWrapper.DiskUpdateProperties(deviceHandles[x]);
+            driveLayout = NativeDiskWrapper.DiskGetDriveLayoutEx(deviceHandles[x]);
+        }
 
-            for (int i = 0; i < volumeHandles.Length; i++)
+        public static DiskPartitionInfo GetDiskPartitionInfo(char driveLetter)
+        {
+            int deviceID = NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", driveLetter));
+            IntPtr deviceHandle = NativeDiskWrapper.GetHandleOnDevice(deviceID, NativeDisk.GENERIC_READ);
+            uint partitionTableSize = 0;
+
+            DiskPartitionInfo partitionsInfo = new DiskPartitionInfo();
+
+            var partitionInfo = NativeDiskWrapper.GetDiskPartitionInfo(deviceHandle);
+
+            partitionsInfo.DiskTotalSize = GetDeviceLength(deviceID);
+
+            if (partitionInfo.PartitionStyle == PARTITION_STYLE.MasterBootRecord)
             {
-                taskList.Add(NativeDiskWrapper.WriteSectorDataToHandleAsync(deviceHandles[i], emptyData, 0, 1, (ulong)emptyData.Length));
+                partitionsInfo.PartitionType = PartitionType.MBR;
+                partitionTableSize = 512;
+
+                unsafe
+                {
+                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, 512);
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        ulong partitionStartSector = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 8 + 16 * i);
+                        ulong partitionNumSectors = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1BE + 12 + 16 * i);
+
+                        if (partitionStartSector + partitionNumSectors > 0)
+                        {
+                            partitionsInfo.PartitionSizes.Add(partitionNumSectors * 512);
+                        }
+                    }
+                }
+            }
+            else if (partitionInfo.PartitionStyle == PARTITION_STYLE.GuidPartitionTable)
+            {
+                partitionsInfo.PartitionType = PartitionType.GPT;
+                partitionTableSize = 17408;
+
+                unsafe
+                {
+                    byte* data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, 0, 1, 512);
+                    uint gptHeaderOffset = (uint)Marshal.ReadInt32(new IntPtr(data), 0x1C6);
+                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, gptHeaderOffset, 1, 512);
+                    ulong partitionTableSector = (ulong)Marshal.ReadInt64(new IntPtr(data), 0x48);
+                    uint noOfPartitionEntries = (uint)Marshal.ReadInt32(new IntPtr(data), 0x50);
+                    uint sizeOfPartitionEntry = (uint)Marshal.ReadInt32(new IntPtr(data), 0x54);
+
+                    data = NativeDiskWrapper.ReadSectorDataPointerFromHandle(deviceHandle, partitionTableSector, (512 / sizeOfPartitionEntry) * noOfPartitionEntries, 512);
+
+                    for (int i = 0; i < noOfPartitionEntries; i++)
+                    {
+                        ulong partitionStartSector = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x20 + sizeOfPartitionEntry * i));
+                        ulong partitionNumSectors = (ulong)Marshal.ReadInt64(new IntPtr(data), (int)(0x28 + sizeOfPartitionEntry * i));
+
+                        if (partitionStartSector + partitionNumSectors > 0)
+                        {
+                            partitionsInfo.PartitionSizes.Add(partitionNumSectors * 512);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                partitionsInfo.PartitionType = PartitionType.RAW;
             }
 
-            await Task.WhenAll(taskList);
+            NativeDisk.CloseHandle(deviceHandle);
+
+            partitionsInfo.UnallocatedSize = partitionsInfo.DiskTotalSize - (partitionsInfo.PartitionSizes.Sum() + partitionTableSize);
+
+            return partitionsInfo;
         }
     }
 }

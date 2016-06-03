@@ -446,6 +446,61 @@ namespace dotNetDiskImager.DiskAccess
             return resultStruct;
         }
 
+        internal static DRIVE_LAYOUT_INFORMATION_EX DiskGetDriveLayoutEx(IntPtr handle)
+        {
+            var buffSize = Marshal.SizeOf(typeof(DRIVE_LAYOUT_INFORMATION_EX));
+            var buffer = Marshal.AllocHGlobal(buffSize);
+            int outBytes = 0;
+
+            var result = NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_DISK_GET_DRIVE_LAYOUT_EX, IntPtr.Zero, 0, buffer, buffSize, ref outBytes, IntPtr.Zero);
+            if (!result)
+            {
+                Marshal.FreeHGlobal(buffer);
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            else
+            {
+                var resultStruct = Marshal.PtrToStructure<DRIVE_LAYOUT_INFORMATION_EX>(buffer);
+                Marshal.FreeHGlobal(buffer);
+                return resultStruct;
+            }
+        }
+
+        internal static void DiskCreateDiskMBR(IntPtr handle, uint Signature)
+        {
+            CREATE_DISK disk = new CREATE_DISK();
+            disk.PartitionStyle = PARTITION_STYLE.MasterBootRecord; // MBR
+            disk.Mbr.Signature = Signature;
+            var buffSize = Marshal.SizeOf(disk);
+            var buffer = Marshal.AllocHGlobal(buffSize);
+            Marshal.StructureToPtr(disk, buffer, false);
+            int bytesReturned = 0;
+            var result = NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_DISK_CREATE_DISK, buffer, buffSize, IntPtr.Zero, 0, ref bytesReturned, IntPtr.Zero);
+            Marshal.FreeHGlobal(buffer);
+            if (!result)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        internal static void DiskUpdateProperties(IntPtr handle)
+        {
+            int bytesReturned = 0;
+            var result = NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_DISK_UPDATE_PROPERTIES, IntPtr.Zero, 0, IntPtr.Zero, 0, ref bytesReturned, IntPtr.Zero);
+            if (!result)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        internal static void DiskSetDriveLayoutEx(IntPtr handle, DRIVE_LAYOUT_INFORMATION_EX layout)
+        {
+            var buffSize = Marshal.SizeOf(layout);
+            var buffer = Marshal.AllocHGlobal(buffSize);
+            int bytesReturned = 0;
+            Marshal.StructureToPtr(layout, buffer, false);
+            var result = NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_DISK_SET_DRIVE_LAYOUT_EX, buffer, buffSize, IntPtr.Zero, 0, ref bytesReturned, IntPtr.Zero);
+            Marshal.FreeHGlobal(buffer);
+            if (!result)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
         internal static uint GetLogicalDrives()
         {
             return NativeDisk.GetLogicalDrives();
