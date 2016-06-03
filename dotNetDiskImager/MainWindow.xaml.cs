@@ -401,6 +401,11 @@ namespace dotNetDiskImager
             {
                 MessageBox.Show(this, ex.Message, "Unknown error");
             }
+
+            disk?.Dispose();
+            disk = null;
+            SetUIState(true, false);
+            Mouse.OverrideCursor = null;
         }
 
         private void calculateChecksumButton_Click(object sender, RoutedEventArgs e)
@@ -1523,10 +1528,7 @@ namespace dotNetDiskImager
             Mouse.OverrideCursor = Cursors.Wait;
             disk = new DiskRaw(devices);
             await disk.WipeFileSystemAndPartitions();
-            disk.Dispose();
-            disk = null;
-            SetUIState(true, false);
-            Mouse.OverrideCursor = null;
+
             MessageBox.Show(this, "Device(s) wiped successfully.\nNow you need to reformat them using Windows format dialog or any other formatting software\nto filesystem of your selection.",
                 "Wipe successful", MessageBoxButton.OK, MessageBoxImage.Information);
         }

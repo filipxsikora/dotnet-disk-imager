@@ -20,8 +20,14 @@ namespace dotNetDiskImager.Models
                 i++;
                 speedValue /= 1024.0;
             }
-
-            return string.Format("{0:0.00} {1}B", speedValue, byteUnits[i]);
+            if (i < 5)
+            {
+                return string.Format("{0:0.00} {1}B", speedValue, byteUnits[i]);
+            }
+            else
+            {
+                return "n/a";
+            }
         }
 
         public static string BytesToClosestXbytes(ulong bytes)
