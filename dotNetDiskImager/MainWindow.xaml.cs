@@ -1594,6 +1594,7 @@ namespace dotNetDiskImager
                         disk = null;
                         MessageBox.Show(this, ex.Message, "Unknown error");
                     }
+                    return;
                 }
 
                 if(args.Write)
@@ -1610,6 +1611,7 @@ namespace dotNetDiskImager
                         disk = null;
                         MessageBox.Show(this, ex.Message, "Unknown error");
                     }
+                    return;
                 }
 
                 if(args.Verify)
@@ -1625,6 +1627,7 @@ namespace dotNetDiskImager
                         disk = null;
                         MessageBox.Show(this, ex.Message, "Unknown error");
                     }
+                    return;
                 }
             }
             else
