@@ -857,7 +857,7 @@ namespace dotNetDiskImager
                     progressText.Content = "0% Complete";
                     stepText.Content = "Writing...";
 
-                    disk.BeginWriteImageToDevice(true);
+                    disk.BeginWriteImageToDevice(true, true);
                     SetUIState(false);
                     programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                     programTaskbar.Overlay = Properties.Resources.write.ToBitmapImage();
