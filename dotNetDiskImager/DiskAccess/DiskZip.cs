@@ -468,6 +468,12 @@ namespace dotNetDiskImager.DiskAccess
             int progress = 0;
             int readedFromZip = 0;
             List<Task<bool>> taskList = new List<Task<bool>>(deviceHandles.Length);
+            byte[][] deviceData = new byte[deviceHandles.Length][];
+
+            for (int i = 0; i < deviceHandles.Length; i++)
+            {
+                deviceData[i] = new byte[1024 * sectorSize];
+            }
 
             msStopwatch.Start();
             percentStopwatch.Start();
@@ -495,13 +501,14 @@ namespace dotNetDiskImager.DiskAccess
                             return false;
 
                         readedFromZip = zipReader.Read(fileData, 0, (int)(((numSectors - i >= 1024) ? 1024 : (numSectors - i)) * sectorSize));
-                        foreach (var deviceHandle in deviceHandles)
+                        for (int x = 0; x < deviceHandles.Length; x++)
                         {
+                            int index = x;
                             taskList.Add(Task.Run(() =>
                             {
-                                var deviceData = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandle, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                                NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[index], deviceData[index], i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
-                                if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData))
+                                if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData[index]))
                                 {
                                     return false;
                                 }

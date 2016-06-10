@@ -61,7 +61,7 @@ namespace dotNetDiskImager
                     break;
             }
 
-            deviceSizeAndInfoTextBlock.Text = string.Format("{0} - {1}", Helpers.BytesToXbytes(partitionInfo.DiskTotalSize), partitionTableName);
+            deviceSizeAndInfoTextBlock.Text = string.Format("{0} ({1}) - {2}", Helpers.BytesToXbytes(partitionInfo.DiskTotalSize), string.Format("{0:#,0} Bytes", partitionInfo.DiskTotalSize), partitionTableName);
         }
 
         void Add(double percent, string textLabel, ulong partitionSize, bool allocated)
