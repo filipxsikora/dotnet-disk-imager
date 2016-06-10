@@ -799,12 +799,15 @@ namespace dotNetDiskImager
             if (result.Result)
             {
                 DisplayInfoPart(false);
-                if (MessageBox.Show(this, string.Format("Writing to the {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
-                    "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                if (AppSettings.Settings.DisplayWriteWarnings)
                 {
-                    disk?.Dispose();
-                    disk = null;
-                    return;
+                    if (MessageBox.Show(this, string.Format("Writing to the {0}\ncan corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
+                        "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        return;
+                    }
                 }
                 disk.OperationProgressChanged += Disk_OperationProgressChanged;
                 disk.OperationProgressReport += Disk_OperationProgressReport;
@@ -837,16 +840,19 @@ namespace dotNetDiskImager
             {
                 DisplayInfoPart(false);
                 if (MessageBox.Show(this, string.Format("Target device [{0}:\\] hasn't got enough capacity.\nSpace availible {1}\nSpace required {2}\n" +
-                    "The extra space {3} appear to contain any data.\nWould you like to write data up to device size ?", result.AffectedDevice,
-                    Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), result.DataFound ? "DOES" : "does not"),
+                    "The extra space ({3}) {4} appear to contain any data.\nWould you like to write data up to device size ?", result.AffectedDevice,
+                    Helpers.BytesToXbytes(result.AvailibleSpace), Helpers.BytesToXbytes(result.RequiredSpace), Helpers.BytesToXbytes(result.RequiredSpace - result.AvailibleSpace), result.DataFound ? "DOES" : "does not"),
                     "Not enough capacity", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    if (MessageBox.Show(this, string.Format("Writing to the {0}\n can corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
-                        "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    if (AppSettings.Settings.DisplayWriteWarnings)
                     {
-                        disk?.Dispose();
-                        disk = null;
-                        return;
+                        if (MessageBox.Show(this, string.Format("Writing to the {0}\n can corrupt the device(s).\nMake sure you have selected correct device(s) and you know what you are doing.\nWe are not responsible for any damage done.\nAre you sure you want to continue ?", Helpers.GetDevicesListWithModel(GetSelectedDevices())),
+                            "Confirm write", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                        {
+                            disk?.Dispose();
+                            disk = null;
+                            return;
+                        }
                     }
                     disk.OperationProgressChanged += Disk_OperationProgressChanged;
                     disk.OperationProgressReport += Disk_OperationProgressReport;
@@ -972,7 +978,9 @@ namespace dotNetDiskImager
             {
                 DisplayInfoPart(false);
                 if (MessageBox.Show(this, string.Format("Image and device size does not match.\nImage size: {0}\nDevice size: {1}\nWould you like to verify data up to {2} size?",
-                    Helpers.BytesToXbytes(result.ImageSize), Helpers.BytesToXbytes(result.DeviceSize), (result.DeviceSize > result.ImageSize ? "image" : "device")),
+                    string.Format("{0}{1}", Helpers.BytesToXbytes(result.ImageSize), result.ImageSize > result.DeviceSize ? string.Format(" - larger by {0}", Helpers.BytesToXbytes(result.ImageSize - result.DeviceSize)) : ""),
+                    string.Format("{0}{1}", Helpers.BytesToXbytes(result.DeviceSize), result.DeviceSize > result.ImageSize ? string.Format(" - larger by {0}", Helpers.BytesToXbytes(result.DeviceSize - result.ImageSize)) : ""),
+                    (result.DeviceSize > result.ImageSize ? "image" : "device")),
                     "Size does not match", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     ulong bytesToRead = result.DeviceSize > result.ImageSize ? result.ImageSize : result.DeviceSize;
@@ -1580,7 +1588,7 @@ namespace dotNetDiskImager
                     verifyCheckBox.IsChecked = true;
                 }
 
-                if(args.Read)
+                if (args.Read)
                 {
                     verifyingAfterOperation = false;
 
@@ -1597,7 +1605,7 @@ namespace dotNetDiskImager
                     return;
                 }
 
-                if(args.Write)
+                if (args.Write)
                 {
                     verifyingAfterOperation = false;
 
@@ -1614,7 +1622,7 @@ namespace dotNetDiskImager
                     return;
                 }
 
-                if(args.Verify)
+                if (args.Verify)
                 {
                     verifyingAfterOperation = false;
                     try
@@ -1636,7 +1644,7 @@ namespace dotNetDiskImager
                 {
                     verifyCheckBox.IsChecked = true;
                 }
-            } 
+            }
         }
     }
 }
