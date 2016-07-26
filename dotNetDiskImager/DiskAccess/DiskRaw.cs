@@ -381,8 +381,6 @@ namespace dotNetDiskImager.DiskAccess
             int readed = 0;
             List<Task> taskList = new List<Task>(deviceHandles.Length);
 
-            byte[][] deviceData = new byte[deviceHandles.Length][];
-
             msStopwatch.Start();
             percentStopwatch.Start();
 
