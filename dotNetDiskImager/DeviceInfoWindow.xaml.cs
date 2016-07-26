@@ -41,14 +41,14 @@ namespace dotNetDiskImager
                 Add((double)partitionInfo.PartitionSizes[i] / partitionInfo.DiskTotalSize, string.Format("Partition {0}", i + 1), partitionInfo.PartitionSizes[i], true);
             }
 
-            if(((double)partitionInfo.UnallocatedSize / partitionInfo.DiskTotalSize) > 0.01)
+            if (((double)partitionInfo.UnallocatedSize / partitionInfo.DiskTotalSize) > 0.01)
             {
                 Add((double)partitionInfo.UnallocatedSize / partitionInfo.DiskTotalSize, "Unallocated", partitionInfo.UnallocatedSize, false);
             }
 
             deviceNameTextBlock.Text = Disk.GetModelFromDrive(driveLetter);
-            
-            switch(partitionInfo.PartitionType)
+
+            switch (partitionInfo.PartitionType)
             {
                 case PartitionType.GPT:
                     partitionTableName = "GUID Partition Table";
@@ -90,6 +90,16 @@ namespace dotNetDiskImager
 
             if (lastUsedColor == colors.Length)
                 lastUsedColor = 0;
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                DialogResult = false;
+                e.Handled = true;
+                Close();
+            }
         }
     }
 }

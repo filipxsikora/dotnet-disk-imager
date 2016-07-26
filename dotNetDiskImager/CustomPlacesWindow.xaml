@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:dotNetDiskImager"
         mc:Ignorable="d"
-        Title="Custom Places - dotNet Disk Imager" Height="200" Width="350" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Icon="icon.ico">
+        Title="Custom Places - dotNet Disk Imager" Height="200" Width="350" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Icon="icon.ico" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <Border BorderBrush="#FFBBBBBB" BorderThickness="1" Margin="10,40,10,10">
             <ScrollViewer>

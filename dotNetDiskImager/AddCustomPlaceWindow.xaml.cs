@@ -78,6 +78,7 @@ namespace dotNetDiskImager
                     e.Handled = true;
                     Close();
                 }
+
                 if (e.Key == Key.Enter)
                 {
                     if (pathTextBox.Text.Length > 0)
