@@ -40,7 +40,7 @@ namespace dotNetDiskImager
         const int DBT_DEVTYP_VOLUME = 0x02;
         #endregion
 
-        const int windowHeight = 290;
+        const int windowHeight = 285;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
         const int progressPartHeight = 235;
