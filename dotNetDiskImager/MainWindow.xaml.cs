@@ -1137,12 +1137,15 @@ namespace dotNetDiskImager
                         {
                             if (file[1] == ':' && file[2] == '\\')
                             {
-                                foreach (var item in driveSelectComboBox.Items)
+                                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
                                 {
+                                    var item = driveSelectComboBox.Items[i];
                                     var device = (((item as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem);
                                     if (device.DriveLetter == file[0])
                                     {
-                                        driveSelectComboBox.SelectedIndex = driveSelectComboBox.Items.IndexOf(device);
+                                        device.IsChecked = true;
+                                        DeviceCheckBoxClickHandler();
+                                        break;
                                     }
                                 }
                             }
