@@ -111,9 +111,13 @@
     <Compile Include="Models\CommandLineArguments.cs" />
     <Compile Include="Models\DeviceButton.cs" />
     <Compile Include="Models\Extensions.cs" />
+    <Compile Include="Models\LastOperationInfo.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Models\Updater.cs" />
     <Compile Include="Models\Utils.cs" />
+    <Compile Include="OperationFinishedInfoWindow.xaml.cs">
+      <DependentUpon>OperationFinishedInfoWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -163,6 +167,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="OperationFinishedInfoWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Brushes.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

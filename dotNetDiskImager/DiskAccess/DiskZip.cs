@@ -35,29 +35,34 @@ namespace dotNetDiskImager.DiskAccess
         {
             cancelPending = false;
             currentDiskOperation = DiskOperation.Read;
+
             if (verify)
+            {
                 currentDiskOperation |= DiskOperation.Verify;
+            }
 
             workingThread = new Thread(async () =>
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
+                Exception exception = null;
 
                 try
                 {
                     result = ReadImageFromDeviceWorker(sectorSize, numSectors);
                     if (verify && !cancelPending)
                     {
-                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
+                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation, null));
                         result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
-                catch
+                catch (Exception e)
                 {
                     result = false;
                     state = OperationFinishedState.Error;
+                    exception = e;
                 }
                 finally
                 {
@@ -67,7 +72,7 @@ namespace dotNetDiskImager.DiskAccess
                         state = OperationFinishedState.Error;
 
                     Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
+                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation, exception));
                 }
             });
             workingThread.Start();
@@ -84,6 +89,7 @@ namespace dotNetDiskImager.DiskAccess
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
+                Exception exception = null;
 
                 try
                 {
@@ -91,10 +97,11 @@ namespace dotNetDiskImager.DiskAccess
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
-                catch
+                catch (Exception e)
                 {
                     result = false;
                     state = OperationFinishedState.Error;
+                    exception = e;
                 }
                 finally
                 {
@@ -104,7 +111,7 @@ namespace dotNetDiskImager.DiskAccess
                         state = OperationFinishedState.Error;
 
                     Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
+                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation, exception));
                 }
             });
             workingThread.Start();
@@ -125,22 +132,24 @@ namespace dotNetDiskImager.DiskAccess
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
+                Exception exception = null;
 
                 try
                 {
                     result = await WriteImageToDeviceWorker(sectorSize, numSectors);
                     if (verify && !cancelPending)
                     {
-                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
+                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation, null));
                         result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
-                catch
+                catch (Exception e)
                 {
                     result = false;
                     state = OperationFinishedState.Error;
+                    exception = e;
                 }
                 finally
                 {
@@ -150,7 +159,7 @@ namespace dotNetDiskImager.DiskAccess
                         state = OperationFinishedState.Error;
 
                     Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
+                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation, exception));
                 }
             });
             workingThread.Start();
@@ -224,14 +233,23 @@ namespace dotNetDiskImager.DiskAccess
                 deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_READ);
             }
 
+            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
+
+            for (int i = 1; i < deviceHandles.Length; i++)
+            {
+                var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
+                if (sectors < numSectors)
+                {
+                    numSectors = sectors;
+                }
+            }
+
             if (!IsZipFile())
             {
                 throw new FileFormatException(string.Format("File {0} isn't valid zip file.", new FileInfo(_imagePath).Name));
             }
 
             _imagePath = imagePath;
-
-            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
 
             if (skipUnallocated)
             {
@@ -469,6 +487,7 @@ namespace dotNetDiskImager.DiskAccess
             int readedFromZip = 0;
             List<Task<bool>> taskList = new List<Task<bool>>(deviceHandles.Length);
             byte[][] deviceData = new byte[deviceHandles.Length][];
+            int failedDeviceIndex = 0;
 
             for (int i = 0; i < deviceHandles.Length; i++)
             {
@@ -510,6 +529,7 @@ namespace dotNetDiskImager.DiskAccess
 
                                 if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData[index]))
                                 {
+                                    failedDeviceIndex = index;
                                     return false;
                                 }
                                 else
@@ -524,7 +544,16 @@ namespace dotNetDiskImager.DiskAccess
                         foreach (var task in taskList)
                         {
                             if (!task.Result)
+                            {
+                                for (ulong x = 0; x < 1024 * sectorSize; x++)
+                                {
+                                    if (deviceData[failedDeviceIndex][x] != fileData[x])
+                                    {
+                                        throw new Exception(string.Format("Verify found different data. Device {0}:\\ at byte {1:n0}, file data: 0x{2:X2}, device data: 0x{3:X2}", DriveLetters[failedDeviceIndex], i * sectorSize + x, deviceData[failedDeviceIndex][x], fileData[x]));
+                                    }
+                                }
                                 return false;
+                            }
                         }
 
                         totalBytesVerified += (ulong)readedFromZip;

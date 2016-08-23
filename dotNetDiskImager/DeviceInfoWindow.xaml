@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:dotNetDiskImager"
         mc:Ignorable="d"
-        Title="Device Info - dotNet Disk Imager" Height="230" Width="525" ResizeMode="CanMinimize" WindowStartupLocation="CenterOwner" Icon="icon.ico">
+        Title="Device Info - dotNet Disk Imager" Height="230" Width="525" ResizeMode="CanMinimize" WindowStartupLocation="CenterOwner" Icon="icon.ico" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <Border BorderBrush="Black" BorderThickness="1" Height="50" Margin="10,70,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="489">
             <StackPanel x:Name="partitionsHolder" Orientation="Horizontal"/>

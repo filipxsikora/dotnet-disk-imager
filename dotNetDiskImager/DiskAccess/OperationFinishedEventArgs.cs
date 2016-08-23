@@ -12,13 +12,15 @@ namespace dotNetDiskImager.DiskAccess
         public bool Success { get; }
         public OperationFinishedState OperationState { get; }
         public DiskOperation DiskOperation { get; }
+        public Exception Exception {get;}
 
-        public OperationFinishedEventArgs(bool done, bool success, OperationFinishedState operationState, DiskOperation diskOperation)
+        public OperationFinishedEventArgs(bool done, bool success, OperationFinishedState operationState, DiskOperation diskOperation, Exception exception)
         {
             Done = done;
             Success = success;
             OperationState = operationState;
             DiskOperation = diskOperation;
+            Exception = exception;
         }
     }
 }

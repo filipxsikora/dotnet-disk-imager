@@ -25,6 +25,7 @@ using System.Windows.Shapes;
 using System.Windows.Shell;
 using dotNetDiskImager.UI;
 using System.Media;
+using System.Diagnostics;
 
 namespace dotNetDiskImager
 {
@@ -40,7 +41,7 @@ namespace dotNetDiskImager
         const int DBT_DEVTYP_VOLUME = 0x02;
         #endregion
 
-        const int windowHeight = 290;
+        const int windowHeight = 285;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
         const int progressPartHeight = 235;
@@ -60,6 +61,8 @@ namespace dotNetDiskImager
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
         AboutWindow aboutWindow = null;
         SettingsWindow settingsWindow = null;
+        Stopwatch elapsedStopwatch = new Stopwatch();
+        LastOperationInfo lastOperationInfo = new LastOperationInfo();
 
         public SpeedGraphModel GraphModel { get; } = new SpeedGraphModel();
         bool verifyingAfterOperation = false;
@@ -226,9 +229,15 @@ namespace dotNetDiskImager
             {
                 if (e.Done)
                 {
+                    elapsedStopwatch.Stop();
                     verifyingAfterOperation = false;
+                    lastOperationInfo.OperationFinishedArgs = e;
+                    lastOperationInfo.ElapsedTime = elapsedStopwatch.Elapsed;
+                    lastOperationInfo.Devices = disk.DriveLetters;
+
                     Dispatcher.Invoke(() =>
                     {
+                        lastOperationInfo.ImageFile = imagePathTextBox.Text;
                         PlayNotifySound();
                         this.FlashWindow();
                         SetUIState(true);
@@ -606,6 +615,7 @@ namespace dotNetDiskImager
                 windowAnimation.Completed += (s, e) =>
                 {
                     closeInfoButton.Visibility = Visibility.Visible;
+                    showInfoButton.Visibility = Visibility.Visible;
                 };
                 BeginAnimation(HeightProperty, windowAnimation);
                 infoContainer.BeginAnimation(HeightProperty, containerAnimation);
@@ -618,6 +628,7 @@ namespace dotNetDiskImager
                     Height = windowHeight;
                     infoContainer.Visibility = Visibility.Collapsed;
                     closeInfoButton.Visibility = Visibility.Collapsed;
+                    showInfoButton.Visibility = Visibility.Collapsed;
                     return;
                 }
                 else
@@ -629,6 +640,7 @@ namespace dotNetDiskImager
                         infoContainer.Visibility = Visibility.Collapsed;
                     };
                     closeInfoButton.Visibility = Visibility.Collapsed;
+                    showInfoButton.Visibility = Visibility.Collapsed;
                     BeginAnimation(HeightProperty, windowAnimation);
                     infoContainer.BeginAnimation(HeightProperty, containerAnimation);
                 }
@@ -700,6 +712,7 @@ namespace dotNetDiskImager
                 progressText.Content = "0% Complete";
                 stepText.Content = "Reading...";
 
+                elapsedStopwatch.Restart();
                 disk.BeginReadImageFromDevice(verifyCheckBox.IsChecked.Value);
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
@@ -818,6 +831,7 @@ namespace dotNetDiskImager
                 progressText.Content = "0% Complete";
                 stepText.Content = "Writing...";
 
+                elapsedStopwatch.Restart();
                 disk.BeginWriteImageToDevice(verifyCheckBox.IsChecked.Value);
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
@@ -863,7 +877,8 @@ namespace dotNetDiskImager
                     progressText.Content = "0% Complete";
                     stepText.Content = "Writing...";
 
-                    disk.BeginWriteImageToDevice(true, true);
+                    elapsedStopwatch.Restart();
+                    disk.BeginWriteImageToDevice(verifyCheckBox.IsChecked.Value, true);
                     SetUIState(false);
                     programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                     programTaskbar.Overlay = Properties.Resources.write.ToBitmapImage();
@@ -956,6 +971,7 @@ namespace dotNetDiskImager
                 progressText.Content = "0% Complete";
                 stepText.Content = "Verifying...";
 
+                elapsedStopwatch.Restart();
                 disk.BeginVerifyImageAndDevice(result.ImageSize);
                 SetUIState(false);
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
@@ -993,6 +1009,7 @@ namespace dotNetDiskImager
                     progressText.Content = "0% Complete";
                     stepText.Content = "Verifying...";
 
+                    elapsedStopwatch.Restart();
                     disk.BeginVerifyImageAndDevice(bytesToRead);
                     SetUIState(false);
                     programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
@@ -1137,12 +1154,15 @@ namespace dotNetDiskImager
                         {
                             if (file[1] == ':' && file[2] == '\\')
                             {
-                                foreach (var item in driveSelectComboBox.Items)
+                                for (int i = 1; i < driveSelectComboBox.Items.Count; i++)
                                 {
+                                    var item = driveSelectComboBox.Items[i];
                                     var device = (((item as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem);
                                     if (device.DriveLetter == file[0])
                                     {
-                                        driveSelectComboBox.SelectedIndex = driveSelectComboBox.Items.IndexOf(device);
+                                        device.IsChecked = true;
+                                        DeviceCheckBoxClickHandler();
+                                        break;
                                     }
                                 }
                             }
@@ -1221,7 +1241,11 @@ namespace dotNetDiskImager
             if (settingsWindow == null)
             {
                 settingsWindow = new SettingsWindow(this);
-                settingsWindow.Closed += (s, e) => settingsWindow = null;
+                settingsWindow.Closed += (s, e) =>
+                {
+                    settingsWindow = null;
+                    Activate();
+                };
             }
             settingsWindow.Show();
             settingsWindow.Activate();
@@ -1232,7 +1256,11 @@ namespace dotNetDiskImager
             if (aboutWindow == null)
             {
                 aboutWindow = new AboutWindow(this);
-                aboutWindow.Closed += (s, e) => aboutWindow = null;
+                aboutWindow.Closed += (s, e) =>
+                {
+                    aboutWindow = null;
+                    Activate();
+                };
             }
             aboutWindow.Show();
             aboutWindow.Activate();
@@ -1645,6 +1673,11 @@ namespace dotNetDiskImager
                     verifyCheckBox.IsChecked = true;
                 }
             }
+        }
+
+        private void showInfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            new OperationFinishedInfoWindow(this, lastOperationInfo).ShowDialog();
         }
     }
 }

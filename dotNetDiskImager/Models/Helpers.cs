@@ -150,5 +150,24 @@ namespace dotNetDiskImager.Models
 
             return sb.ToString();
         }
+
+        public static string TimeSpanToString(TimeSpan timeSpan)
+        {
+            string str = "";
+
+            if (timeSpan.Hours > 0)
+            {
+                str += string.Format("{0} hour{1} ", timeSpan.Hours, timeSpan.Hours == 1 ? "" : "s");
+            }
+
+            if (timeSpan.Minutes > 0)
+            {
+                str += string.Format("{0} minute{1} ", timeSpan.Minutes, timeSpan.Minutes == 1 ? "" : "s");
+            }
+
+            str += string.Format("{0} second{1} ", timeSpan.Seconds, timeSpan.Seconds == 1 ? "" : "s");
+
+            return str;
+        }
     }
 }

@@ -7,7 +7,7 @@
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
         x:Name="window"
-        Title="dotNet Disk Imager" Height="290" Width="575" ResizeMode="CanMinimize" Background="White" AllowDrop="True" Icon="icon.ico" WindowStartupLocation="CenterOwner" PreviewKeyDown="window_PreviewKeyDown" Drop="program_Drop" PreviewDragEnter="program_DragEnter" PreviewDragLeave="program_DragLeave">
+        Title="dotNet Disk Imager" Height="285" Width="575" ResizeMode="CanMinimize" Background="White" AllowDrop="True" Icon="icon.ico" WindowStartupLocation="CenterOwner" PreviewKeyDown="window_PreviewKeyDown" Drop="program_Drop" PreviewDragEnter="program_DragEnter" PreviewDragLeave="program_DragLeave">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="programTaskbar" Description="dotNet Disk Imager" ProgressState="Normal"/>
     </Window.TaskbarItemInfo>
@@ -33,8 +33,9 @@
         <CheckBox TabIndex="6" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" ToolTip="Reads only allocated partitions on device if checked" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <Border x:Name="infoContainer" Style="{StaticResource InfoContainerError}" Height="30" VerticalAlignment="Top" Visibility="Collapsed">
             <Grid>
-                <Label x:Name="infoText" Content="Operation finished successfully" Margin="30,0" Padding="0" Foreground="#FF800505" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
-                <Button x:Name="closeInfoButton" Style="{StaticResource CloseInfoButton}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="30" BorderThickness="0" Click="closeInfoButton_Click" />
+                <Label x:Name="infoText" Content="Reading and verify was finished succesfully" Margin="30,0" Padding="0" Foreground="#FF800505" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
+                <Button x:Name="closeInfoButton" ToolTip="Hide" Style="{StaticResource CloseInfoButton}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="20" BorderThickness="0" Click="closeInfoButton_Click" Margin="0,0,5,0" />
+                <Button x:Name="showInfoButton" ToolTip="Show more informations" Style="{StaticResource CloseInfoButton}" Content="{StaticResource operationInfoIcon}" Padding="0" HorizontalAlignment="Right" Width="20" BorderThickness="0" Margin="0,0,25,0" Click="showInfoButton_Click" />
                 <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             </Grid>
         </Border>
@@ -88,12 +89,12 @@
                 </StackPanel>
             </Button>
         </StackPanel>
-        <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0" AllowDrop="True">Drop File or Drive here</Label>
         <Button TabIndex="13" x:Name="cancelButton" ToolTip="Cancel current operation" HorizontalAlignment="Right" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Margin="0,212,10,0" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{StaticResource cancelIcon}" Padding="0,0,3,0"/>
                 <TextBlock Text="Cancel"/>
             </StackPanel>
         </Button>
+        <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0" AllowDrop="True">Drop File or Drive here</Label>
     </Grid>
 </Window>

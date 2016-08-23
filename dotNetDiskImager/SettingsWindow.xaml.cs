@@ -162,6 +162,7 @@ namespace dotNetDiskImager
             if (e.Key == Key.Escape)
             {
                 Close();
+                e.Handled = true;
             }
         }
 
@@ -191,7 +192,11 @@ namespace dotNetDiskImager
             if (customPlacesWindow == null)
             {
                 customPlacesWindow = new CustomPlacesWindow(this);
-                customPlacesWindow.Closed += (s, ea) => customPlacesWindow = null;
+                customPlacesWindow.Closed += (s, ea) =>
+                {
+                    customPlacesWindow = null;
+                    Activate();
+                };
             }
             customPlacesWindow.ShowDialog();
         }
