@@ -25,13 +25,12 @@ namespace dotNetDiskImager
         {
             Owner = owner;
             InitializeComponent();
-
             BuildMessage(info);
         }
 
         void BuildMessage(LastOperationInfo info)
         {
-            StringBuilder sb = new StringBuilder(4096);
+            /*StringBuilder sb = new StringBuilder(4096);
 
             sb.Append("Description: ");
             sb.Append(BuildOperationMessage(info.OperationFinishedArgs));
@@ -53,7 +52,30 @@ namespace dotNetDiskImager
                 }
             }
 
-            moreInfoTextBox.Text = sb.ToString();
+            //moreInfoTextBox.Text = sb.ToString();
+            paragraph.Inlines.Add(new Run(sb.ToString()));*/
+
+            paragraph.Inlines.Add(new Run("Description: ") { FontWeight = FontWeights.Bold });
+            paragraph.Inlines.Add(BuildOperationMessage(info.OperationFinishedArgs) + "\n\n");
+            paragraph.Inlines.Add(new Run("Elapsed time: ") { FontWeight = FontWeights.Bold });
+            paragraph.Inlines.Add(Helpers.TimeSpanToString(info.ElapsedTime) + "\n\n");
+            paragraph.Inlines.Add(new Run("Image file: ") { FontWeight = FontWeights.Bold });
+            paragraph.Inlines.Add(info.ImageFile + "\n\n");
+            paragraph.Inlines.Add(new Run(string.Format("Device{0}: ", info.Devices.Length > 1 ? "s" : "")) { FontWeight = FontWeights.Bold });
+            foreach (var device in info.Devices)
+            {
+                paragraph.Inlines.Add(string.Format("{0}:\\ ", device));
+            }
+            paragraph.Inlines.Add("\n\n");
+            if (info.OperationFinishedArgs.Exception != null)
+            {
+                paragraph.Inlines.Add(new Run("Error description: ") { FontWeight = FontWeights.Bold });
+                paragraph.Inlines.Add(info.OperationFinishedArgs.Exception.Message);
+                if (info.OperationFinishedArgs.Exception.InnerException != null)
+                {
+                    paragraph.Inlines.Add(info.OperationFinishedArgs.Exception.InnerException.Message);
+                }
+            }
         }
 
         string BuildOperationMessage(OperationFinishedEventArgs e)

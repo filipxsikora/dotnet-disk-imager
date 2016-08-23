@@ -7,6 +7,10 @@
         mc:Ignorable="d"
         Title="More Information - dotNet Disk Imager" Height="250" Width="400" Icon="icon.ico" ShowInTaskbar="False" MinWidth="200" MinHeight="200" WindowStartupLocation="CenterOwner">
     <Grid>
-        <TextBox x:Name="moreInfoTextBox" IsReadOnly="True" Margin="10" TextWrapping="NoWrap" Text="" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+        <RichTextBox x:Name="moreInfoTextBox" IsReadOnly="True" Margin="10" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <FlowDocument x:Name="document" PageWidth="Auto">
+                <Paragraph x:Name="paragraph"></Paragraph>
+            </FlowDocument>
+        </RichTextBox>
     </Grid>
 </Window>
