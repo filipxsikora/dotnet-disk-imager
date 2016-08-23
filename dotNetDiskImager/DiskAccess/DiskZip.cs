@@ -233,14 +233,23 @@ namespace dotNetDiskImager.DiskAccess
                 deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_READ);
             }
 
+            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
+
+            for (int i = 1; i < deviceHandles.Length; i++)
+            {
+                var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
+                if (sectors < numSectors)
+                {
+                    numSectors = sectors;
+                }
+            }
+
             if (!IsZipFile())
             {
                 throw new FileFormatException(string.Format("File {0} isn't valid zip file.", new FileInfo(_imagePath).Name));
             }
 
             _imagePath = imagePath;
-
-            numSectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[0], ref sectorSize);
 
             if (skipUnallocated)
             {
@@ -478,6 +487,7 @@ namespace dotNetDiskImager.DiskAccess
             int readedFromZip = 0;
             List<Task<bool>> taskList = new List<Task<bool>>(deviceHandles.Length);
             byte[][] deviceData = new byte[deviceHandles.Length][];
+            int failedDeviceIndex = 0;
 
             for (int i = 0; i < deviceHandles.Length; i++)
             {
@@ -519,6 +529,7 @@ namespace dotNetDiskImager.DiskAccess
 
                                 if (!NativeDiskWrapper.ByteArrayCompare(fileData, deviceData[index]))
                                 {
+                                    failedDeviceIndex = index;
                                     return false;
                                 }
                                 else
@@ -533,7 +544,16 @@ namespace dotNetDiskImager.DiskAccess
                         foreach (var task in taskList)
                         {
                             if (!task.Result)
+                            {
+                                for (ulong x = 0; x < 1024 * sectorSize; x++)
+                                {
+                                    if (deviceData[failedDeviceIndex][x] != fileData[x])
+                                    {
+                                        throw new Exception(string.Format("Verify found different data. Device {0}:\\ at byte {1:n0}, file data: 0x{2:X2}, device data: 0x{3:X2}", DriveLetters[failedDeviceIndex], i * sectorSize + x, deviceData[failedDeviceIndex][x], fileData[x]));
+                                    }
+                                }
                                 return false;
+                            }
                         }
 
                         totalBytesVerified += (ulong)readedFromZip;
