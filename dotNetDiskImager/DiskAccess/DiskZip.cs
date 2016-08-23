@@ -35,29 +35,34 @@ namespace dotNetDiskImager.DiskAccess
         {
             cancelPending = false;
             currentDiskOperation = DiskOperation.Read;
+
             if (verify)
+            {
                 currentDiskOperation |= DiskOperation.Verify;
+            }
 
             workingThread = new Thread(async () =>
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
+                Exception exception = null;
 
                 try
                 {
                     result = ReadImageFromDeviceWorker(sectorSize, numSectors);
                     if (verify && !cancelPending)
                     {
-                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
+                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation, null));
                         result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
-                catch
+                catch (Exception e)
                 {
                     result = false;
                     state = OperationFinishedState.Error;
+                    exception = e;
                 }
                 finally
                 {
@@ -67,7 +72,7 @@ namespace dotNetDiskImager.DiskAccess
                         state = OperationFinishedState.Error;
 
                     Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
+                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation, exception));
                 }
             });
             workingThread.Start();
@@ -84,6 +89,7 @@ namespace dotNetDiskImager.DiskAccess
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
+                Exception exception = null;
 
                 try
                 {
@@ -91,10 +97,11 @@ namespace dotNetDiskImager.DiskAccess
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
-                catch
+                catch (Exception e)
                 {
                     result = false;
                     state = OperationFinishedState.Error;
+                    exception = e;
                 }
                 finally
                 {
@@ -104,7 +111,7 @@ namespace dotNetDiskImager.DiskAccess
                         state = OperationFinishedState.Error;
 
                     Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
+                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation, exception));
                 }
             });
             workingThread.Start();
@@ -125,22 +132,24 @@ namespace dotNetDiskImager.DiskAccess
             {
                 bool result = false;
                 OperationFinishedState state = OperationFinishedState.Error;
+                Exception exception = null;
 
                 try
                 {
                     result = await WriteImageToDeviceWorker(sectorSize, numSectors);
                     if (verify && !cancelPending)
                     {
-                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation));
+                        OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation, null));
                         result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                     }
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
-                catch
+                catch (Exception e)
                 {
                     result = false;
                     state = OperationFinishedState.Error;
+                    exception = e;
                 }
                 finally
                 {
@@ -150,7 +159,7 @@ namespace dotNetDiskImager.DiskAccess
                         state = OperationFinishedState.Error;
 
                     Dispose();
-                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation));
+                    OperationFinished?.Invoke(this, new OperationFinishedEventArgs(true, result && !cancelPending, state, currentDiskOperation, exception));
                 }
             });
             workingThread.Start();
