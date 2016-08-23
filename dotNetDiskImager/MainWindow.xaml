@@ -33,8 +33,9 @@
         <CheckBox TabIndex="6" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" ToolTip="Reads only allocated partitions on device if checked" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="1"/>
         <Border x:Name="infoContainer" Style="{StaticResource InfoContainerError}" Height="30" VerticalAlignment="Top" Visibility="Collapsed">
             <Grid>
-                <Label x:Name="infoText" Content="Operation finished successfully" Margin="30,0" Padding="0" Foreground="#FF800505" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
-                <Button x:Name="closeInfoButton" Style="{StaticResource CloseInfoButton}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="30" BorderThickness="0" Click="closeInfoButton_Click" />
+                <Label x:Name="infoText" Content="Reading and verify was finished succesfully" Margin="30,0" Padding="0" Foreground="#FF800505" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
+                <Button x:Name="closeInfoButton" ToolTip="Hide" Style="{StaticResource CloseInfoButton}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="20" BorderThickness="0" Click="closeInfoButton_Click" Margin="0,0,5,0" />
+                <Button x:Name="showInfoButton" ToolTip="Show more informations" Style="{StaticResource CloseInfoButton}" Content="{StaticResource operationInfoIcon}" Padding="0" HorizontalAlignment="Right" Width="20" BorderThickness="0" Margin="0,0,25,0" Click="showInfoButton_Click" />
                 <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             </Grid>
         </Border>
