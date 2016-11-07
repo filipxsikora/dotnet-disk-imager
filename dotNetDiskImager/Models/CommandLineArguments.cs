@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,15 @@ namespace dotNetDiskImager.Models
         public static CommandLineArguments Parse(string[] args)
         {
             CommandLineArguments arguments = new CommandLineArguments();
+
+            if (args.Length == 2)
+            {
+                if (File.Exists(args[1]))
+                {
+                    arguments.ImagePath = args[1];
+                    return arguments;
+                }
+            }
 
             for (int i = 0; i < args.Length; i++)
             {
