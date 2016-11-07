@@ -78,6 +78,12 @@ namespace dotNetDiskImager
 
             LoadDriveSelectItems(true);
 
+            if (driveSelectComboBox.Items.Count == 2 && AppSettings.Settings.AutoSelectSingleDevice.Value)
+            {
+                (((driveSelectComboBox.Items[1] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).IsChecked = true;
+                DeviceCheckBoxClickHandler();
+            }
+
             Loaded += (s, e) =>
             {
                 WindowContextMenu.CreateWindowMenu(Handle);
@@ -130,6 +136,11 @@ namespace dotNetDiskImager
                                 if (driveSelectComboBox.Items.Count == 0)
                                 {
                                     LoadDriveSelectItems(false);
+                                    if (AppSettings.Settings.AutoSelectSingleDevice.Value)
+                                    {
+                                        (((driveSelectComboBox.Items[1] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).IsChecked = true;
+                                        DeviceCheckBoxClickHandler();
+                                    }
                                 }
                                 else
                                 {
@@ -1295,6 +1306,14 @@ namespace dotNetDiskImager
                         Width = 510,
                         Margin = new Thickness(5, 0, 0, 0)
                     };
+
+                    if (!getImmediate && drives.Length == 1)
+                    {
+                        deviceCheckBox.ModelAcquired += (s, e) =>
+                        {
+                            DeviceCheckBoxClickHandler();
+                        };
+                    }
 
                     deviceCheckBox.Click += DeviceCheckBox_Click;
 

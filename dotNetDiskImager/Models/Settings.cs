@@ -41,19 +41,30 @@ namespace dotNetDiskImager.Models
             try
             {
                 string file = string.Format(@"{0}\dotNetDiskImager\settings.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+
                 if (!File.Exists(file))
+                {
                     return;
+                }
+
                 using (var stream = File.Open(file, FileMode.Open))
                 {
                     var serializer = new XmlSerializer(typeof(SettingsInternal));
                     Settings = serializer.Deserialize(stream) as SettingsInternal;
+
                     if (Settings.EnableSoundNotify == null)
                     {
                         Settings.EnableSoundNotify = true;
                     }
+
                     if (Settings.IsTopMost == null)
                     {
                         Settings.IsTopMost = false;
+                    }
+
+                    if (Settings.AutoSelectSingleDevice == null)
+                    {
+                        Settings.AutoSelectSingleDevice = false;
                     }
                 }
             }
@@ -76,6 +87,7 @@ namespace dotNetDiskImager.Models
         public bool CheckForUpdatesOnStartup { get; set; }
         public List<string> CustomPlaces { get; set; }
         public bool? EnableSoundNotify { get; set; }
+        public bool? AutoSelectSingleDevice { get; set; }
         public CompressionMethod CompressionMethod { get; set; }
         public bool? IsTopMost { get; set; }
 
@@ -94,6 +106,7 @@ namespace dotNetDiskImager.Models
                     CheckForUpdatesOnStartup = true,
                     CustomPlaces = new List<string>(),
                     EnableSoundNotify = true,
+                    AutoSelectSingleDevice = false,
                     CompressionMethod = CompressionMethod.Fast,
                     IsTopMost = false
                 };
