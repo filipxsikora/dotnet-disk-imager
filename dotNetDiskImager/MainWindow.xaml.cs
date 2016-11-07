@@ -68,9 +68,16 @@ namespace dotNetDiskImager
         bool verifyingAfterOperation = false;
         bool closed = false;
 
+        bool acceleratorsVisible = false;
+        List<Label> accelerators;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            InitAccelerators();
+            SetAcceleratorsVisibility(false);
+
             OxyPlot.Wpf.LineAnnotation.PlotViewProperty = speedGraph;
             Topmost = AppSettings.Settings.IsTopMost.Value;
 
@@ -456,6 +463,78 @@ namespace dotNetDiskImager
             {
                 ShowSettingsWindow();
                 e.Handled = true;
+            }
+            if (e.Key == Key.System && Keyboard.Modifiers == ModifierKeys.Alt)
+            {
+                if (!acceleratorsVisible)
+                {
+                    acceleratorsVisible = true;
+                    SetAcceleratorsVisibility(true);
+                }
+                else
+                {
+                    acceleratorsVisible = false;
+                    SetAcceleratorsVisibility(false);
+                }
+                e.Handled = true;
+            }
+            else
+            {
+                if (acceleratorsVisible)
+                {
+                    acceleratorsVisible = false;
+                    SetAcceleratorsVisibility(false);
+
+                    switch (e.Key)
+                    {
+                        case Key.R:
+                            readButton_Click(null, null);
+                            break;
+                        case Key.W:
+                            writeButton_Click(null, null);
+                            break;
+                        case Key.V:
+                            verifyImageButton_Click(null, null);
+                            break;
+                        case Key.P:
+                            wipeDeviceButton_Click(null, null);
+                            break;
+                        case Key.C:
+                            cancelButton_Click(null, null);
+                            break;
+                        case Key.O:
+                            fileSelectDialogButton_Click(null, null);
+                            break;
+                        case Key.A:
+                            readOnlyAllocatedCheckBox.IsChecked = !readOnlyAllocatedCheckBox.IsChecked.Value;
+                            break;
+                        case Key.Z:
+                            onTheFlyZipCheckBox.IsChecked = !onTheFlyZipCheckBox.IsChecked.Value;
+                            break;
+                        case Key.F:
+                            verifyCheckBox.IsChecked = !verifyCheckBox.IsChecked.Value;
+                            break;
+                        case Key.H:
+                            calculateChecksumButton_Click(null, null);
+                            break;
+                        case Key.D:
+                            driveSelectComboBox.IsDropDownOpen = true;
+                            driveSelectComboBox.Focus();
+                            break;
+                        case Key.I:
+                            imagePathTextBox.Focus();
+                            break;
+                        case Key.U:
+                            checksumTextBox.Focus();
+                            break;
+                        case Key.M:
+                            checksumComboBox.IsDropDownOpen = true;
+                            checksumComboBox.Focus();
+                            break;
+                    }
+
+                    e.Handled = true;
+                }
             }
         }
 
@@ -1697,6 +1776,42 @@ namespace dotNetDiskImager
         private void showInfoButton_Click(object sender, RoutedEventArgs e)
         {
             new OperationFinishedInfoWindow(this, lastOperationInfo).ShowDialog();
+        }
+
+        private void InitAccelerators()
+        {
+            accelerators = new List<Label>(16);
+            accelerators.Add(acceleratorLabel_cancel);
+            accelerators.Add(acceleratorLabel_open);
+            accelerators.Add(acceleratorLabel_read);
+            accelerators.Add(acceleratorLabel_verify);
+            accelerators.Add(acceleratorLabel_wipe);
+            accelerators.Add(acceleratorLabel_write);
+            accelerators.Add(acceleratorLabel_allocatedPartitons);
+            accelerators.Add(acceleratorLabel_compression);
+            accelerators.Add(acceleratorLabel_verifyWhenFinished);
+            accelerators.Add(acceleratorLabel_hash);
+            accelerators.Add(acceleratorLabel_devices);
+            accelerators.Add(acceleratorLabel_image);
+            accelerators.Add(acceleratorLabel_checksum);
+            accelerators.Add(acceleratorLabel_checksumType);
+        }
+
+        private void SetAcceleratorsVisibility(bool visible)
+        {
+            foreach (var accelerator in accelerators)
+            {
+                accelerator.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        private void window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (acceleratorsVisible)
+            {
+                acceleratorsVisible = false;
+                SetAcceleratorsVisibility(false);
+            }
         }
     }
 }
