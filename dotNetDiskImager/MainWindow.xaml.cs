@@ -473,6 +473,13 @@ namespace dotNetDiskImager
             DisplayInfoPart(false);
         }
 
+        private bool IsAnyAcceleratorControlFocused()
+        {
+            return fileSelectDialogButton.IsFocused || driveSelectComboBox.IsFocused || checksumTextBox.IsFocused || checksumComboBox.IsFocused || calculateChecksumButton.IsFocused ||
+                readOnlyAllocatedCheckBox.IsFocused || verifyCheckBox.IsFocused || onTheFlyZipCheckBox.IsFocused || readButton.IsFocused || writeButton.IsFocused || 
+                verifyImageButton.IsFocused || wipeDeviceButton.IsFocused || cancelButton.IsFocused;
+        }
+
         private void window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (Keyboard.Modifiers == ModifierKeys.Alt && e.SystemKey == Key.F4)
@@ -506,7 +513,7 @@ namespace dotNetDiskImager
             }
             else
             {
-                if (acceleratorsVisible)
+                if (acceleratorsVisible || IsAnyAcceleratorControlFocused())
                 {
                     acceleratorsVisible = false;
                     SetAcceleratorsVisibility(false);
