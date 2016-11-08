@@ -13,6 +13,12 @@ namespace dotNetDiskImager.Models
     public enum TaskbarExtraInfo { Nothing, Percent, CurrentSpeed, RemainingTime, ActiveDevice, ImageFileName }
     public enum CompressionMethod { Fast, Slow }
 
+    public class LastWindowPosition
+    {
+        public int Top { get; set; }
+        public int Left { get; set; }
+    }
+
     public static class AppSettings
     {
         public static SettingsInternal Settings { get; set; } = SettingsInternal.Default;
@@ -96,6 +102,7 @@ namespace dotNetDiskImager.Models
         public CompressionMethod CompressionMethod { get; set; }
         public bool? IsTopMost { get; set; }
         public bool? AutoClose { get; set; }
+        public LastWindowPosition LastWindowPosition { get; set; }
 
         public static SettingsInternal Default
         {
@@ -115,7 +122,8 @@ namespace dotNetDiskImager.Models
                     AutoSelectSingleDevice = false,
                     CompressionMethod = CompressionMethod.Fast,
                     IsTopMost = false,
-                    AutoClose = false
+                    AutoClose = false,
+                    LastWindowPosition = null
                 };
             }
         }

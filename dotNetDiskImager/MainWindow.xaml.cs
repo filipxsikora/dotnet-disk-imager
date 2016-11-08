@@ -42,6 +42,7 @@ namespace dotNetDiskImager
         #endregion
 
         const int windowHeight = 285;
+        const int windowWidth = 585;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
         const int progressPartHeight = 235;
@@ -91,6 +92,22 @@ namespace dotNetDiskImager
                 DeviceCheckBoxClickHandler();
             }
 
+            if (AppSettings.Settings.LastWindowPosition != null)
+            {
+                if (AppSettings.Settings.LastWindowPosition.Top > SystemParameters.VirtualScreenHeight - windowHeight || AppSettings.Settings.LastWindowPosition.Top < 0)
+                {
+                    AppSettings.Settings.LastWindowPosition.Top = (int)((SystemParameters.VirtualScreenHeight - windowHeight) / 2);
+                }
+
+                if (AppSettings.Settings.LastWindowPosition.Left > SystemParameters.VirtualScreenWidth - windowWidth || AppSettings.Settings.LastWindowPosition.Left < 0)
+                {
+                    AppSettings.Settings.LastWindowPosition.Left = (int)((SystemParameters.VirtualScreenWidth - windowWidth) / 2);
+                }
+
+                Top = AppSettings.Settings.LastWindowPosition.Top;
+                Left = AppSettings.Settings.LastWindowPosition.Left;
+            }
+
             Loaded += (s, e) =>
             {
                 WindowContextMenu.CreateWindowMenu(Handle);
@@ -128,6 +145,12 @@ namespace dotNetDiskImager
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
                 AppSettings.Settings.IsTopMost = WindowContextMenu.IsAlwaysOnTopChecked(Handle);
+                if (AppSettings.Settings.LastWindowPosition == null)
+                {
+                    AppSettings.Settings.LastWindowPosition = new LastWindowPosition();
+                }
+                AppSettings.Settings.LastWindowPosition.Left = (int)Left;
+                AppSettings.Settings.LastWindowPosition.Top = (int)Top;
                 AppSettings.SaveSettings();
             };
 
