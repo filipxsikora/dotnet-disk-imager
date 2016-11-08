@@ -48,6 +48,7 @@ namespace dotNetDiskImager
         const int progressPartHeight = 235;
         const int applicationPartHeight = 250;
         const int windowInnerOffset = 10;
+        readonly Brush AcceleratorDisabledForegroundBrush = new SolidColorBrush(Color.FromRgb(0xC3, 0xC3, 0xC3));
 
         public IntPtr Handle
         {
@@ -1257,7 +1258,7 @@ namespace dotNetDiskImager
             {
                 if (accelerator != acceleratorLabel_cancel)
                 {
-                    accelerator.Foreground = enabled ? Brushes.White : new SolidColorBrush(Color.FromRgb(0xC3, 0xC3, 0xC3));
+                    accelerator.Foreground = enabled ? Brushes.White : AcceleratorDisabledForegroundBrush;
                     accelerator.Opacity = enabled ? 1 : 0.8;
                 }
             }
