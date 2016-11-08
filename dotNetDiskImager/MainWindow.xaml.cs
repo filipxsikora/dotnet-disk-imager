@@ -267,6 +267,15 @@ namespace dotNetDiskImager
 
                     Dispatcher.Invoke(() =>
                     {
+                        if (e.OperationState == OperationFinishedState.Success && AppSettings.Settings.AutoClose.Value)
+                        {
+                            disk.Dispose();
+                            disk = null;
+                            Close();
+                            PlayNotifySound(true);
+                            return;
+                        }
+
                         lastOperationInfo.ImageFile = imagePathTextBox.Text;
                         PlayNotifySound();
                         this.FlashWindow();
@@ -278,11 +287,6 @@ namespace dotNetDiskImager
                         remainingTimeEstimator.Reset();
                         disk.Dispose();
                         disk = null;
-
-                        if (e.OperationState == OperationFinishedState.Success && AppSettings.Settings.AutoClose.Value)
-                        {
-                            Close();
-                        }
 
                         DisplayInfoPart(true, false, e.OperationState, CreateInfoMessage(e));
 
@@ -1435,14 +1439,21 @@ namespace dotNetDiskImager
             aboutWindow.Activate();
         }
 
-        private void PlayNotifySound()
+        private void PlayNotifySound(bool sync = false)
         {
             if (AppSettings.Settings.EnableSoundNotify.Value)
             {
                 using (Stream str = Properties.Resources.notify)
                 using (SoundPlayer snd = new SoundPlayer(str))
                 {
-                    snd.Play();
+                    if (sync)
+                    {
+                        snd.PlaySync();
+                    }
+                    else
+                    {
+                        snd.Play();
+                    }
                 }
             }
         }
