@@ -464,7 +464,7 @@ namespace dotNetDiskImager
                 ShowSettingsWindow();
                 e.Handled = true;
             }
-            if (e.Key == Key.System && Keyboard.Modifiers == ModifierKeys.Alt)
+            if (e.Key == Key.System && Keyboard.Modifiers == ModifierKeys.Alt && e.SystemKey == Key.LeftAlt)
             {
                 if (!acceleratorsVisible)
                 {
@@ -485,7 +485,14 @@ namespace dotNetDiskImager
                     acceleratorsVisible = false;
                     SetAcceleratorsVisibility(false);
 
-                    switch (e.Key)
+                    Key key = e.Key;
+
+                    if (e.Key == Key.System || e.SystemKey != Key.None)
+                    {
+                        key = e.SystemKey;
+                    }
+
+                    switch (key)
                     {
                         case Key.R:
                             readButton_Click(null, null);
@@ -1297,7 +1304,7 @@ namespace dotNetDiskImager
                         {
                             if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project's website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
                             {
-                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
+                                Process.Start(new ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
                             }
                         });
                     }
