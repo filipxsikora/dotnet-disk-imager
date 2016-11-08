@@ -112,6 +112,18 @@ namespace dotNetDiskImager
                     }
                     disk.CancelOperation();
                 }
+
+                if (checksum != null)
+                {
+                    if (MessageBox.Show(this, "Checksum calculation in progress.\nDo you really want to exit application ?",
+                        "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+                    checksum.Cancel();
+                }
+
                 closed = true;
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
