@@ -66,6 +66,11 @@ namespace dotNetDiskImager.Models
                     {
                         Settings.AutoSelectSingleDevice = false;
                     }
+
+                    if (Settings.AutoClose == null)
+                    {
+                        Settings.AutoClose = false;
+                    }
                 }
             }
             catch
@@ -90,6 +95,7 @@ namespace dotNetDiskImager.Models
         public bool? AutoSelectSingleDevice { get; set; }
         public CompressionMethod CompressionMethod { get; set; }
         public bool? IsTopMost { get; set; }
+        public bool? AutoClose { get; set; }
 
         public static SettingsInternal Default
         {
@@ -108,7 +114,8 @@ namespace dotNetDiskImager.Models
                     EnableSoundNotify = true,
                     AutoSelectSingleDevice = false,
                     CompressionMethod = CompressionMethod.Fast,
-                    IsTopMost = false
+                    IsTopMost = false,
+                    AutoClose = false
                 };
             }
         }

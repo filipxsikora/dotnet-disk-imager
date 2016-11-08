@@ -56,6 +56,7 @@ namespace dotNetDiskImager
             checkForUpdatesCheckBox.IsChecked = AppSettings.Settings.CheckForUpdatesOnStartup;
             soundNotifyCheckBox.IsChecked = AppSettings.Settings.EnableSoundNotify;
             autoSelectSingleDeviceCheckBox.IsChecked = AppSettings.Settings.AutoSelectSingleDevice;
+            autoCloseAppCheckBox.IsChecked = AppSettings.Settings.AutoClose;
 
             switch (AppSettings.Settings.TaskbarExtraInfo)
             {
@@ -122,6 +123,7 @@ namespace dotNetDiskImager
             AppSettings.Settings.CheckForUpdatesOnStartup = enableAnimationsCheckBox.IsChecked.Value;
             AppSettings.Settings.EnableSoundNotify = soundNotifyCheckBox.IsChecked.Value;
             AppSettings.Settings.AutoSelectSingleDevice = autoSelectSingleDeviceCheckBox.IsChecked.Value;
+            AppSettings.Settings.AutoClose = autoCloseAppCheckBox.IsChecked.Value;
 
             switch (showMoreOptions.SelectedIndex)
             {

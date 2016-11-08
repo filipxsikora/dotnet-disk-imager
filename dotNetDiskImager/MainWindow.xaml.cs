@@ -279,6 +279,11 @@ namespace dotNetDiskImager
                         disk.Dispose();
                         disk = null;
 
+                        if (e.OperationState == OperationFinishedState.Success && AppSettings.Settings.AutoClose.Value)
+                        {
+                            Close();
+                        }
+
                         DisplayInfoPart(true, false, e.OperationState, CreateInfoMessage(e));
 
                         Title = "dotNet Disk Imager";
