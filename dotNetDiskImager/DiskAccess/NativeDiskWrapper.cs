@@ -408,7 +408,7 @@ namespace dotNetDiskImager.DiskAccess
                     if (handle == NativeDisk.INVALID_HANDLE_VALUE)
                     {
                         var exception = new Win32Exception(Marshal.GetLastWin32Error());
-                        throw new Exception(string.Format("Error occured when trying to check drive type.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
+                        throw new Exception(string.Format("Error occured when trying to check drive type 1.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                     }
                     else
                     {
@@ -430,7 +430,7 @@ namespace dotNetDiskImager.DiskAccess
                                 if (handle == NativeDisk.INVALID_HANDLE_VALUE)
                                 {
                                     var exception = new Win32Exception(Marshal.GetLastWin32Error());
-                                    throw new Exception(string.Format("Error occured when trying to check drive type.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
+                                    throw new Exception(string.Format("Error occured when trying to check drive type 2.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                                 }
                                 if (NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_STORAGE_CHECK_VERIFY, IntPtr.Zero, 0, IntPtr.Zero, 0, ref bytesReaded, IntPtr.Zero))
                                 {
