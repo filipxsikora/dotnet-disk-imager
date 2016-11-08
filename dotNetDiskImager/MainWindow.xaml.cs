@@ -495,48 +495,88 @@ namespace dotNetDiskImager
                     switch (key)
                     {
                         case Key.R:
-                            readButton_Click(null, null);
+                            if (disk == null && checksum == null)
+                            {
+                                readButton_Click(null, null);
+                            }
                             break;
                         case Key.W:
-                            writeButton_Click(null, null);
+                            if (disk == null && checksum == null)
+                            {
+                                writeButton_Click(null, null);
+                            }
                             break;
                         case Key.V:
-                            verifyImageButton_Click(null, null);
+                            if (disk == null && checksum == null)
+                            {
+                                verifyImageButton_Click(null, null);
+                            }
                             break;
                         case Key.P:
-                            wipeDeviceButton_Click(null, null);
+                            if (disk == null && checksum == null)
+                            {
+                                wipeDeviceButton_Click(null, null);
+                            }
                             break;
                         case Key.C:
                             cancelButton_Click(null, null);
                             break;
                         case Key.O:
-                            fileSelectDialogButton_Click(null, null);
+                            if (disk == null && checksum == null)
+                            {
+                                fileSelectDialogButton_Click(null, null);
+                            }
                             break;
                         case Key.A:
-                            readOnlyAllocatedCheckBox.IsChecked = !readOnlyAllocatedCheckBox.IsChecked.Value;
+                            if (disk == null && checksum == null)
+                            {
+                                readOnlyAllocatedCheckBox.IsChecked = !readOnlyAllocatedCheckBox.IsChecked.Value;
+                            }
                             break;
                         case Key.Z:
-                            onTheFlyZipCheckBox.IsChecked = !onTheFlyZipCheckBox.IsChecked.Value;
+                            if (disk == null && checksum == null)
+                            {
+                                onTheFlyZipCheckBox.IsChecked = !onTheFlyZipCheckBox.IsChecked.Value;
+                            }
                             break;
                         case Key.F:
-                            verifyCheckBox.IsChecked = !verifyCheckBox.IsChecked.Value;
+                            if (disk == null && checksum == null)
+                            {
+                                verifyCheckBox.IsChecked = !verifyCheckBox.IsChecked.Value;
+                            }
                             break;
                         case Key.H:
-                            calculateChecksumButton_Click(null, null);
+                            if (disk == null && checksum == null)
+                            {
+                                calculateChecksumButton_Click(null, null);
+                            }
                             break;
                         case Key.D:
-                            driveSelectComboBox.IsDropDownOpen = true;
-                            driveSelectComboBox.Focus();
+                            if (disk == null && checksum == null)
+                            {
+                                driveSelectComboBox.IsDropDownOpen = true;
+                                driveSelectComboBox.Focus();
+                            }
                             break;
                         case Key.I:
-                            imagePathTextBox.Focus();
+                            if (disk == null && checksum == null)
+                            {
+                                imagePathTextBox.Focus();
+                                imagePathTextBox.CaretIndex = imagePathTextBox.Text.Length;
+                            }
                             break;
                         case Key.U:
-                            checksumTextBox.Focus();
+                            if (disk == null && checksum == null)
+                            {
+                                checksumTextBox.Focus();
+                            }
                             break;
                         case Key.M:
-                            checksumComboBox.IsDropDownOpen = true;
-                            checksumComboBox.Focus();
+                            if (disk == null && checksum == null)
+                            {
+                                checksumComboBox.IsDropDownOpen = true;
+                                checksumComboBox.Focus();
+                            }
                             break;
                     }
 
@@ -1155,6 +1195,16 @@ namespace dotNetDiskImager
             readOnlyAllocatedCheckBox.IsEnabled = enabled;
             fileSelectDialogButton.IsEnabled = enabled;
             calculateChecksumButton.IsEnabled = enabled;
+            checksumComboBox.IsEnabled = enabled;
+
+            foreach (var accelerator in accelerators)
+            {
+                if (accelerator != acceleratorLabel_cancel)
+                {
+                    accelerator.Foreground = enabled ? Brushes.White : new SolidColorBrush(Color.FromRgb(0xC3, 0xC3, 0xC3));
+                    accelerator.Opacity = enabled ? 1 : 0.8;
+                }
+            }
         }
 
         private void DisplayProgressPart(bool display)
