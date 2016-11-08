@@ -20,7 +20,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (_handle == NativeDisk.INVALID_HANDLE_VALUE)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get handle on file.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return _handle;
@@ -34,7 +35,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (_handle == NativeDisk.INVALID_HANDLE_VALUE)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get handle on device.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return _handle;
@@ -48,7 +50,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (_handle == NativeDisk.INVALID_HANDLE_VALUE)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get handle on volume.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return _handle;
@@ -63,7 +66,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (!result)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get lock on volume.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return result;
@@ -78,7 +82,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (!result)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to remove lock on volume.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return result;
@@ -93,7 +98,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (!result)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to unmount volume.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return result;
@@ -120,7 +126,8 @@ namespace dotNetDiskImager.DiskAccess
             NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
             if (!NativeDisk.ReadFile(handle, data, (uint)(sectorSize * numSectors), out bytesRead, IntPtr.Zero))
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to read sector data from handle.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             if (bytesRead < (sectorSize * numSectors))
@@ -144,7 +151,8 @@ namespace dotNetDiskImager.DiskAccess
             NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
             if (!NativeDisk.ReadFile(handle, data, (uint)(sectorSize * numSectors), out bytesRead, IntPtr.Zero))
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to read sector data from handle.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             if (bytesRead < (sectorSize * numSectors))
@@ -170,7 +178,8 @@ namespace dotNetDiskImager.DiskAccess
                 NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
                 if (!NativeDisk.ReadFile(handle, data, (uint)(sectorSize * numSectors), out bytesRead, IntPtr.Zero))
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                    throw new Exception(string.Format("Error occured when trying to read sector data from handle async.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                 }
 
                 if (bytesRead < (sectorSize * numSectors))
@@ -197,7 +206,8 @@ namespace dotNetDiskImager.DiskAccess
                 NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
                 if (!NativeDisk.ReadFile(handle, new IntPtr(data), (uint)(sectorSize * numSectors), out bytesRead, IntPtr.Zero))
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                    throw new Exception(string.Format("Error occured when trying to read sector data pointer from handle.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                 }
 
                 if (bytesRead < (sectorSize * numSectors))
@@ -225,7 +235,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (!result)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to write sector data to handle.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
         }
 
@@ -244,7 +255,8 @@ namespace dotNetDiskImager.DiskAccess
 
                 if (!result)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                    throw new Exception(string.Format("Error occured when trying to write sector data to handle async.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                 }
             });
         }
@@ -260,7 +272,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (!result)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get number of sectors.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             diskGeometry = Marshal.PtrToStructure<DISK_GEOMETRY_EX>(diskGeometryPtr);
@@ -278,7 +291,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (!NativeDisk.GetFileSizeEx(handle, out fileSize))
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get file size in sectors.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             retVal = (ulong)((fileSize / (long)sectorSize) + ((fileSize % (long)sectorSize) > 0 ? 1 : 0));
@@ -294,7 +308,8 @@ namespace dotNetDiskImager.DiskAccess
             result = NativeDisk.GetDiskFreeSpaceEx(location, out foo, out foo, out freeSpace);
             if (!result)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get space availible.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return spaceNeeded <= freeSpace;
@@ -306,7 +321,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (!NativeDisk.GetVolumeInformation(drive, sb, 261, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, 0))
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get drive label.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return sb.ToString();
@@ -320,7 +336,8 @@ namespace dotNetDiskImager.DiskAccess
 
             if (!NativeDisk.GetVolumeInformation(drive, sb, 261, IntPtr.Zero, IntPtr.Zero, out flags, IntPtr.Zero, 0))
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to check if device is read only.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
             return (flags & FileSystemFeature.ReadOnlyVolume) > 0;
@@ -354,7 +371,9 @@ namespace dotNetDiskImager.DiskAccess
                 if (!result)
                 {
                     Marshal.FreeHGlobal(devInfoStructPtr);
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                    var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                    throw new Exception(string.Format("Error occured when trying to get disk property IOCTL_STORAGE_GET_DEVICE_NUMBER.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                 }
             }
             else
@@ -362,7 +381,9 @@ namespace dotNetDiskImager.DiskAccess
                 if (NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_STORAGE_CHECK_VERIFY2, IntPtr.Zero, 0, IntPtr.Zero, 0, ref outBytes, IntPtr.Zero))
                 {
                     Marshal.FreeHGlobal(devInfoStructPtr);
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                    var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                    throw new Exception(string.Format("Error occured when trying to get disk property IOCTL_STORAGE_CHECK_VERIFY2.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                 }
             }
             var resultStruct = Marshal.PtrToStructure<STORAGE_DEVICE_NUMBER>(devInfoStructPtr);
@@ -386,7 +407,8 @@ namespace dotNetDiskImager.DiskAccess
                     handle = NativeDisk.CreateFile(nameNoSlash, NativeDisk.FILE_READ_ATTRIBUTES, NativeDisk.FILE_SHARE_READ | NativeDisk.FILE_SHARE_WRITE, IntPtr.Zero, NativeDisk.OPEN_EXISTING, 0, IntPtr.Zero);
                     if (handle == NativeDisk.INVALID_HANDLE_VALUE)
                     {
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
+                        var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                        throw new Exception(string.Format("Error occured when trying to check drive type.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                     }
                     else
                     {
@@ -407,7 +429,8 @@ namespace dotNetDiskImager.DiskAccess
                                 handle = NativeDisk.CreateFile(name, NativeDisk.FILE_READ_DATA, NativeDisk.FILE_SHARE_READ | NativeDisk.FILE_SHARE_WRITE, IntPtr.Zero, NativeDisk.OPEN_EXISTING, 0, IntPtr.Zero);
                                 if (handle == NativeDisk.INVALID_HANDLE_VALUE)
                                 {
-                                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                                    var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                                    throw new Exception(string.Format("Error occured when trying to check drive type.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                                 }
                                 if (NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_STORAGE_CHECK_VERIFY, IntPtr.Zero, 0, IntPtr.Zero, 0, ref bytesReaded, IntPtr.Zero))
                                 {
@@ -439,7 +462,9 @@ namespace dotNetDiskImager.DiskAccess
             if (!result)
             {
                 Marshal.FreeHGlobal(partitionInfoStrPtr);
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get disk partition info.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
             var resultStruct = partitionInfo = Marshal.PtrToStructure<PARTITION_INFORMATION_EX>(partitionInfoStrPtr);
             Marshal.FreeHGlobal(partitionInfoStrPtr);
@@ -456,7 +481,9 @@ namespace dotNetDiskImager.DiskAccess
             if (!result)
             {
                 Marshal.FreeHGlobal(buffer);
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to get drive layout.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
             else
             {
@@ -475,18 +502,29 @@ namespace dotNetDiskImager.DiskAccess
             var buffer = Marshal.AllocHGlobal(buffSize);
             Marshal.StructureToPtr(disk, buffer, false);
             int bytesReturned = 0;
+
             var result = NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_DISK_CREATE_DISK, buffer, buffSize, IntPtr.Zero, 0, ref bytesReturned, IntPtr.Zero);
+
             Marshal.FreeHGlobal(buffer);
+
             if (!result)
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+            {
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to create disk MBR.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
+            }
         }
 
         internal static void DiskUpdateProperties(IntPtr handle)
         {
             int bytesReturned = 0;
+
             var result = NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_DISK_UPDATE_PROPERTIES, IntPtr.Zero, 0, IntPtr.Zero, 0, ref bytesReturned, IntPtr.Zero);
+
             if (!result)
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+            {
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to update disk properties.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
+            }
         }
 
         internal static void DiskSetDriveLayoutEx(IntPtr handle, DRIVE_LAYOUT_INFORMATION_EX layout)
@@ -498,7 +536,10 @@ namespace dotNetDiskImager.DiskAccess
             var result = NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_DISK_SET_DRIVE_LAYOUT_EX, buffer, buffSize, IntPtr.Zero, 0, ref bytesReturned, IntPtr.Zero);
             Marshal.FreeHGlobal(buffer);
             if (!result)
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+            {
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Exception(string.Format("Error occured when trying to set drive layout.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
+            }
         }
 
         internal static uint GetLogicalDrives()
