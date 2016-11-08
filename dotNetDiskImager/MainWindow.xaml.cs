@@ -1418,11 +1418,22 @@ namespace dotNetDiskImager
                     stackPanel.Children.Add(deviceCheckBox);
                     stackPanel.Children.Add(deviceInfoButton);
 
-                    driveSelectComboBox.Items.Add(new ComboBoxItem()
+                    var comboBoxItem = new ComboBoxItem()
                     {
                         Padding = new Thickness(0),
                         Content = stackPanel
-                    });
+                    };
+
+                    comboBoxItem.PreviewKeyDown += (s, e) =>
+                    {
+                        if (e.Key == Key.Space && Keyboard.Modifiers == ModifierKeys.None)
+                        {
+                            deviceCheckBox.IsChecked = !deviceCheckBox.IsChecked;
+                            DeviceCheckBoxClickHandler();
+                        }
+                    };
+
+                    driveSelectComboBox.Items.Add(comboBoxItem);
                 }
 
                 driveSelectComboBox.SelectedIndex = 0;
