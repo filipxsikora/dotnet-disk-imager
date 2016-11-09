@@ -243,7 +243,7 @@ namespace dotNetDiskImager
             {
                 disk?.Dispose();
                 disk = null;
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Read from device error. {0}", ex.Message), "Unknown error");
             }
         }
 
@@ -258,7 +258,7 @@ namespace dotNetDiskImager
             {
                 disk?.Dispose();
                 disk = null;
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Write to device error. {0}", ex.Message), "Unknown error");
             }
         }
 
@@ -273,7 +273,7 @@ namespace dotNetDiskImager
             {
                 disk?.Dispose();
                 disk = null;
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Verify image error. {0}", ex.Message), "Unknown error");
             }
         }
 
@@ -471,7 +471,7 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Wipe device error. {0}", ex.Message), "Unknown error");
             }
 
             disk?.Dispose();
@@ -488,7 +488,7 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Calculate checksum error. {0}", ex.Message), "Unknown error");
             }
         }
 
@@ -709,17 +709,17 @@ namespace dotNetDiskImager
         {
             if (string.IsNullOrEmpty(imagePathTextBox.Text))
             {
-                MessageBox.Show("No file selected.\nPlease select file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Cannot calculate checksum. No file selected.\nPlease select file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (!new FileInfo(imagePathTextBox.Text).Exists)
             {
-                MessageBox.Show("Selected file doesn't exist.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Cannot calculate checksum. Selected file doesn't exist.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (new FileInfo(imagePathTextBox.Text).Length == 0)
             {
-                MessageBox.Show("Selected file is empty.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Cannot calculate checksum. Selected file is empty.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -766,7 +766,7 @@ namespace dotNetDiskImager
             {
                 var fileInfo = new FileInfo(imagePathTextBox.Text);
 
-                MessageBox.Show(this, string.Format("Unable to read from file {0}\nFile is probably in use by another application.", fileInfo.Name), "Unable to open file", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Cannot calculate checksum. Unable to read from file {0}\nFile is probably in use by another application.", fileInfo.Name), "Unable to open file", MessageBoxButton.OK, MessageBoxImage.Error);
                 checksum.Dispose();
                 checksum = null;
                 return;
@@ -856,7 +856,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Cannot read from device. {0}", ex.Message), "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -888,7 +888,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Unable to init read from device.\n{0}", ex.Message), "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -948,7 +948,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Cannot write to device. {0}", ex.Message), "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -958,7 +958,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name),
+                    MessageBox.Show(this, string.Format("Cannot write to device. File {0} exists but has no size. Aborting.", fileInfo.Name),
                         "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -966,7 +966,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last()),
+                MessageBox.Show(this, string.Format("Cannot write to device. File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last()),
                     "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -976,7 +976,7 @@ namespace dotNetDiskImager
                 if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", driveLetter)))
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", driveLetter, Disk.GetModelFromDrive(driveLetter)),
+                    MessageBox.Show(this, string.Format(@"Cannot write to device. Device [{0}:\ - {1}] is read only. Aborting.", driveLetter, Disk.GetModelFromDrive(driveLetter)),
                         "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -997,7 +997,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Unable to init write to device.\n{0}", ex.Message), "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -1109,7 +1109,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Cannot verify. {0}", ex.Message), "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -1119,7 +1119,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
+                    MessageBox.Show(this, string.Format("Nothing to verify. File {0} exists but has no size. Aborting.", fileInfo.Name)
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -1127,7 +1127,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
+                MessageBox.Show(this, string.Format("Nothing to verify. File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -1147,7 +1147,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Unable to init verify.\n{0}", ex.Message), "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -1770,7 +1770,7 @@ namespace dotNetDiskImager
 
             if (devices.Length == 0)
             {
-                MessageBox.Show(this, "No device selected.\nPlease select at least one device.", "No device selected", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, "Cannot wipe device. No device selected.\nPlease select at least one device.", "No device selected", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -1778,7 +1778,7 @@ namespace dotNetDiskImager
             {
                 if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", device)))
                 {
-                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device)),
+                    MessageBox.Show(this, string.Format(@"Cannot wipe device. Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device)),
                         "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
