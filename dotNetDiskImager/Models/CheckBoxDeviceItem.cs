@@ -11,6 +11,9 @@ namespace dotNetDiskImager.Models
 {
     public class CheckBoxDeviceItem : CheckBox
     {
+        public delegate void ModelAcquiredEventHandler(object sender, EventArgs e);
+        public event ModelAcquiredEventHandler ModelAcquired;
+
         public char DriveLetter { get; }
         public string Model { get; private set; }
         public ulong DeviceLength { get; }
@@ -72,6 +75,7 @@ namespace dotNetDiskImager.Models
                         Content = string.Format(@"[{0}:\] ({1}) - {2}", DriveLetter, Helpers.BytesToClosestXbytes(DeviceLength), model);
                         Model = model;
                         IsEnabled = true;
+                        ModelAcquired?.Invoke(this, new EventArgs());
                     });
 
                     return;
@@ -82,6 +86,7 @@ namespace dotNetDiskImager.Models
                     Content = string.Format(@"[{0}:\] - n/a", DriveLetter);
                     Model = "n/a";
                     IsEnabled = true;
+                    ModelAcquired?.Invoke(this, new EventArgs());
                 });
             })
             { IsBackground = true }.Start();

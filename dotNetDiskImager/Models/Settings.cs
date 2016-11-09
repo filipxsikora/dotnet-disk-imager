@@ -13,6 +13,12 @@ namespace dotNetDiskImager.Models
     public enum TaskbarExtraInfo { Nothing, Percent, CurrentSpeed, RemainingTime, ActiveDevice, ImageFileName }
     public enum CompressionMethod { Fast, Slow }
 
+    public class LastWindowPosition
+    {
+        public int Top { get; set; }
+        public int Left { get; set; }
+    }
+
     public static class AppSettings
     {
         public static SettingsInternal Settings { get; set; } = SettingsInternal.Default;
@@ -41,19 +47,35 @@ namespace dotNetDiskImager.Models
             try
             {
                 string file = string.Format(@"{0}\dotNetDiskImager\settings.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+
                 if (!File.Exists(file))
+                {
                     return;
+                }
+
                 using (var stream = File.Open(file, FileMode.Open))
                 {
                     var serializer = new XmlSerializer(typeof(SettingsInternal));
                     Settings = serializer.Deserialize(stream) as SettingsInternal;
+
                     if (Settings.EnableSoundNotify == null)
                     {
                         Settings.EnableSoundNotify = true;
                     }
+
                     if (Settings.IsTopMost == null)
                     {
                         Settings.IsTopMost = false;
+                    }
+
+                    if (Settings.AutoSelectSingleDevice == null)
+                    {
+                        Settings.AutoSelectSingleDevice = false;
+                    }
+
+                    if (Settings.AutoClose == null)
+                    {
+                        Settings.AutoClose = false;
                     }
                 }
             }
@@ -76,8 +98,11 @@ namespace dotNetDiskImager.Models
         public bool CheckForUpdatesOnStartup { get; set; }
         public List<string> CustomPlaces { get; set; }
         public bool? EnableSoundNotify { get; set; }
+        public bool? AutoSelectSingleDevice { get; set; }
         public CompressionMethod CompressionMethod { get; set; }
         public bool? IsTopMost { get; set; }
+        public bool? AutoClose { get; set; }
+        public LastWindowPosition LastWindowPosition { get; set; }
 
         public static SettingsInternal Default
         {
@@ -94,8 +119,11 @@ namespace dotNetDiskImager.Models
                     CheckForUpdatesOnStartup = true,
                     CustomPlaces = new List<string>(),
                     EnableSoundNotify = true,
+                    AutoSelectSingleDevice = false,
                     CompressionMethod = CompressionMethod.Fast,
-                    IsTopMost = false
+                    IsTopMost = false,
+                    AutoClose = false,
+                    LastWindowPosition = null
                 };
             }
         }

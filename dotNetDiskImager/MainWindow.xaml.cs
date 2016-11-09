@@ -42,11 +42,13 @@ namespace dotNetDiskImager
         #endregion
 
         const int windowHeight = 285;
+        const int windowWidth = 585;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
         const int progressPartHeight = 235;
         const int applicationPartHeight = 250;
         const int windowInnerOffset = 10;
+        readonly Brush AcceleratorDisabledForegroundBrush = new SolidColorBrush(Color.FromRgb(0xC3, 0xC3, 0xC3));
 
         public IntPtr Handle
         {
@@ -68,15 +70,44 @@ namespace dotNetDiskImager
         bool verifyingAfterOperation = false;
         bool closed = false;
 
+        bool acceleratorsVisible = false;
+        List<Label> accelerators;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            InitAccelerators();
+            SetAcceleratorsVisibility(false);
+
             OxyPlot.Wpf.LineAnnotation.PlotViewProperty = speedGraph;
             Topmost = AppSettings.Settings.IsTopMost.Value;
 
             driveSelectComboBox.SelectionChanged += (s, e) => driveSelectComboBox.SelectedIndex = 0;
 
             LoadDriveSelectItems(true);
+
+            if (driveSelectComboBox.Items.Count == 2 && AppSettings.Settings.AutoSelectSingleDevice.Value)
+            {
+                (((driveSelectComboBox.Items[1] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).IsChecked = true;
+                DeviceCheckBoxClickHandler();
+            }
+
+            if (AppSettings.Settings.LastWindowPosition != null)
+            {
+                if (AppSettings.Settings.LastWindowPosition.Top > SystemParameters.VirtualScreenHeight - windowHeight || AppSettings.Settings.LastWindowPosition.Top < 0)
+                {
+                    AppSettings.Settings.LastWindowPosition.Top = (int)((SystemParameters.VirtualScreenHeight - windowHeight) / 2);
+                }
+
+                if (AppSettings.Settings.LastWindowPosition.Left > SystemParameters.VirtualScreenWidth - windowWidth || AppSettings.Settings.LastWindowPosition.Left < 0)
+                {
+                    AppSettings.Settings.LastWindowPosition.Left = (int)((SystemParameters.VirtualScreenWidth - windowWidth) / 2);
+                }
+
+                Top = AppSettings.Settings.LastWindowPosition.Top;
+                Left = AppSettings.Settings.LastWindowPosition.Left;
+            }
 
             Loaded += (s, e) =>
             {
@@ -99,10 +130,28 @@ namespace dotNetDiskImager
                     }
                     disk.CancelOperation();
                 }
+
+                if (checksum != null)
+                {
+                    if (MessageBox.Show(this, "Checksum calculation in progress.\nDo you really want to exit application ?",
+                        "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+                    checksum.Cancel();
+                }
+
                 closed = true;
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
                 AppSettings.Settings.IsTopMost = WindowContextMenu.IsAlwaysOnTopChecked(Handle);
+                if (AppSettings.Settings.LastWindowPosition == null)
+                {
+                    AppSettings.Settings.LastWindowPosition = new LastWindowPosition();
+                }
+                AppSettings.Settings.LastWindowPosition.Left = (int)Left;
+                AppSettings.Settings.LastWindowPosition.Top = (int)Top;
                 AppSettings.SaveSettings();
             };
 
@@ -130,6 +179,11 @@ namespace dotNetDiskImager
                                 if (driveSelectComboBox.Items.Count == 0)
                                 {
                                     LoadDriveSelectItems(false);
+                                    if (AppSettings.Settings.AutoSelectSingleDevice.Value)
+                                    {
+                                        (((driveSelectComboBox.Items[1] as ComboBoxItem).Content as StackPanel).Children[0] as CheckBoxDeviceItem).IsChecked = true;
+                                        DeviceCheckBoxClickHandler();
+                                    }
                                 }
                                 else
                                 {
@@ -189,7 +243,7 @@ namespace dotNetDiskImager
             {
                 disk?.Dispose();
                 disk = null;
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Read from device error. {0}", ex.Message), "Unknown error");
             }
         }
 
@@ -204,7 +258,7 @@ namespace dotNetDiskImager
             {
                 disk?.Dispose();
                 disk = null;
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Write to device error. {0}", ex.Message), "Unknown error");
             }
         }
 
@@ -219,7 +273,7 @@ namespace dotNetDiskImager
             {
                 disk?.Dispose();
                 disk = null;
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Verify image error. {0}", ex.Message), "Unknown error");
             }
         }
 
@@ -237,6 +291,15 @@ namespace dotNetDiskImager
 
                     Dispatcher.Invoke(() =>
                     {
+                        if (e.OperationState == OperationFinishedState.Success && AppSettings.Settings.AutoClose.Value)
+                        {
+                            disk.Dispose();
+                            disk = null;
+                            Close();
+                            PlayNotifySound(true);
+                            return;
+                        }
+
                         lastOperationInfo.ImageFile = imagePathTextBox.Text;
                         PlayNotifySound();
                         this.FlashWindow();
@@ -408,7 +471,7 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Wipe device error. {0}", ex.Message), "Unknown error");
             }
 
             disk?.Dispose();
@@ -425,7 +488,7 @@ namespace dotNetDiskImager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.Message, "Unknown error");
+                MessageBox.Show(this, string.Format("Calculate checksum error. {0}", ex.Message), "Unknown error");
             }
         }
 
@@ -434,8 +497,20 @@ namespace dotNetDiskImager
             DisplayInfoPart(false);
         }
 
+        private bool IsAnyAcceleratorControlFocused()
+        {
+            return fileSelectDialogButton.IsFocused || driveSelectComboBox.IsFocused || checksumTextBox.IsFocused || checksumComboBox.IsFocused || calculateChecksumButton.IsFocused ||
+                readOnlyAllocatedCheckBox.IsFocused || verifyCheckBox.IsFocused || onTheFlyZipCheckBox.IsFocused || readButton.IsFocused || writeButton.IsFocused || 
+                verifyImageButton.IsFocused || wipeDeviceButton.IsFocused || cancelButton.IsFocused;
+        }
+
         private void window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            if (Keyboard.Modifiers == ModifierKeys.Alt && e.SystemKey == Key.F4)
+            {
+                Close();
+            }
+
             if (e.Key == Key.F1 && Keyboard.Modifiers == ModifierKeys.None)
             {
                 ShowAboutWindow();
@@ -445,6 +520,125 @@ namespace dotNetDiskImager
             {
                 ShowSettingsWindow();
                 e.Handled = true;
+            }
+            if (e.Key == Key.System && Keyboard.Modifiers == ModifierKeys.Alt && e.SystemKey == Key.LeftAlt)
+            {
+                if (!acceleratorsVisible)
+                {
+                    acceleratorsVisible = true;
+                    SetAcceleratorsVisibility(true);
+                }
+                else
+                {
+                    acceleratorsVisible = false;
+                    SetAcceleratorsVisibility(false);
+                }
+                e.Handled = true;
+            }
+            else
+            {
+                if (acceleratorsVisible || IsAnyAcceleratorControlFocused())
+                {
+                    acceleratorsVisible = false;
+                    SetAcceleratorsVisibility(false);
+
+                    Key key = e.Key;
+
+                    if (e.Key == Key.System || e.SystemKey != Key.None)
+                    {
+                        key = e.SystemKey;
+                    }
+
+                    switch (key)
+                    {
+                        case Key.R:
+                            if (disk == null && checksum == null)
+                            {
+                                readButton_Click(null, null);
+                            }
+                            break;
+                        case Key.W:
+                            if (disk == null && checksum == null)
+                            {
+                                writeButton_Click(null, null);
+                            }
+                            break;
+                        case Key.V:
+                            if (disk == null && checksum == null)
+                            {
+                                verifyImageButton_Click(null, null);
+                            }
+                            break;
+                        case Key.P:
+                            if (disk == null && checksum == null)
+                            {
+                                wipeDeviceButton_Click(null, null);
+                            }
+                            break;
+                        case Key.C:
+                            cancelButton_Click(null, null);
+                            break;
+                        case Key.O:
+                            if (disk == null && checksum == null)
+                            {
+                                fileSelectDialogButton_Click(null, null);
+                            }
+                            break;
+                        case Key.A:
+                            if (disk == null && checksum == null)
+                            {
+                                readOnlyAllocatedCheckBox.IsChecked = !readOnlyAllocatedCheckBox.IsChecked.Value;
+                            }
+                            break;
+                        case Key.Z:
+                            if (disk == null && checksum == null)
+                            {
+                                onTheFlyZipCheckBox.IsChecked = !onTheFlyZipCheckBox.IsChecked.Value;
+                            }
+                            break;
+                        case Key.F:
+                            if (disk == null && checksum == null)
+                            {
+                                verifyCheckBox.IsChecked = !verifyCheckBox.IsChecked.Value;
+                            }
+                            break;
+                        case Key.H:
+                            if (disk == null && checksum == null)
+                            {
+                                calculateChecksumButton_Click(null, null);
+                            }
+                            break;
+                        case Key.D:
+                            if (disk == null && checksum == null)
+                            {
+                                driveSelectComboBox.IsDropDownOpen = true;
+                                driveSelectComboBox.Focus();
+                            }
+                            break;
+                        case Key.I:
+                            if (disk == null && checksum == null)
+                            {
+                                imagePathTextBox.Focus();
+                                imagePathTextBox.CaretIndex = imagePathTextBox.Text.Length;
+                            }
+                            break;
+                        case Key.U:
+                            if (disk == null && checksum == null)
+                            {
+                                checksumTextBox.Focus();
+                            }
+                            break;
+                        case Key.M:
+                            if (disk == null && checksum == null)
+                            {
+                                checksumComboBox.IsDropDownOpen = true;
+                                checksumComboBox.Focus();
+                            }
+                            break;
+                    }
+
+                    e.Handled = true;
+                }
             }
         }
 
@@ -515,17 +709,17 @@ namespace dotNetDiskImager
         {
             if (string.IsNullOrEmpty(imagePathTextBox.Text))
             {
-                MessageBox.Show("No file selected.\nPlease select file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Cannot calculate checksum. No file selected.\nPlease select file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (!new FileInfo(imagePathTextBox.Text).Exists)
             {
-                MessageBox.Show("Selected file doesn't exist.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Cannot calculate checksum. Selected file doesn't exist.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (new FileInfo(imagePathTextBox.Text).Length == 0)
             {
-                MessageBox.Show("Selected file is empty.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Cannot calculate checksum. Selected file is empty.\nPlease select valid file first", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -572,7 +766,7 @@ namespace dotNetDiskImager
             {
                 var fileInfo = new FileInfo(imagePathTextBox.Text);
 
-                MessageBox.Show(this, string.Format("Unable to read from file {0}\nFile is probably in use by another application.", fileInfo.Name), "Unable to open file", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Cannot calculate checksum. Unable to read from file {0}\nFile is probably in use by another application.", fileInfo.Name), "Unable to open file", MessageBoxButton.OK, MessageBoxImage.Error);
                 checksum.Dispose();
                 checksum = null;
                 return;
@@ -662,7 +856,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Cannot read from device. {0}", ex.Message), "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -694,7 +888,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Unable to init read from device.\n{0}", ex.Message), "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -754,7 +948,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Cannot write to device. {0}", ex.Message), "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -764,7 +958,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name),
+                    MessageBox.Show(this, string.Format("Cannot write to device. File {0} exists but has no size. Aborting.", fileInfo.Name),
                         "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -772,7 +966,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last()),
+                MessageBox.Show(this, string.Format("Cannot write to device. File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last()),
                     "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -782,7 +976,7 @@ namespace dotNetDiskImager
                 if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", driveLetter)))
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", driveLetter, Disk.GetModelFromDrive(driveLetter)),
+                    MessageBox.Show(this, string.Format(@"Cannot write to device. Device [{0}:\ - {1}] is read only. Aborting.", driveLetter, Disk.GetModelFromDrive(driveLetter)),
                         "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -803,7 +997,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Unable to init write to device.\n{0}", ex.Message), "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -915,7 +1109,7 @@ namespace dotNetDiskImager
             catch (ArgumentException ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Cannot verify. {0}", ex.Message), "Invalid input", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -925,7 +1119,7 @@ namespace dotNetDiskImager
                 if (fileInfo.Length == 0)
                 {
                     DisplayInfoPart(false);
-                    MessageBox.Show(this, string.Format("File {0} exists but has no size. Aborting.", fileInfo.Name)
+                    MessageBox.Show(this, string.Format("Nothing to verify. File {0} exists but has no size. Aborting.", fileInfo.Name)
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -933,7 +1127,7 @@ namespace dotNetDiskImager
             else
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, string.Format("File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
+                MessageBox.Show(this, string.Format("Nothing to verify. File {0} does not exist. Aborting.", imagePathTextBox.Text.Split('\\', '/').Last())
                         , "File invalid", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -953,7 +1147,7 @@ namespace dotNetDiskImager
             catch (Exception ex)
             {
                 DisplayInfoPart(false);
-                MessageBox.Show(this, ex.Message, "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, string.Format("Unable to init verify.\n{0}", ex.Message), "Error occured", MessageBoxButton.OK, MessageBoxImage.Error);
                 disk?.Dispose();
                 disk = null;
                 return;
@@ -1058,6 +1252,16 @@ namespace dotNetDiskImager
             readOnlyAllocatedCheckBox.IsEnabled = enabled;
             fileSelectDialogButton.IsEnabled = enabled;
             calculateChecksumButton.IsEnabled = enabled;
+            checksumComboBox.IsEnabled = enabled;
+
+            foreach (var accelerator in accelerators)
+            {
+                if (accelerator != acceleratorLabel_cancel)
+                {
+                    accelerator.Foreground = enabled ? Brushes.White : AcceleratorDisabledForegroundBrush;
+                    accelerator.Opacity = enabled ? 1 : 0.8;
+                }
+            }
         }
 
         private void DisplayProgressPart(bool display)
@@ -1207,7 +1411,7 @@ namespace dotNetDiskImager
                         {
                             if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project's website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
                             {
-                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
+                                Process.Start(new ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
                             }
                         });
                     }
@@ -1266,14 +1470,21 @@ namespace dotNetDiskImager
             aboutWindow.Activate();
         }
 
-        private void PlayNotifySound()
+        private void PlayNotifySound(bool sync = false)
         {
             if (AppSettings.Settings.EnableSoundNotify.Value)
             {
                 using (Stream str = Properties.Resources.notify)
                 using (SoundPlayer snd = new SoundPlayer(str))
                 {
-                    snd.Play();
+                    if (sync)
+                    {
+                        snd.PlaySync();
+                    }
+                    else
+                    {
+                        snd.Play();
+                    }
                 }
             }
         }
@@ -1296,6 +1507,14 @@ namespace dotNetDiskImager
                         Margin = new Thickness(5, 0, 0, 0)
                     };
 
+                    if (!getImmediate && drives.Length == 1)
+                    {
+                        deviceCheckBox.ModelAcquired += (s, e) =>
+                        {
+                            DeviceCheckBoxClickHandler();
+                        };
+                    }
+
                     deviceCheckBox.Click += DeviceCheckBox_Click;
 
                     var deviceInfoButton = new DeviceButton(drive)
@@ -1313,11 +1532,22 @@ namespace dotNetDiskImager
                     stackPanel.Children.Add(deviceCheckBox);
                     stackPanel.Children.Add(deviceInfoButton);
 
-                    driveSelectComboBox.Items.Add(new ComboBoxItem()
+                    var comboBoxItem = new ComboBoxItem()
                     {
                         Padding = new Thickness(0),
                         Content = stackPanel
-                    });
+                    };
+
+                    comboBoxItem.PreviewKeyDown += (s, e) =>
+                    {
+                        if (e.Key == Key.Space && Keyboard.Modifiers == ModifierKeys.None)
+                        {
+                            deviceCheckBox.IsChecked = !deviceCheckBox.IsChecked;
+                            DeviceCheckBoxClickHandler();
+                        }
+                    };
+
+                    driveSelectComboBox.Items.Add(comboBoxItem);
                 }
 
                 driveSelectComboBox.SelectedIndex = 0;
@@ -1540,7 +1770,7 @@ namespace dotNetDiskImager
 
             if (devices.Length == 0)
             {
-                MessageBox.Show(this, "No device selected.\nPlease select at least one device.", "No device selected", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, "Cannot wipe device. No device selected.\nPlease select at least one device.", "No device selected", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -1548,7 +1778,7 @@ namespace dotNetDiskImager
             {
                 if (Disk.IsDriveReadOnly(string.Format(@"{0}:\", device)))
                 {
-                    MessageBox.Show(this, string.Format(@"Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device)),
+                    MessageBox.Show(this, string.Format(@"Cannot wipe device. Device [{0}:\ - {1}] is read only. Aborting.", device, Disk.GetModelFromDrive(device)),
                         "Read only device", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -1678,6 +1908,42 @@ namespace dotNetDiskImager
         private void showInfoButton_Click(object sender, RoutedEventArgs e)
         {
             new OperationFinishedInfoWindow(this, lastOperationInfo).ShowDialog();
+        }
+
+        private void InitAccelerators()
+        {
+            accelerators = new List<Label>(16);
+            accelerators.Add(acceleratorLabel_cancel);
+            accelerators.Add(acceleratorLabel_open);
+            accelerators.Add(acceleratorLabel_read);
+            accelerators.Add(acceleratorLabel_verify);
+            accelerators.Add(acceleratorLabel_wipe);
+            accelerators.Add(acceleratorLabel_write);
+            accelerators.Add(acceleratorLabel_allocatedPartitons);
+            accelerators.Add(acceleratorLabel_compression);
+            accelerators.Add(acceleratorLabel_verifyWhenFinished);
+            accelerators.Add(acceleratorLabel_hash);
+            accelerators.Add(acceleratorLabel_devices);
+            accelerators.Add(acceleratorLabel_image);
+            accelerators.Add(acceleratorLabel_checksum);
+            accelerators.Add(acceleratorLabel_checksumType);
+        }
+
+        private void SetAcceleratorsVisibility(bool visible)
+        {
+            foreach (var accelerator in accelerators)
+            {
+                accelerator.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        private void window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (acceleratorsVisible)
+            {
+                acceleratorsVisible = false;
+                SetAcceleratorsVisibility(false);
+            }
         }
     }
 }
