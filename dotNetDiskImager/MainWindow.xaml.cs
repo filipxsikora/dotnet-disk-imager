@@ -460,7 +460,14 @@ namespace dotNetDiskImager
                 }
             }
 
-            checksum?.Cancel();
+            if (checksum != null)
+            {
+                if (MessageBox.Show(this, "Do you really want to cancel checksum calculation ?",
+                    "Confirm Cancel", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                {
+                    checksum.Cancel();
+                }
+            }
         }
 
         private async void wipeDeviceButton_Click(object sender, RoutedEventArgs e)

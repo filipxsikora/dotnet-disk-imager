@@ -45,8 +45,7 @@ namespace dotNetDiskImager.DiskAccess
         internal static IntPtr GetHandleOnVolume(int volume, uint access)
         {
             IntPtr _handle;
-            string test = string.Format(@"\\.\{0}:", (char)(volume + 'A'));
-            _handle = NativeDisk.CreateFile(test, access, NativeDisk.FILE_SHARE_READ | NativeDisk.FILE_SHARE_WRITE, IntPtr.Zero, NativeDisk.OPEN_EXISTING, 0, IntPtr.Zero);
+            _handle = NativeDisk.CreateFile(string.Format(@"\\.\{0}:", (char)(volume + 'A')), access, NativeDisk.FILE_SHARE_READ | NativeDisk.FILE_SHARE_WRITE, IntPtr.Zero, NativeDisk.OPEN_EXISTING, 0, IntPtr.Zero);
 
             if (_handle == NativeDisk.INVALID_HANDLE_VALUE)
             {
@@ -67,6 +66,12 @@ namespace dotNetDiskImager.DiskAccess
             if (!result)
             {
                 var exception = new Win32Exception(Marshal.GetLastWin32Error());
+
+                if (exception.NativeErrorCode == 5)
+                {
+                    return true;
+                }
+
                 throw new Exception(string.Format("Error occured when trying to get lock on volume.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
