@@ -66,6 +66,12 @@ namespace dotNetDiskImager.DiskAccess
             if (!result)
             {
                 var exception = new Win32Exception(Marshal.GetLastWin32Error());
+
+                if (exception.NativeErrorCode == 5)
+                {
+                    return true;
+                }
+
                 throw new Exception(string.Format("Error occured when trying to get lock on volume.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
 
