@@ -227,7 +227,7 @@ namespace dotNetDiskImager.DiskAccess
             }
         }
 
-        internal static void WriteSectorDataToHandle(IntPtr handle, byte[] data, ulong startSector, ulong numSectors, ulong sectorSize)
+        internal static void WriteSectorDataToHandle(IntPtr handle, byte[] data, ulong startSector, ulong numSectors, ulong sectorSize, int length)
         {
             uint bytesWritten;
             bool result;
@@ -236,7 +236,7 @@ namespace dotNetDiskImager.DiskAccess
             li.QuadPart = (long)(startSector * sectorSize);
 
             NativeDisk.SetFilePointer(handle, li.LowPart, out li.HighPart, EMoveMethod.Begin);
-            result = NativeDisk.WriteFile(handle, data, (uint)(sectorSize * numSectors), out bytesWritten, IntPtr.Zero);
+            result = NativeDisk.WriteFile(handle, data, (uint)(length), out bytesWritten, IntPtr.Zero);
 
             if (!result)
             {
