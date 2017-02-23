@@ -343,7 +343,7 @@ namespace dotNetDiskImager.DiskAccess
                 }
 
                 readed = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                NativeDiskWrapper.WriteSectorDataToHandle(fileHandle, deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
+                NativeDiskWrapper.WriteSectorDataToHandle(fileHandle, deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize, readed);
 
                 totalBytesReaded += (ulong)readed;
                 bytesReaded += (ulong)readed;
@@ -495,7 +495,7 @@ namespace dotNetDiskImager.DiskAccess
                     {
                         for (ulong x = 0; x < 1024 * sectorSize; x++)
                         {
-                            if(deviceData[failedDeviceIndex][x] != fileData[x])
+                            if (deviceData[failedDeviceIndex][x] != fileData[x])
                             {
                                 throw new Exception(string.Format("Verify found different data. Device {0}:\\ at byte {1:n0}, file data: 0x{2:X2}, device data: 0x{3:X2}", DriveLetters[failedDeviceIndex], i * sectorSize + x, deviceData[failedDeviceIndex][x], fileData[x]));
                             }
