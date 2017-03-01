@@ -441,7 +441,7 @@ namespace dotNetDiskImager.DiskAccess
                         }
 
                         readed = NativeDiskWrapper.ReadSectorDataFromHandle(deviceHandles[0], deviceData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
-                        zipWriter.Write(deviceData, 0, deviceData.Length);
+                        zipWriter.Write(deviceData, 0, readed);
 
                         totalBytesReaded += (ulong)readed;
                         bytesReaded += (ulong)readed;

@@ -16,7 +16,7 @@
             </ScrollViewer>
         </Border>
         <TextBlock Margin="10,0,10,10" TextWrapping="Wrap" VerticalAlignment="Bottom"><Run Text="Graph library used: " FontWeight="Medium"/><Hyperlink NavigateUri="http://oxyplot.org/" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="OxyPlot"/></Hyperlink> (MIT License)</TextBlock>
-        <TextBlock Margin="145,80,10,0" TextWrapping="Wrap" VerticalAlignment="Top">
+        <TextBlock Margin="130,80,10,0" TextWrapping="Wrap" VerticalAlignment="Top">
             <Run Text="This is a free software. You can get it for free "/><Hyperlink NavigateUri="http://dotnetdiskimager.sourceforge.net/" RequestNavigate="Hyperlink_RequestNavigate">HERE</Hyperlink>.
         </TextBlock>
         <Label x:Name="copyrightLabel" Margin="121,51,10,0" Content="© FxS 2016" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0"/>

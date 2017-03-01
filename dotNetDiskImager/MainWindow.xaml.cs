@@ -507,7 +507,7 @@ namespace dotNetDiskImager
         private bool IsAnyAcceleratorControlFocused()
         {
             return fileSelectDialogButton.IsFocused || driveSelectComboBox.IsFocused || checksumTextBox.IsFocused || checksumComboBox.IsFocused || calculateChecksumButton.IsFocused ||
-                readOnlyAllocatedCheckBox.IsFocused || verifyCheckBox.IsFocused || onTheFlyZipCheckBox.IsFocused || readButton.IsFocused || writeButton.IsFocused || 
+                readOnlyAllocatedCheckBox.IsFocused || verifyCheckBox.IsFocused || onTheFlyZipCheckBox.IsFocused || readButton.IsFocused || writeButton.IsFocused ||
                 verifyImageButton.IsFocused || wipeDeviceButton.IsFocused || cancelButton.IsFocused;
         }
 
@@ -1407,6 +1407,12 @@ namespace dotNetDiskImager
 
         void CheckUpdates(bool displayNoUpdatesAvailible = false)
         {
+#if DEBUG
+            if (displayNoUpdatesAvailible)
+            {
+                MessageBox.Show(this, "Debug build doesn't support updates.", "Updates not availible", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+#else
             new Thread(() =>
             {
                 var result = Updater.IsUpdateAvailible();
@@ -1445,6 +1451,7 @@ namespace dotNetDiskImager
                 }
             })
             { IsBackground = true }.Start();
+#endif
         }
 
         private void ShowSettingsWindow()
@@ -1774,6 +1781,8 @@ namespace dotNetDiskImager
         private async Task HandleWipeButtonClick()
         {
             var devices = GetSelectedDevices();
+
+            DisplayInfoPart(false);
 
             if (devices.Length == 0)
             {
