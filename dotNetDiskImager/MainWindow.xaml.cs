@@ -1782,6 +1782,8 @@ namespace dotNetDiskImager
         {
             var devices = GetSelectedDevices();
 
+            DisplayInfoPart(false);
+
             if (devices.Length == 0)
             {
                 MessageBox.Show(this, "Cannot wipe device. No device selected.\nPlease select at least one device.", "No device selected", MessageBoxButton.OK, MessageBoxImage.Error);
