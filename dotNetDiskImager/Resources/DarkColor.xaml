@@ -1,0 +1,35 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:dotNetDiskImager.Resources">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Styles.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+    <SolidColorBrush x:Key="Foreground" Color="#FFF1F1F1"/>
+    <SolidColorBrush x:Key="ForegroundMouseOver" Color="#FFF1F1F1"/>
+    <SolidColorBrush x:Key="Background" Color="#FF2D2D30"/>
+    <SolidColorBrush x:Key="BackgroundMouseOver" Color="#FF3F3F3F"/>
+    <SolidColorBrush x:Key="WindowBorderColor" Color="#FF2D2D30"/>
+    <SolidColorBrush x:Key="WindowPlaceholderColor" Color="#FF1E1E1E"/>
+    <SolidColorBrush x:Key="WindowStatusbarColor" Color="#FF007ACC"/>
+    <SolidColorBrush x:Key="WindowTitleColor" Color="#FF999999"/>
+    <SolidColorBrush x:Key="WindowActiveTitleColor" Color="#FF999999"/>
+    <SolidColorBrush x:Key="WindowInactiveTitleColor" Color="#FF6E6E6E"/>
+    <SolidColorBrush x:Key="WindowIconColor" Color="#FF007ACC"/>
+    <SolidColorBrush x:Key="WindowActiveIconColor" Color="#FF007ACC"/>
+    <SolidColorBrush x:Key="WindowInactiveIconColor" Color="#FF6E6E6E"/>
+    <SolidColorBrush x:Key="WindowOuterBorderColor" Color="#FF007ACC"/>
+    <SolidColorBrush x:Key="WindowOuterInactiveBorderColor" Color="#FF858585"/>
+
+    <SolidColorBrush x:Key="MenuBorder" Color="#FF29292B"/>
+    <SolidColorBrush x:Key="MenuSeparatorBorderBrush" Color="#FF333337"/>
+    <SolidColorBrush x:Key="MenuItemHighlightedBackground" Color="#FF3F3F3F"/>
+    <SolidColorBrush x:Key="SubmenuItemBackground" Color="#FF1B1B1C"/>
+    <SolidColorBrush x:Key="SubmenuItemBackgroundHighlighted" Color="#FF333334"/>
+    <SolidColorBrush x:Key="MenuDisabledForeground" Color="#656565"/>
+    <SolidColorBrush x:Key="BackgroundSelected" Color="#007ACC"/>
+    <SolidColorBrush x:Key="LightBackground" Color="#FFADADB4"/>
+
+    <SolidColorBrush x:Key="BorderBrushNormal" Color="#FF8D8D8D"/>
+    <SolidColorBrush x:Key="BorderBrushSelected" Color="#1C97EA"/>
+    <SolidColorBrush x:Key="BorderBrushHighlighted" Color="#FF007ACC"/>
+</ResourceDictionary>
