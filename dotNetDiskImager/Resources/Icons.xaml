@@ -390,4 +390,165 @@
             <Path Data="F1M8.29,1.09C7.998,1.026,7.698,0.984,7.399,0.965L7.461,0C7.809,0.023,8.157,0.072,8.496,0.146z M5.607,1.114L5.386,0.172C5.724,0.093,6.071,0.038,6.417,0.009L6.497,0.973C6.199,0.997,5.899,1.045,5.607,1.114 M9.967,1.731C9.708,1.583,9.434,1.454,9.154,1.347L9.497,0.444C9.823,0.568,10.142,0.719,10.445,0.89z M3.944,1.784L3.454,0.95C3.755,0.774,4.07,0.619,4.391,0.489L4.751,1.386C4.474,1.497,4.203,1.631,3.944,1.784 M11.382,2.84C11.176,2.622,10.952,2.418,10.715,2.233L11.311,1.472C11.584,1.687,11.845,1.923,12.083,2.176z M2.548,2.915L1.835,2.263C2.07,2.006,2.325,1.765,2.596,1.545L3.203,2.297C2.97,2.486,2.75,2.694,2.548,2.915 M12.411,4.314C12.277,4.045,12.123,3.784,11.951,3.538L12.743,2.985C12.941,3.27,13.12,3.572,13.275,3.884z M1.545,4.407L0.671,3.994C0.82,3.679,0.995,3.373,1.19,3.084L1.99,3.624C1.823,3.873,1.673,4.137,1.545,4.407 M12.957,6.024C12.911,5.73,12.84,5.435,12.748,5.148L13.668,4.853C13.775,5.187,13.857,5.529,13.912,5.871z M1.027,6.127L0.071,5.991C0.12,5.648,0.195,5.304,0.296,4.97L1.22,5.248C1.134,5.536,1.068,5.832,1.027,6.127 M13.923,8.035L12.969,7.893C13.012,7.597,13.035,7.294,13.035,6.993L13.709,6.941 14,6.974C14,7.341,13.975,7.692,13.923,8.035 M0.083,8.075C0.03,7.732,0.002,7.381,0,7.033L0.966,7.027C0.968,7.328,0.991,7.631,1.037,7.926z M13.31,10.03L12.441,9.609C12.57,9.341,12.681,9.059,12.77,8.771L13.692,9.054C13.589,9.39,13.461,9.718,13.31,10.03 M0.706,10.065C0.554,9.753,0.423,9.425,0.32,9.093L1.24,8.804C1.331,9.09,1.443,9.371,1.574,9.64z M12.137,11.753L11.43,11.096C11.633,10.877,11.821,10.639,11.991,10.391L12.789,10.934C12.592,11.223,12.373,11.499,12.137,11.753 M1.889,11.781C1.652,11.528,1.431,11.253,1.233,10.966L2.027,10.417C2.199,10.665,2.389,10.902,2.594,11.12z M10.51,13.056L10.027,12.22C10.284,12.071,10.534,11.899,10.769,11.711L11.372,12.464C11.1,12.683,10.81,12.883,10.51,13.056 M3.521,13.075C3.225,12.904,2.934,12.708,2.658,12.491L3.254,11.73C3.494,11.919,3.746,12.09,4.002,12.237z M8.575,13.822L8.358,12.88C8.648,12.813,8.938,12.723,9.218,12.613L9.572,13.511C9.248,13.64,8.912,13.744,8.575,13.822 M5.465,13.831C5.126,13.755,4.789,13.652,4.464,13.525L4.815,12.625C5.094,12.733,5.384,12.822,5.676,12.887z M7.032,14C6.857,13.996,6.675,13.996,6.498,13.982L6.567,13.018C6.72,13.028 6.876,13.036 7.029,13.034 7.177,13.034 7.323,13.028 7.467,13.017L7.542,13.979C7.374,13.994,7.203,14,7.032,14" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}" Height="14" Canvas.Left="0" Canvas.Top="0" Width="14"/>
         </Canvas>
     </Canvas>
+
+    <Viewbox x:Shared="false" x:Key="close_icon" Width="9" Height="9" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="9" Height="9">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}" Geometry="F1M10,3L7,6 10,9 8,9 6,7 4,9 2,9 5,6 2,3 4,3 6,5 8,3z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="minimize_icon" Width="10" Height="10" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="10" Height="10">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}" Geometry="F1M14,11L2,11 2,14 14,14z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="flag_icon" Width="12" Height="12" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="12" Height="12">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FF1E1E1E" Geometry="F1M7,9L10,15 8,15 1,1 15,1z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="flag_icon_notification" Width="12" Height="12" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="12" Height="12">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Label}}" Geometry="F1M7,9L10,15 8,15 1,1 15,1z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="settings_icon" Width="12" Height="12" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="12" Height="12">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M5.9859,-0.000199999999999534L5.6129,2.2378 3.7669,0.918800000000001 0.9189,3.7668 2.2369,5.6128 -9.99999999997669E-05,5.9858 -9.99999999997669E-05,10.0118 2.2369,10.3868 0.9189,12.2338 3.7669,15.0798 5.6119,13.7628 5.9859,15.9998 10.0129,15.9998 10.3869,13.7618 12.2339,15.0798 15.0799,12.2338 13.7619,10.3868 15.9999,10.0148 15.9999,5.9868 13.7619,5.6128 15.0799,3.7668 12.2339,0.919800000000001 10.3869,2.2378 10.0139,-0.000199999999999534z" />
+                                <GeometryDrawing Brush="#FF424242" Geometry="F1M10.2123,8C10.2123,9.222 9.2223,10.212 8.0003,10.212 6.7783,10.212 5.7873,9.222 5.7873,8 5.7873,6.778 6.7783,5.788 8.0003,5.788 9.2223,5.788 10.2123,6.778 10.2123,8z M9.9643,3.257C9.8183,3.197,9.6683,3.17,9.5203,3.124L9.1663,1 6.8333,1 6.4803,3.121C6.1853,3.213,5.8993,3.332,5.6253,3.475L3.8753,2.225 2.2253,3.875 3.4773,5.627C3.4053,5.764 3.3183,5.89 3.2573,6.036 3.1973,6.182 3.1703,6.331 3.1243,6.479L1.0003,6.833 1.0003,9.166 3.1213,9.52C3.2133,9.815,3.3313,10.101,3.4753,10.375L2.2253,12.125 3.8753,13.775 5.6273,12.523C5.7643,12.595 5.8893,12.682 6.0353,12.742 6.1813,12.803 6.3313,12.83 6.4793,12.876L6.8333,15 9.1663,15 9.5203,12.879C9.8153,12.787,10.1013,12.668,10.3743,12.525L12.1243,13.775 13.7743,12.125 12.5233,10.373C12.5953,10.236 12.6823,10.11 12.7423,9.964 12.8033,9.818 12.8303,9.669 12.8763,9.521L15.0003,9.167 15.0003,6.834 12.8783,6.48C12.7863,6.185,12.6683,5.899,12.5243,5.625L13.7743,3.875 12.1253,2.225 10.3723,3.477C10.2353,3.405,10.1103,3.318,9.9643,3.257z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Canvas x:Shared="false" x:Key="restore_icon" SnapsToDevicePixels="True" ClipToBounds="True" HorizontalAlignment="Left" Height="16" UseLayoutRounding="False" VerticalAlignment="Top" Width="16">
+        <Path Data="F1M3,7C3,8.333 3,9.667 3,11 5,11 7,11 9,11 9,9.667 9,8.333 9,7 7,7 5,7 3,7z M5,4C5,4.333 5,4.667 5,5 6.666,5 8.333,5 10,5 10,6 10,7 10,8 10.333,8 10.667,8 11,8 11,6.667 11,5.333 11,4 9,4 7,4 5,4z M4,2C6.666,2 9.334,2 12,2 12,4.333 12,6.667 12,9 11.333,9 10.667,9 10,9 10,10 10,11 10,12 7.334,12 4.666,12 2,12 2,9.667 2,7.333 2,5 2.667,5 3.333,5 4,5 4,4 4,3 4,2z" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=MenuItem}}" Height="14" Width="14" Canvas.Left="1" Canvas.Top="1"/>
+    </Canvas>
+
+    <Canvas x:Shared="false" x:Key="maximize_icon" SnapsToDevicePixels="True" ClipToBounds="True" HorizontalAlignment="Left" Height="16" UseLayoutRounding="False" VerticalAlignment="Top" Width="16">
+        <Path Data="F1M3,5C3,5 3,11 3,11 3,11 13,11 13,11 13,11 13,5 13,5 13,5 3,5 3,5z M2,2C2,2 14,2 14,2 14,2 14,12 14,12 14,12 2,12 2,12 2,12 2,2 2,2z" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=MenuItem}}" Height="14" Canvas.Left="0" Canvas.Top="1" Width="16"/>
+    </Canvas>
+
+    <Canvas x:Shared="false" x:Key="minimize_icon_menu" SnapsToDevicePixels="True" HorizontalAlignment="Left" Height="16" VerticalAlignment="Top" Width="16">
+        <Path Data="M1.953125,12.608567 L12.099609,12.608567 L12.099609,15.157395 L1.953125,15.157395 z" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=MenuItem}}" HorizontalAlignment="Left" Height="2.548" RenderTransformOrigin="0.5,0.5" Stretch="Fill" VerticalAlignment="Top" Width="10.147" Canvas.Left="3" Canvas.Top="8.452">
+        </Path>
+    </Canvas>
+
+    <Canvas x:Shared="false" x:Key="close_icon_menu" SnapsToDevicePixels="True" HorizontalAlignment="Left" Height="16" VerticalAlignment="Top" Width="16">
+        <Path Data="M3.6460876,5.6163797 L7.1812439,9.1613016 L10.726013,5.6163797 L12.34375,7.2290812 L8.7988281,10.783311 L12.34375,14.308854 L10.726166,15.919114 L7.1812439,12.383958 L3.6459351,15.919114 L2.03125,14.308854 L5.5761719,10.783311 L2.03125,7.2290812 z" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=MenuItem}}" HorizontalAlignment="Left" Height="10" RenderTransformOrigin="0.5,0.5" Stretch="Fill" VerticalAlignment="Top" Width="10" Canvas.Left="3" Canvas.Top="3">
+        </Path>
+    </Canvas>
+
+    <Viewbox x:Shared="false" x:Key="settings_icon_menu" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M5.9859,-0.000199999999999534L5.6129,2.2378 3.7669,0.918800000000001 0.9189,3.7668 2.2369,5.6128 -9.99999999997669E-05,5.9858 -9.99999999997669E-05,10.0118 2.2369,10.3868 0.9189,12.2338 3.7669,15.0798 5.6119,13.7628 5.9859,15.9998 10.0129,15.9998 10.3869,13.7618 12.2339,15.0798 15.0799,12.2338 13.7619,10.3868 15.9999,10.0148 15.9999,5.9868 13.7619,5.6128 15.0799,3.7668 12.2339,0.919800000000001 10.3869,2.2378 10.0139,-0.000199999999999534z" />
+                                <GeometryDrawing Brush="#FF424242" Geometry="F1M10.2123,8C10.2123,9.222 9.2223,10.212 8.0003,10.212 6.7783,10.212 5.7873,9.222 5.7873,8 5.7873,6.778 6.7783,5.788 8.0003,5.788 9.2223,5.788 10.2123,6.778 10.2123,8z M9.9643,3.257C9.8183,3.197,9.6683,3.17,9.5203,3.124L9.1663,1 6.8333,1 6.4803,3.121C6.1853,3.213,5.8993,3.332,5.6253,3.475L3.8753,2.225 2.2253,3.875 3.4773,5.627C3.4053,5.764 3.3183,5.89 3.2573,6.036 3.1973,6.182 3.1703,6.331 3.1243,6.479L1.0003,6.833 1.0003,9.166 3.1213,9.52C3.2133,9.815,3.3313,10.101,3.4753,10.375L2.2253,12.125 3.8753,13.775 5.6273,12.523C5.7643,12.595 5.8893,12.682 6.0353,12.742 6.1813,12.803 6.3313,12.83 6.4793,12.876L6.8333,15 9.1663,15 9.5203,12.879C9.8153,12.787,10.1013,12.668,10.3743,12.525L12.1243,13.775 13.7743,12.125 12.5233,10.373C12.5953,10.236 12.6823,10.11 12.7423,9.964 12.8033,9.818 12.8303,9.669 12.8763,9.521L15.0003,9.167 15.0003,6.834 12.8783,6.48C12.7863,6.185,12.6683,5.899,12.5243,5.625L13.7743,3.875 12.1253,2.225 10.3723,3.477C10.2353,3.405,10.1103,3.318,9.9643,3.257z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Path x:Shared="false" x:Key="check_icon" Data="F1M16.5,0L8,17 4,17 0,9 4,9 6,13 12.5,0z" SnapsToDevicePixels="True" Fill="{DynamicResource Foreground}" Height="10" Width="9.706" Stretch="Fill"/>
+
+    <Viewbox x:Shared="false" x:Key="mapped_drives_icon" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M16,10L16,5C16,3.897,15.103,3,14,3L2,3C0.897,3,0,3.897,0,5L0,10 5,10 5,11 3,11 3,12 0,12 0,15 3,15 3,16 13,16 13,15 16,15 16,12 13,12 13,11 11,11 11,10z" />
+                                <GeometryDrawing Brush="#FFEFEFF0" Geometry="F1M13,6L12,6 12,7 13,7z M11,6L10,6 10,7 11,7z M14,8L2,8 2,5 14,5z M9,13L11,13 11,14 5,14 5,13 7,13 7,12 9,12z" />
+                                <GeometryDrawing Brush="#FF424242" Geometry="F1M10,6L11,6 11,7 10,7z M12,6L13,6 13,7 12,7z M2,5L14,5 14,8 2,8z M9,12L9,13 11,13 11,14 5,14 5,13 7,13 7,12z M15,9L15,5C15,4.449,14.552,4,14,4L2,4C1.449,4,1,4.449,1,5L1,9 7.5,9 7.5,11 6,11 6,12 4,12 4,13 1,13 1,14 4,14 4,15 12,15 12,14 15,14 15,13 12,13 12,12 10,12 10,11 8.5,11 8.5,9z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="about_icon" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M0,8.0005C0,3.5825 3.582,0.000499999999998835 8,0.000499999999998835 12.418,0.000499999999998835 16,3.5825 16,8.0005 16,12.4185 12.418,16.0005 8,16.0005 3.582,16.0005 0,12.4185 0,8.0005" />
+                                <GeometryDrawing Brush="#FF1AA1E2" Geometry="F1M9,5L7,5 7,3 9,3z M9,13L7,13 7,6 9,6z M8,1C4.135,1 1,4.135 1,8 1,11.865 4.135,15 8,15 11.865,15 15,11.865 15,8 15,4.135 11.865,1 8,1" />
+                                <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1M7,5L9,5 9,3 7,3z M7,6L9,6 9,13 7,13z" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
 </ResourceDictionary>
