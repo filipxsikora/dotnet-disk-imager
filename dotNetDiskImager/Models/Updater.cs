@@ -10,9 +10,9 @@ namespace dotNetDiskImager.Models
 {
     public class Updater
     {
-        public static bool? IsUpdateAvailible()
+        public static string IsUpdateAvailible()
         {
-            string contents;
+            
             var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
             string currentVersion = string.Format("{0}.{1}.{2}.{3}", appVersion.Major, appVersion.Minor, appVersion.Build, appVersion.Revision);
 
@@ -20,16 +20,16 @@ namespace dotNetDiskImager.Models
             {
                 using (var webClient = new WebClient())
                 {
-                    contents = webClient.DownloadString("http://dotnetdiskimager.sourceforge.net/version.txt");
+                    string contents = webClient.DownloadString("http://dotnetdiskimager.sourceforge.net/version.txt");
                     if (contents != currentVersion)
                     {
-                        return true;
+                        return contents;
                     }
                 }
             }
             catch { return null; }
 
-            return false;
+            return "";
         }
     }
 }
