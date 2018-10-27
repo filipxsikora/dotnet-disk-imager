@@ -26,6 +26,7 @@ using System.Windows.Shell;
 using dotNetDiskImager.UI;
 using System.Media;
 using System.Diagnostics;
+using System.Windows.Controls.Primitives;
 
 namespace dotNetDiskImager
 {
@@ -39,9 +40,11 @@ namespace dotNetDiskImager
         const int DBT_DEVICEARRIVAL = 0x8000;
         const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
         const int DBT_DEVTYP_VOLUME = 0x02;
+        const int WM_SYSTEMMENU = 0xA4;
+        const int WP_SYSTEMMENU = 0x02;
         #endregion
 
-        const int windowHeight = 285;
+        const int windowHeight = 290;
         const int windowWidth = 585;
         const int infoMessageHeight = 40;
         const int infoMessageMargin = 10;
@@ -49,6 +52,12 @@ namespace dotNetDiskImager
         const int applicationPartHeight = 250;
         const int windowInnerOffset = 10;
         readonly Brush AcceleratorDisabledForegroundBrush = new SolidColorBrush(Color.FromRgb(0xC3, 0xC3, 0xC3));
+        readonly Color ActivatedColor = Color.FromRgb(0, 122, 204);
+        readonly Brush ActivatedBrush = new SolidColorBrush(Color.FromRgb(0, 122, 204));
+        readonly Color WorkingColor = Color.FromRgb(228, 133, 67);
+        readonly Brush WorkingBrush = new SolidColorBrush(Color.FromRgb(228, 133, 67));
+        readonly Color DeactivatedColor = Color.FromRgb(212, 212, 212);
+        readonly Brush DeactivatedBrush = new SolidColorBrush(Color.FromRgb(153, 153, 153));
 
         public IntPtr Handle
         {
@@ -69,6 +78,7 @@ namespace dotNetDiskImager
         public SpeedGraphModel GraphModel { get; } = new SpeedGraphModel();
         bool verifyingAfterOperation = false;
         bool closed = false;
+        bool windowContextMenuShown;
 
         bool acceleratorsVisible = false;
         List<Label> accelerators;
@@ -93,6 +103,25 @@ namespace dotNetDiskImager
                 DeviceCheckBoxClickHandler();
             }
 
+            if (AppSettings.Settings.Appearance == null)
+            {
+                AppSettings.Settings.Appearance = Appearance.Light;
+            }
+
+            ResourceDictionary dict = new ResourceDictionary();
+            if (AppSettings.Settings.Appearance == Appearance.Light)
+            {
+                dict.Source = new Uri("Resources/LightColor.xaml", UriKind.Relative);
+            }
+            else
+            {
+                dict.Source = new Uri("Resources/DarkColor.xaml", UriKind.Relative);
+            }
+            Application.Current.Resources.Clear();
+            Application.Current.Resources.MergedDictionaries.Add(dict);
+
+            GraphModel.UpdateColors(AppSettings.Settings.Appearance.Value);
+
             if (AppSettings.Settings.LastWindowPosition != null)
             {
                 if (AppSettings.Settings.LastWindowPosition.Top > SystemParameters.VirtualScreenHeight - windowHeight || AppSettings.Settings.LastWindowPosition.Top < 0)
@@ -111,7 +140,6 @@ namespace dotNetDiskImager
 
             Loaded += (s, e) =>
             {
-                WindowContextMenu.CreateWindowMenu(Handle);
                 HwndSource source = HwndSource.FromHwnd(Handle);
                 source.AddHook(WndProc);
 
@@ -145,7 +173,7 @@ namespace dotNetDiskImager
                 closed = true;
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
-                AppSettings.Settings.IsTopMost = WindowContextMenu.IsAlwaysOnTopChecked(Handle);
+                AppSettings.Settings.IsTopMost = Topmost;
                 if (AppSettings.Settings.LastWindowPosition == null)
                 {
                     AppSettings.Settings.LastWindowPosition = new LastWindowPosition();
@@ -159,6 +187,9 @@ namespace dotNetDiskImager
             {
                 CheckUpdates();
             }
+
+            windowBorderEffect.Color = ActivatedColor;
+            windowBorder.BorderBrush = ActivatedBrush;
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -203,32 +234,12 @@ namespace dotNetDiskImager
                 }
             }
 
-            if (msg == WindowContextMenu.WM_SYSCOMMAND)
+            if ((msg == WM_SYSTEMMENU) && (wParam.ToInt32() == WP_SYSTEMMENU))
             {
-                switch (wParam.ToInt32())
-                {
-                    case WindowContextMenu.SettingsCommand:
-                        ShowSettingsWindow();
-                        handled = true;
-                        break;
-                    case WindowContextMenu.AlwaysOnTopCommand:
-                        HandleAlwaysOnTopCommand();
-                        handled = true;
-                        break;
-                    case WindowContextMenu.AboutCommand:
-                        ShowAboutWindow();
-                        handled = true;
-                        break;
-                    case WindowContextMenu.EnableLinkedConnectionCommand:
-                        HandleEnableLinkedConnectionCommand();
-                        handled = true;
-                        break;
-                    case WindowContextMenu.CheckUpdatesCommand:
-                        CheckUpdates(true);
-                        handled = true;
-                        break;
-                }
+                ShowContextMenu(false);
+                handled = true;
             }
+
             return IntPtr.Zero;
         }
 
@@ -456,7 +467,7 @@ namespace dotNetDiskImager
                 if (MessageBox.Show(this, "Canceling current operation will result in corruption at the target.\nDo you really want to cancel current operation ?",
                     "Confirm Cancel", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    disk.CancelOperation();
+                    disk?.CancelOperation();
                 }
             }
 
@@ -465,7 +476,7 @@ namespace dotNetDiskImager
                 if (MessageBox.Show(this, "Do you really want to cancel checksum calculation ?",
                     "Confirm Cancel", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    checksum.Cancel();
+                    checksum?.Cancel();
                 }
             }
         }
@@ -523,11 +534,22 @@ namespace dotNetDiskImager
                 ShowAboutWindow();
                 e.Handled = true;
             }
+
             if (e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 ShowSettingsWindow();
                 e.Handled = true;
             }
+
+            if (Keyboard.Modifiers == ModifierKeys.Alt)
+            {
+                if (e.SystemKey == Key.Space)
+                {
+                    ShowContextMenu(false, true);
+                    e.Handled = true;
+                }
+            }
+
             if (e.Key == Key.System && Keyboard.Modifiers == ModifierKeys.Alt && e.SystemKey == Key.LeftAlt)
             {
                 if (!acceleratorsVisible)
@@ -1175,6 +1197,7 @@ namespace dotNetDiskImager
                 elapsedStopwatch.Restart();
                 disk.BeginVerifyImageAndDevice(result.ImageSize);
                 SetUIState(false);
+                GraphModel.ResetToVerify();
                 programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                 programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
 
@@ -1213,6 +1236,7 @@ namespace dotNetDiskImager
                     elapsedStopwatch.Restart();
                     disk.BeginVerifyImageAndDevice(bytesToRead);
                     SetUIState(false);
+                    GraphModel.ResetToVerify();
                     programTaskbar.ProgressState = TaskbarItemProgressState.Normal;
                     programTaskbar.Overlay = Properties.Resources.check.ToBitmapImage();
 
@@ -1268,6 +1292,17 @@ namespace dotNetDiskImager
                     accelerator.Foreground = enabled ? Brushes.White : AcceleratorDisabledForegroundBrush;
                     accelerator.Opacity = enabled ? 1 : 0.8;
                 }
+            }
+
+            if (!enabled)
+            {
+                windowBorderEffect.Color = WorkingColor;
+                windowBorder.BorderBrush = WorkingBrush;
+            }
+            else
+            {
+                windowBorderEffect.Color = ActivatedColor;
+                windowBorder.BorderBrush = ActivatedBrush;
             }
         }
 
@@ -1413,19 +1448,17 @@ namespace dotNetDiskImager
                 MessageBox.Show(this, "Debug build doesn't support updates.", "Updates not availible", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 #else
-            new Thread(() =>
+            new Task(() =>
             {
                 var result = Updater.IsUpdateAvailible();
-                if (result != null && result.Value)
+                if (!string.IsNullOrEmpty(result))
                 {
                     if (!closed)
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            if (MessageBox.Show(this, "Newer version of dotNet Disk Imager availible.\nWould you like to visit project's website to download it ?", "Update Availible", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
-                            {
-                                Process.Start(new ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
-                            }
+                            notificationButton.Visibility = Visibility.Visible;
+                            newVersionRun.Text = result;
                         });
                     }
                 }
@@ -1449,8 +1482,7 @@ namespace dotNetDiskImager
                         }
                     }
                 }
-            })
-            { IsBackground = true }.Start();
+            }).Start();
 #endif
         }
 
@@ -1463,6 +1495,10 @@ namespace dotNetDiskImager
                 {
                     settingsWindow = null;
                     Activate();
+                };
+                settingsWindow.AppearanceChanged += (a) =>
+                {
+                    GraphModel.UpdateColors(a);
                 };
             }
             settingsWindow.Show();
@@ -1744,16 +1780,14 @@ namespace dotNetDiskImager
             }
         }
 
-        private void HandleAlwaysOnTopCommand()
+        private void HandleAlwaysOnTopCommand(MenuItem item)
         {
-            if (WindowContextMenu.IsAlwaysOnTopChecked(Handle))
+            if (!item.IsChecked)
             {
-                WindowContextMenu.SetAlwaysOnTopChecked(Handle, false);
                 Topmost = false;
             }
             else
             {
-                WindowContextMenu.SetAlwaysOnTopChecked(Handle, true);
                 Topmost = true;
             }
         }
@@ -1960,6 +1994,252 @@ namespace dotNetDiskImager
                 acceleratorsVisible = false;
                 SetAcceleratorsVisibility(false);
             }
+        }
+
+        private void windowTop_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
+        }
+
+        private void window_Activated(object sender, EventArgs e)
+        {
+            if (disk == null)
+            {
+                windowBorderEffect.Color = ActivatedColor;
+                windowBorder.BorderBrush = ActivatedBrush;
+            }
+            else
+            {
+                windowBorderEffect.Color = WorkingColor;
+                windowBorder.BorderBrush = WorkingBrush;
+            }
+            windowTitleLabel.Foreground = FindResource("Foreground") as Brush;
+        }
+
+        private void window_Deactivated(object sender, EventArgs e)
+        {
+            windowBorderEffect.Color = DeactivatedColor;
+            windowBorder.BorderBrush = DeactivatedBrush;
+            windowTitleLabel.Foreground = FindResource("WindowInactiveTitleColor") as Brush;
+        }
+
+        private void closeButton_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void minimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void notificationButton_Click(object sender, RoutedEventArgs e)
+        {
+            notificationContainer.Visibility = Visibility.Visible;
+        }
+
+        private void settingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowSettingsWindow();
+        }
+
+        private void ShowContextMenu(bool highlightClose, bool placeToIcon = false)
+        {
+            var cm = new ContextMenu()
+            {
+                Style = FindResource("StandardContextMenu") as Style
+            };
+
+            var cmItemRestore = new MenuItem()
+            {
+                Header = "Restore down",
+                IsEnabled = false,
+                Foreground = FindResource("MenuDisabledForeground") as Brush,//new SolidColorBrush(WindowState == WindowState.Maximized ? Color.FromRgb(30, 30, 30) : Color.FromRgb(96, 96, 96)),
+                Icon = FindResource("restore_icon") as Canvas
+            };
+
+            var cmItemMove = new MenuItem()
+            {
+                Header = "Move"
+            };
+
+            cmItemMove.Click += (s, e) =>
+            {
+                //SetCursorPos((int)(Left + (ActualWidth / 2)), (int)(Top + 15));
+            };
+
+            var cmItemSize = new MenuItem()
+            {
+                Header = "Size",
+                IsEnabled = false,
+                Foreground = FindResource("MenuDisabledForeground") as Brush
+            };
+
+            var cmItemMinimize = new MenuItem()
+            {
+                Header = "Minimize",
+                Foreground = (Brush)FindResource("Foreground"),
+                Icon = FindResource("minimize_icon_menu") as Canvas
+            };
+
+            cmItemMinimize.Click += (s, e) =>
+            {
+                WindowState = WindowState.Minimized;
+            };
+
+            var cmItemMaximize = new MenuItem()
+            {
+                Header = "Maximize",
+                IsEnabled = false,
+                Foreground = FindResource("MenuDisabledForeground") as Brush,
+                Icon = FindResource("maximize_icon") as Canvas
+            };
+
+            var cmItemOptions = new MenuItem()
+            {
+                Header = "Settings",
+                InputGestureText = "Ctrl+O",
+                Icon = FindResource("settings_icon_menu") as Viewbox
+            };
+
+            cmItemOptions.Click += (s, e) =>
+            {
+                ShowSettingsWindow();
+            };
+
+            var cmItemOnTop = new MenuItem()
+            {
+                Header = "Always on top",
+                IsCheckable = true,
+                IsChecked = Topmost
+            };
+
+            cmItemOnTop.Click += (s, e) =>
+            {
+                HandleAlwaysOnTopCommand(s as MenuItem);
+                e.Handled = true;
+            };
+
+            var cmItemUpdates = new MenuItem()
+            {
+                Header = "Check for updates"
+            };
+
+            cmItemUpdates.Click += (s, e) =>
+            {
+                CheckUpdates(true);
+            };
+
+            var cmItemMappedDrives = new MenuItem()
+            {
+                Header = "Enable mapped drives",
+                Icon = FindResource("mapped_drives_icon") as Viewbox
+            };
+
+            cmItemMappedDrives.Click += (s, e) =>
+            {
+                Utils.SetMappedDrivesEnable();
+            };
+
+            var cmItemAbout = new MenuItem()
+            {
+                Header = "About",
+                InputGestureText = "F1",
+                Icon = FindResource("about_icon") as Viewbox
+            };
+
+            cmItemAbout.Click += (s, e) =>
+            {
+                ShowAboutWindow();
+            };
+
+            var cmItemClose = new MenuItem()
+            {
+                Header = "Close",
+                InputGestureText = "Alt+F4",
+                FontWeight = highlightClose ? FontWeights.Bold : FontWeights.Normal,
+                Foreground = (Brush)FindResource("Foreground"),
+                Icon = FindResource("close_icon_menu") as Canvas
+            };
+
+            cmItemClose.Click += (s, e) =>
+            {
+                Application.Current.Shutdown();
+            };
+
+            cm.Items.Add(cmItemRestore);
+            cm.Items.Add(cmItemMove);
+            cm.Items.Add(cmItemSize);
+            cm.Items.Add(cmItemMinimize);
+            cm.Items.Add(cmItemMaximize);
+            cm.Items.Add(new Separator());
+            cm.Items.Add(cmItemOptions);
+            cm.Items.Add(cmItemOnTop);
+            cm.Items.Add(cmItemUpdates);
+            if (Utils.CheckMappedDrivesEnable())
+            {
+                cm.Items.Add(cmItemMappedDrives);
+            }
+            cm.Items.Add(cmItemAbout);
+            cm.Items.Add(new Separator());
+            cm.Items.Add(cmItemClose);
+
+            if (highlightClose || placeToIcon)
+            {
+                cm.PlacementTarget = windowIcon;
+                cm.Placement = PlacementMode.Bottom;
+            }
+
+            cm.IsOpen = true;
+            cm.Closed += (s, e) => windowContextMenuShown = false;
+            windowContextMenuShown = true;
+        }
+
+        private void Label_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.RightButton == MouseButtonState.Pressed && e.ChangedButton == MouseButton.Right)
+            {
+                ShowContextMenu(false);
+                e.Handled = true;
+            }
+        }
+
+        private async void windowIcon_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount >= 2)
+            {
+                Application.Current.Shutdown();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                if (!windowContextMenuShown)
+                {
+                    await Task.Delay(250);
+                    ShowContextMenu(true);
+                    windowContextMenuShown = true;
+                }
+                else
+                {
+                    windowContextMenuShown = false;
+                }
+            }
+            e.Handled = true;
+        }
+
+        private void closeNotificationButton_Click(object sender, RoutedEventArgs e)
+        {
+            notificationContainer.Visibility = Visibility.Collapsed;
+        }
+
+        private void visitWebsiteButton_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
         }
     }
 }

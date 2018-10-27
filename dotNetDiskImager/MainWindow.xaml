@@ -7,7 +7,7 @@
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
         x:Name="window"
-        Title="dotNet Disk Imager" Height="285" Width="575" ResizeMode="CanMinimize" Background="White" AllowDrop="True" Icon="icon.ico" PreviewKeyDown="window_PreviewKeyDown" Drop="program_Drop" PreviewDragEnter="program_DragEnter" PreviewDragLeave="program_DragLeave" PreviewMouseDown="window_PreviewMouseDown">
+        Title="dotNet Disk Imager" WindowStyle="None" AllowsTransparency="True" Height="290" Width="585" ResizeMode="CanMinimize" Background="{x:Null}" AllowDrop="True" Icon="icon.ico" PreviewKeyDown="window_PreviewKeyDown" Drop="program_Drop" PreviewDragEnter="program_DragEnter" PreviewDragLeave="program_DragLeave" PreviewMouseDown="window_PreviewMouseDown" Activated="window_Activated" Deactivated="window_Deactivated">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="programTaskbar" Description="dotNet Disk Imager" ProgressState="Normal"/>
     </Window.TaskbarItemInfo>
@@ -29,104 +29,136 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Grid Background="White">
-        <Grid.RowDefinitions>
-            <RowDefinition x:Name="infoPartRow" Height="Auto"/>
-            <RowDefinition x:Name="applicationPartRow" Height="260"/>
-            <RowDefinition x:Name="progressPartRow" Height="0"/>
-        </Grid.RowDefinitions>
-        <ComboBox TabIndex="2" x:Name="driveSelectComboBox" Margin="10,74,10,0" VerticalAlignment="Top" Height="23" Grid.Row="1"/>
-        <TextBox TabIndex="0" x:Name="imagePathTextBox" Height="23" Margin="10,26,55,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" TextChanged="imagePathTextBox_TextChanged"/>
-        <Button TabIndex="1" x:Name="fileSelectDialogButton" ToolTip="Open dialog to select image file" Content="{StaticResource openImageIcon}" HorizontalAlignment="Right" Margin="0,26,10,0" VerticalAlignment="Top" Width="40" Click="fileSelectDialogButton_Click" Height="23" Grid.Row="1"/>
-        <Label Content="Image file:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <Grid x:Name="progressPartGrid" Grid.Row="2" Visibility="Collapsed">
-            <Rectangle Height="1" Margin="10,1" VerticalAlignment="Top" Stroke="#FFBBBBBB"/>
-            <oxy:PlotView x:Name="speedGraph" DataContext="{Binding ElementName=window}" Margin="20,36,20,66" Model="{Binding GraphModel.Model}" DefaultTrackerTemplate="{x:Null}" BorderThickness="1" BorderBrush="#bbbbbb"/>
-            <Label x:Name="progressText" Content="" HorizontalAlignment="Left" Margin="20,5,0,0" FontSize="16" Height="31" VerticalAlignment="Top"/>
-            <Label x:Name="transferredText" Content="" HorizontalAlignment="Left" Margin="20,0,0,40" Height="26" VerticalAlignment="Bottom"/>
-            <Label x:Name="stepText" Content="" Margin="0,0,20,199" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
-            <Label x:Name="timeRemainingText" Content="" HorizontalAlignment="Left" Margin="20,0,0,17" Height="26" VerticalAlignment="Bottom"/>
-        </Grid>
-        <Label Content="Device(s):" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <CheckBox TabIndex="6" x:Name="readOnlyAllocatedCheckBox" Content="Read only allocated partitions" ToolTip="Reads only allocated partitions on device if checked" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <Border x:Name="infoContainer" Style="{StaticResource InfoContainerError}" Height="30" VerticalAlignment="Top" Visibility="Collapsed">
-            <Grid>
-                <Label x:Name="infoText" Content="Reading and verify was finished succesfully" Margin="30,0" Padding="0" Foreground="#FF800505" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
-                <Button x:Name="closeInfoButton" ToolTip="Hide" Style="{StaticResource CloseInfoButton}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="20" BorderThickness="0" Click="closeInfoButton_Click" Margin="0,0,5,0" />
-                <Button x:Name="showInfoButton" ToolTip="Show more informations" Style="{StaticResource CloseInfoButton}" Content="{StaticResource operationInfoIcon}" Padding="0" HorizontalAlignment="Right" Width="20" BorderThickness="0" Margin="0,0,25,0" Click="showInfoButton_Click" />
-                <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+    <Border x:Name="windowBorder" Margin="5" BorderThickness="1" BorderBrush="#FF007ACC">
+        <Border.Effect>
+            <DropShadowEffect x:Name="windowBorderEffect" ShadowDepth="0" Color="#FF007ACC"/>
+        </Border.Effect>
+        <Grid Background="{DynamicResource WindowPlaceholderColor}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition x:Name="infoPartRow" Height="Auto"/>
+                <RowDefinition x:Name="applicationPartRow" Height="260"/>
+                <RowDefinition x:Name="progressPartRow" Height="0"/>
+            </Grid.RowDefinitions>
+            <Grid Background="{DynamicResource Background}" MouseDown="windowTop_MouseDown">
+                <Label x:Name="windowTitleLabel" Content="dotNet Disk Imager" Foreground="{DynamicResource Foreground}" Padding="0" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="14" PreviewMouseDown="Label_PreviewMouseDown"/>
+                <Image x:Name="windowIcon" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" Width="26" Source="icon.ico" Margin="5,2,0,2" PreviewMouseDown="windowIcon_PreviewMouseDown"/>
+                <Grid Height="20" VerticalAlignment="Top" HorizontalAlignment="Right" Width="120" Margin="0,0,7,0">
+                    <Button x:Name="closeButton" Content="{StaticResource close_icon}" Style="{StaticResource MetroButtonRed}" IsTabStop="False" HorizontalAlignment="Right" Width="40" Foreground="White" ToolTip="Close" Click="closeButton_Click"/>
+                    <Button x:Name="minimizeButton" Content="{StaticResource minimize_icon}" Style="{StaticResource MetroButton}" IsTabStop="False" Margin="0,0,41,0" HorizontalAlignment="Right" Width="25" ToolTip="Minimize" Click="minimizeButton_Click"/>
+                    <Button x:Name="notificationButton" Content="{StaticResource flag_icon}" Style="{StaticResource MetroButtonYellow}" IsTabStop="False" Margin="0,0,100,0" HorizontalAlignment="Right" Width="20" ToolTip="Update available" Click="notificationButton_Click" Visibility="Collapsed"/>
+                    <Button x:Name="settingsButton" Content="{StaticResource settings_icon}" Style="{StaticResource MetroButton}" IsTabStop="False" Margin="0,0,80,0" HorizontalAlignment="Right" Width="20" ToolTip="Settings" Click="settingsButton_Click"/>
+                </Grid>
             </Grid>
-        </Border>
-        <CheckBox TabIndex="7" x:Name="verifyCheckBox" ToolTip="Verify procedure will be started automatically when read or write finishes if checked" Content="Verify data when finished" Margin="271,161,0,0" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left"/>
-        <CheckBox TabIndex="8" x:Name="onTheFlyZipCheckBox" Content="Compress/Decompress data on the fly" HorizontalAlignment="Left" Margin="10,184,0,0" VerticalAlignment="Top" Grid.Row="1">
-            <CheckBox.ToolTip>
-                <TextBlock>
+            <ComboBox TabIndex="2" x:Name="driveSelectComboBox" Style="{StaticResource StandardComboBox}" Margin="10,74,10,0" VerticalAlignment="Top" Height="23" Grid.Row="2"/>
+            <TextBox TabIndex="0" x:Name="imagePathTextBox" Style="{StaticResource standardTextBox}" Height="23" Margin="10,26,55,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="2" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" TextChanged="imagePathTextBox_TextChanged"/>
+            <Button TabIndex="1" x:Name="fileSelectDialogButton" Style="{StaticResource MetroButtonBorder}" ToolTip="Open dialog to select image file" Content="{StaticResource openImageIcon}" HorizontalAlignment="Right" Margin="0,26,10,0" VerticalAlignment="Top" Width="40" Click="fileSelectDialogButton_Click" Height="23" Grid.Row="2"/>
+            <Label Content="Image file:" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Grid.Row="2"/>
+            <Grid x:Name="progressPartGrid" Grid.Row="3" Visibility="Collapsed">
+                <Rectangle Height="1" Margin="10,1" VerticalAlignment="Top" Stroke="{DynamicResource BorderBrushNormal}"/>
+                <oxy:PlotView x:Name="speedGraph" DataContext="{Binding ElementName=window}" Margin="20,36,20,66" Model="{Binding GraphModel.Model}" DefaultTrackerTemplate="{x:Null}" BorderThickness="1" BorderBrush="{DynamicResource BorderBrushNormal}" Background="{DynamicResource WindowPlaceholderColor}"/>
+                <Label x:Name="progressText" Content="" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="20,5,0,0" FontSize="16" Height="31" VerticalAlignment="Top"/>
+                <Label x:Name="transferredText" Content="" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="20,0,0,40" Height="26" VerticalAlignment="Bottom"/>
+                <Label x:Name="stepText" Content="" Foreground="{DynamicResource Foreground}" Margin="0,0,20,199" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+                <Label x:Name="timeRemainingText" Foreground="{DynamicResource Foreground}" Content="" HorizontalAlignment="Left" Margin="20,0,0,17" Height="26" VerticalAlignment="Bottom"/>
+            </Grid>
+            <Label Content="Device(s):" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Grid.Row="2"/>
+            <CheckBox TabIndex="6" x:Name="readOnlyAllocatedCheckBox" Style="{StaticResource standardCheckBox}" Content="Read only allocated partitions" ToolTip="Reads only allocated partitions on device if checked" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" Grid.Row="2"/>
+            <Border x:Name="infoContainer" Style="{StaticResource InfoContainerError}" Height="30" VerticalAlignment="Top" Visibility="Collapsed" Margin="10,7.25,10,0" Grid.Row="1">
+                <Grid>
+                    <Label x:Name="infoText" Content="Reading and verify was finished succesfully" Margin="30,0" Padding="0" Foreground="#FF800505" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
+                    <Button x:Name="closeInfoButton" ToolTip="Hide" Style="{StaticResource CloseInfoButton}" Content="{StaticResource closeIcon}" Padding="0" HorizontalAlignment="Right" Width="20" BorderThickness="0" Click="closeInfoButton_Click" Margin="0,0,5,0" />
+                    <Button x:Name="showInfoButton" ToolTip="Show more informations" Style="{StaticResource CloseInfoButton}" Content="{StaticResource operationInfoIcon}" Padding="0" HorizontalAlignment="Right" Width="20" BorderThickness="0" Margin="0,0,25,0" Click="showInfoButton_Click" />
+                    <Label x:Name="infoSymbol" Content="{StaticResource errorIcon}" Padding="0" HorizontalAlignment="Left" Width="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                </Grid>
+            </Border>
+            <CheckBox TabIndex="7" x:Name="verifyCheckBox" Style="{StaticResource standardCheckBox}" ToolTip="Verify procedure will be started automatically when read or write finishes if checked" Content="Verify data when finished" Margin="271,161,0,0" VerticalAlignment="Top" Grid.Row="2" HorizontalAlignment="Left"/>
+            <CheckBox TabIndex="8" x:Name="onTheFlyZipCheckBox" Style="{StaticResource standardCheckBox}" Content="Compress/Decompress data on the fly" HorizontalAlignment="Left" Margin="10,184,0,0" VerticalAlignment="Top" Grid.Row="2">
+                <CheckBox.ToolTip>
+                    <TextBlock>
                     If reading from device, data will be compressed on the fly if checked
                     <LineBreak/>
                     If writing to device, data will be decompressed on the fly if checked
-                </TextBlock>
-            </CheckBox.ToolTip>
-        </CheckBox>
-        <TextBox TabIndex="3" x:Name="checksumTextBox" Height="23" Margin="10,123,169,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" GotKeyboardFocus="checksumTextBox_GotFocus" GotMouseCapture="checksumTextBox_GotFocus"/>
-        <ProgressBar x:Name="checksumProgressBar" Visibility="Collapsed" Height="23" Margin="10,123,169,0"  VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
-        <Label Content="Checksum:" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <ComboBox TabIndex="4" x:Name="checksumComboBox" Margin="0,123,94,0" Grid.Row="1" VerticalAlignment="Top" Height="23" SelectedIndex="0" HorizontalAlignment="Right" Width="70">
-            <ComboBoxItem Content="MD5"/>
-            <ComboBoxItem Content="SHA1"/>
-            <ComboBoxItem Content="SHA256"/>
-        </ComboBox>
-        <Button TabIndex="5" x:Name="calculateChecksumButton" ToolTip="Calculates checksum of selected image file" Margin="0,123,10,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="1" Click="calculateChecksumButton_Click" HorizontalAlignment="Right">
-            <StackPanel Orientation="Horizontal">
-                <Label Content="{StaticResource keyIcon}" Padding="0,0,3,0"/>
-                <TextBlock Text="Calculate"/>
+                    </TextBlock>
+                </CheckBox.ToolTip>
+            </CheckBox>
+            <TextBox TabIndex="3" x:Name="checksumTextBox" Style="{StaticResource standardTextBox}" Height="23" Margin="10,123,169,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="2" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" GotKeyboardFocus="checksumTextBox_GotFocus" GotMouseCapture="checksumTextBox_GotFocus"/>
+            <ProgressBar x:Name="checksumProgressBar" Visibility="Collapsed" Height="23" Margin="10,123,169,0"  VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="2" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
+            <Label Content="Checksum:" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Grid.Row="2"/>
+            <ComboBox TabIndex="4" x:Name="checksumComboBox" Style="{StaticResource StandardComboBox}" Margin="0,123,94,0" Grid.Row="2" VerticalAlignment="Top" Height="23" SelectedIndex="0" HorizontalAlignment="Right" Width="70">
+                <ComboBoxItem Content="MD5"/>
+                <ComboBoxItem Content="SHA1"/>
+                <ComboBoxItem Content="SHA256"/>
+            </ComboBox>
+            <Button TabIndex="5" x:Name="calculateChecksumButton" Style="{StaticResource MetroButtonBorder}" ToolTip="Calculates checksum of selected image file" Margin="0,123,10,0" Padding="5,0" VerticalAlignment="Top" Height="23" Grid.Row="2" Click="calculateChecksumButton_Click" HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="{StaticResource keyIcon}" Padding="0,0,3,0"/>
+                    <TextBlock Text="Calculate"/>
+                </StackPanel>
+            </Button>
+            <StackPanel Margin="10,212,76,0" Grid.Row="2" Height="23" VerticalAlignment="Top" Orientation="Horizontal">
+                <Button TabIndex="9" x:Name="readButton" Style="{StaticResource MetroButtonBorder}" ToolTip="Reads data from selected device to image file" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" Click="readButton_Click" Height="23" VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="{StaticResource readImageIcon}" Padding="0,0,3,0"/>
+                        <TextBlock Text="Read from Device"/>
+                    </StackPanel>
+                </Button>
+                <Button TabIndex="10" x:Name="writeButton" Style="{StaticResource MetroButtonBorder}" ToolTip="Writes data from image to selected device(s)" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="{StaticResource writeImageIcon}" Padding="0,0,3,0"/>
+                        <TextBlock Text="Write to Device"/>
+                    </StackPanel>
+                </Button>
+                <Button TabIndex="11" x:Name="verifyImageButton" Style="{StaticResource MetroButtonBorder}" ToolTip="Verifies image data against data at selected device(s)" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" VerticalAlignment="Top" Height="23" Click="verifyImageButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="{StaticResource verifyImageIcon}" Padding="0,0,3,0"/>
+                        <TextBlock Text="Verify image"/>
+                    </StackPanel>
+                </Button>
+                <Button TabIndex="12" x:Name="wipeDeviceButton" Style="{StaticResource MetroButtonBorder}" ToolTip="Wipes the selected device(s) filesystem and partitions" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5,0" Margin="0,0,5,0" Click="wipeDeviceButton_Click" Height="23">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="{StaticResource wipeDeviceIcon}" Padding="0,0,3,0"/>
+                        <TextBlock Text="Wipe Device"/>
+                    </StackPanel>
+                </Button>
             </StackPanel>
-        </Button>
-        <StackPanel Margin="10,212,76,0" Grid.Row="1" Height="23" VerticalAlignment="Top" Orientation="Horizontal">
-            <Button TabIndex="9" x:Name="readButton" ToolTip="Reads data from selected device to image file" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" Click="readButton_Click" Height="23" VerticalAlignment="Top">
+            <Button TabIndex="13" x:Name="cancelButton" ToolTip="Cancel current operation" Style="{StaticResource MetroButtonBorder}" HorizontalAlignment="Right" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Margin="0,212,10,0" Grid.Row="2">
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="{StaticResource readImageIcon}" Padding="0,0,3,0"/>
-                    <TextBlock Text="Read from Device"/>
+                    <Label Content="{StaticResource cancelIcon}" Padding="0,0,3,0"/>
+                    <TextBlock Text="Cancel"/>
                 </StackPanel>
             </Button>
-            <Button TabIndex="10" x:Name="writeButton" ToolTip="Writes data from image to selected device(s)" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" VerticalAlignment="Top" Click="writeButton_Click" Height="23">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="{StaticResource writeImageIcon}" Padding="0,0,3,0"/>
-                    <TextBlock Text="Write to Device"/>
-                </StackPanel>
-            </Button>
-            <Button TabIndex="11" x:Name="verifyImageButton" ToolTip="Verifies image data against data at selected device(s)" HorizontalAlignment="Left" Padding="5,0" Margin="0,0,5,0" VerticalAlignment="Top" Height="23" Click="verifyImageButton_Click">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="{StaticResource verifyImageIcon}" Padding="0,0,3,0"/>
-                    <TextBlock Text="Verify image"/>
-                </StackPanel>
-            </Button>
-            <Button TabIndex="12" x:Name="wipeDeviceButton" ToolTip="Wipes the selected device(s) filesystem and partitions" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5,0" Margin="0,0,5,0" Click="wipeDeviceButton_Click" Height="23">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="{StaticResource wipeDeviceIcon}" Padding="0,0,3,0"/>
-                    <TextBlock Text="Wipe Device"/>
-                </StackPanel>
-            </Button>
-        </StackPanel>
-        <Button TabIndex="13" x:Name="cancelButton" ToolTip="Cancel current operation" HorizontalAlignment="Right" Padding="5,0" VerticalAlignment="Top" Click="cancelButton_Click" Height="23" Margin="0,212,10,0" Grid.Row="1">
-            <StackPanel Orientation="Horizontal">
-                <Label Content="{StaticResource cancelIcon}" Padding="0,0,3,0"/>
-                <TextBlock Text="Cancel"/>
-            </StackPanel>
-        </Button>
-        <Label x:Name="acceleratorLabel_read" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="R" HorizontalAlignment="Left" Margin="58,210,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
-        <Label x:Name="acceleratorLabel_write" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="W" HorizontalAlignment="Left" Margin="183,210,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
-        <Label x:Name="acceleratorLabel_verify" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="V" HorizontalAlignment="Left" Margin="293,210,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
-        <Label x:Name="acceleratorLabel_wipe" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="P" HorizontalAlignment="Left" Margin="395,210,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
-        <Label x:Name="acceleratorLabel_cancel" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="C" Margin="0,210,26,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Right" Width="27"/>
-        <Label x:Name="acceleratorLabel_open" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="O" Margin="0,24,16,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Right" Width="27"/>
-        <Label x:Name="acceleratorLabel_allocatedPartitons" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="A" HorizontalAlignment="Left" Margin="80,154,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
-        <Label x:Name="acceleratorLabel_compression" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="Z" HorizontalAlignment="Left" Margin="115,177,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
-        <Label x:Name="acceleratorLabel_verifyWhenFinished" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="F" HorizontalAlignment="Left" Margin="342,154,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
-        <Label x:Name="acceleratorLabel_hash" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="H" Margin="0,121,34,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Right" Width="27"/>
-        <Label x:Name="acceleratorLabel_devices" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="D" Margin="271,72,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Left" Width="27"/>
-        <Label x:Name="acceleratorLabel_image" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="I" Margin="235,24,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Left" Width="27"/>
-        <Label x:Name="acceleratorLabel_checksum" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="U" Margin="183,121,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Left" Width="27"/>
-        <Label x:Name="acceleratorLabel_checksumType" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="M" Margin="421,121,0,0" Grid.Row="1" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Left" Width="27"/>
-        <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0" AllowDrop="True">Drop File or Drive here</Label>
-    </Grid>
+            <Label x:Name="acceleratorLabel_read" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="R" HorizontalAlignment="Left" Margin="58,210,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
+            <Label x:Name="acceleratorLabel_write" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="W" HorizontalAlignment="Left" Margin="183,210,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
+            <Label x:Name="acceleratorLabel_verify" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="V" HorizontalAlignment="Left" Margin="293,210,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
+            <Label x:Name="acceleratorLabel_wipe" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="P" HorizontalAlignment="Left" Margin="395,210,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
+            <Label x:Name="acceleratorLabel_cancel" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="C" Margin="0,210,26,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Right" Width="27"/>
+            <Label x:Name="acceleratorLabel_open" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="O" Margin="0,24,16,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Right" Width="27"/>
+            <Label x:Name="acceleratorLabel_allocatedPartitons" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="A" HorizontalAlignment="Left" Margin="80,154,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
+            <Label x:Name="acceleratorLabel_compression" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="Z" HorizontalAlignment="Left" Margin="115,177,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
+            <Label x:Name="acceleratorLabel_verifyWhenFinished" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="F" HorizontalAlignment="Left" Margin="342,154,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Width="27" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold"/>
+            <Label x:Name="acceleratorLabel_hash" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="H" Margin="0,121,34,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Right" Width="27"/>
+            <Label x:Name="acceleratorLabel_devices" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="D" Margin="271,72,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Left" Width="27"/>
+            <Label x:Name="acceleratorLabel_image" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="I" Margin="235,24,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Left" Width="27"/>
+            <Label x:Name="acceleratorLabel_checksum" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="U" Margin="183,121,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Left" Width="27"/>
+            <Label x:Name="acceleratorLabel_checksumType" Style="{StaticResource acceleratorStyle}" Visibility="Visible" BorderThickness="1" Content="M" Margin="421,121,0,0" Grid.Row="2" VerticalAlignment="Top" Background="Gray" BorderBrush="#FF3C3C3C" Foreground="White" Height="27" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontFamily="Segoe UI Semibold" HorizontalAlignment="Left" Width="27"/>
+            <Label x:Name="windowOverlay" Padding="0" Grid.RowSpan="3" Background="#B2FFFFFF" FontSize="32" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10" Opacity="0" AllowDrop="True">Drop File or Drive here</Label>
+            <Border x:Name="notificationContainer" BorderBrush="#FFFFCC00" BorderThickness="1" Margin="0,20,78,0" HorizontalAlignment="Right" Width="246" Height="100" VerticalAlignment="Top" Grid.RowSpan="3" Visibility="Collapsed">
+                <Border.Effect>
+                    <DropShadowEffect Color="#FFFFCC00" ShadowDepth="0" BlurRadius="3"/>
+                </Border.Effect>
+                <Grid Background="{DynamicResource Background}">
+                    <TextBlock Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="25,5,0,0" TextWrapping="Wrap" Text="Update available" VerticalAlignment="Top" FontWeight="Bold" FontSize="14"/>
+                    <TextBlock Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="15,30,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="220">
+                        <Run Text="New version"/>
+                        <Run x:Name="newVersionRun" Text="0.8.547.21"/>
+                        <Run Text="is available for download."/>
+                    </TextBlock>
+                    <Button x:Name="visitWebsiteButton" Style="{StaticResource MetroButtonBorder}" Content="Visit website" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="84" Height="23" Click="visitWebsiteButton_Click"/>
+                    <Label Content="{StaticResource flag_icon_notification}" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="3,4,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="closeNotificationButton" Content="{StaticResource close_icon}" Style="{StaticResource MetroButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="16" Height="16" Click="closeNotificationButton_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </Window>
