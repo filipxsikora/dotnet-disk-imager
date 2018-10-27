@@ -14,6 +14,7 @@ namespace dotNetDiskImager.Models
 {
     public class SpeedGraphModel
     {
+        private enum GraphMode { Normal, Verify };
         ulong currentMaximum = 0;
 
         OxyPlot.Wpf.LineAnnotation speedLine;
@@ -22,6 +23,8 @@ namespace dotNetDiskImager.Models
         LinearAxis xAxis;
         AreaSeries speedSeries;
         bool firsCall = true;
+        GraphMode graphMode = GraphMode.Normal;
+        Appearance appearance = Appearance.Light;
 
         public void UpdateSpeedLineValue(ulong value)
         {
@@ -49,6 +52,48 @@ namespace dotNetDiskImager.Models
             });
         }
 
+        public void UpdateColors(Appearance appearance)
+        {
+            this.appearance = appearance;
+            UpdateColorsInternal();
+        }
+
+        void UpdateColorsInternal()
+        {
+            if (appearance == Appearance.Light)
+            {
+                speedLine.Color = Colors.Black;
+                speedLine.TextColor = Colors.Black;
+
+                if (graphMode == GraphMode.Normal)
+                {
+                    xAxis.MajorGridlineColor = OxyColor.FromRgb(205, 239, 211);
+                    yAxis.MajorGridlineColor = OxyColor.FromRgb(205, 239, 211);
+                }
+                else
+                {
+                    xAxis.MajorGridlineColor = OxyColor.FromRgb(239, 234, 204);
+                    yAxis.MajorGridlineColor = OxyColor.FromRgb(239, 234, 204);
+                }
+            }
+            else
+            {
+                speedLine.Color = Colors.White;
+                speedLine.TextColor = Colors.White;
+
+                if (graphMode == GraphMode.Normal)
+                {
+                    xAxis.MajorGridlineColor = OxyColor.FromRgb(18, 58, 26);
+                    yAxis.MajorGridlineColor = OxyColor.FromRgb(18, 58, 26);
+                }
+                else
+                {
+                    xAxis.MajorGridlineColor = OxyColor.FromRgb(59, 52, 18);
+                    yAxis.MajorGridlineColor = OxyColor.FromRgb(59, 52, 18);
+                }
+            }
+        }
+
         public void AddDataPoint(int x, ulong y)
         {
             double speedValue = y;
@@ -65,6 +110,7 @@ namespace dotNetDiskImager.Models
 
         public void ResetToNormal()
         {
+            graphMode = GraphMode.Normal;
             speedSeries.Points.Clear();
             progressOverlay.MaximumX = -1;
             currentMaximum = 100;
@@ -75,14 +121,14 @@ namespace dotNetDiskImager.Models
             speedSeries.Fill = OxyColor.FromRgb(9, 175, 36);
             speedSeries.Color = OxyColor.FromRgb(9, 175, 36);
             progressOverlay.Fill = OxyColor.FromArgb(96, 61, 229, 0);
-            xAxis.MajorGridlineColor = OxyColor.FromRgb(205, 239, 211);
-            yAxis.MajorGridlineColor = OxyColor.FromRgb(205, 239, 211);
+            UpdateColorsInternal();
             Model.InvalidatePlot(true);
             firsCall = true;
         }
 
         public void ResetToVerify()
         {
+            graphMode = GraphMode.Verify;
             speedSeries.Points.Clear();
             progressOverlay.MaximumX = -1;
             currentMaximum = 100;
@@ -93,8 +139,7 @@ namespace dotNetDiskImager.Models
             speedSeries.Fill = OxyColor.FromRgb(176, 152, 0);
             speedSeries.Color = OxyColor.FromRgb(176, 152, 0);
             progressOverlay.Fill = OxyColor.FromArgb(96, 241, 220, 0);
-            xAxis.MajorGridlineColor = OxyColor.FromRgb(239, 234, 204);
-            yAxis.MajorGridlineColor = OxyColor.FromRgb(239, 234, 204);
+            UpdateColorsInternal();
             Model.InvalidatePlot(true);
             firsCall = true;
         }
@@ -108,8 +153,8 @@ namespace dotNetDiskImager.Models
             var tmp = new PlotModel
             {
                 PlotMargins = new OxyThickness(0),
-                PlotAreaBorderColor = OxyColor.FromRgb(230, 230, 230),
-                PlotAreaBorderThickness = new OxyThickness(1),
+                //PlotAreaBorderColor = OxyColor.FromRgb(141, 141, 141),
+                //PlotAreaBorderThickness = new OxyThickness(1),
                 Padding = new OxyThickness(0, 0, 1, 1),
                 IsLegendVisible = false
             };
@@ -117,7 +162,8 @@ namespace dotNetDiskImager.Models
             speedLine = new OxyPlot.Wpf.LineAnnotation()
             {
                 LineStyle = LineStyle.Solid,
-                Color = Colors.Black,
+                Color = Colors.White,
+                TextColor = Colors.White,
                 Y = -10,
                 Type = LineAnnotationType.Horizontal,
                 Text = "",
