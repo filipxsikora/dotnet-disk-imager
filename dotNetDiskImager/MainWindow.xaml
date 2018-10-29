@@ -82,6 +82,15 @@
                     </TextBlock>
                 </CheckBox.ToolTip>
             </CheckBox>
+            <CheckBox TabIndex="8" x:Name="encryptDecryptCheckBox" Style="{StaticResource standardCheckBox}" Content="Encrypt/Decrypt image on the fly" HorizontalAlignment="Left" Margin="271,184,0,0" VerticalAlignment="Top" Grid.Row="2">
+                <CheckBox.ToolTip>
+                    <TextBlock>
+                    If reading from device, data will be encrypted on the fly if checked
+                    <LineBreak/>
+                    If writing to device, data will be decrypted on the fly if checked
+                    </TextBlock>
+                </CheckBox.ToolTip>
+            </CheckBox>
             <TextBox TabIndex="3" x:Name="checksumTextBox" Style="{StaticResource standardTextBox}" Height="23" Margin="10,123,169,0" IsReadOnly="True" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="2" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver" GotKeyboardFocus="checksumTextBox_GotFocus" GotMouseCapture="checksumTextBox_GotFocus"/>
             <ProgressBar x:Name="checksumProgressBar" Visibility="Collapsed" Height="23" Margin="10,123,169,0"  VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="2" AllowDrop="True" Drop="program_Drop" PreviewDragOver="imagePathTextBox_PreviewDragOver"/>
             <Label Content="Checksum:" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Grid.Row="2"/>
