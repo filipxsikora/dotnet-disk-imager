@@ -419,7 +419,7 @@ namespace dotNetDiskImager
             {
                 CheckFileExists = false,
                 Title = "Select a disk image file",
-                Filter = "Supported Disk image files|*.zip;*.img|Zipped Disk image file (*.zip)|*.zip|Disk image file (*.img)|*.img|Any file|*.*",
+                Filter = "Supported Disk image files|*.zip;*.img;*.eimg|Zipped Disk image file (*.zip)|*.zip|Disk image file (*.img)|*.img|Encrypted Disk image file (*.eimg)|*.img|Any file|*.*",
                 InitialDirectory = AppSettings.Settings.DefaultFolder == DefaultFolder.LastUsed ? AppSettings.Settings.LastFolderPath : AppSettings.Settings.UserSpecifiedFolder
             };
 
