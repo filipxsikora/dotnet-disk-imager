@@ -107,7 +107,6 @@ namespace dotNetDiskImager
         {
             if (e.Key == Key.Escape)
             {
-                DialogResult = false;
                 e.Handled = true;
                 Close();
             }
