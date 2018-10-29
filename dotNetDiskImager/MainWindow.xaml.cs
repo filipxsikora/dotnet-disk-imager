@@ -568,6 +568,7 @@ namespace dotNetDiskImager
             {
                 if (acceleratorsVisible || IsAnyAcceleratorControlFocused())
                 {
+                    bool handled = true;
                     acceleratorsVisible = false;
                     SetAcceleratorsVisibility(false);
 
@@ -664,9 +665,12 @@ namespace dotNetDiskImager
                                 checksumComboBox.Focus();
                             }
                             break;
+                        default:
+                            handled = false;
+                            break;
                     }
 
-                    e.Handled = true;
+                    e.Handled = handled;
                 }
             }
         }
