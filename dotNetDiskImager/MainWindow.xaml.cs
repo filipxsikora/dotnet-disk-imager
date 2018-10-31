@@ -67,8 +67,8 @@ namespace dotNetDiskImager
             }
         }
 
-        Disk disk;
-        Checksum checksum;
+        Disk _disk;
+        Checksum _checksum;
         CircularBuffer remainingTimeEstimator = new CircularBuffer(5);
         AboutWindow aboutWindow = null;
         SettingsWindow settingsWindow = null;
@@ -76,8 +76,39 @@ namespace dotNetDiskImager
         LastOperationInfo lastOperationInfo = new LastOperationInfo();
 
         public SpeedGraphModel GraphModel { get; } = new SpeedGraphModel();
+        Disk disk
+        {
+            get
+            {
+                return _disk;
+            }
+            set
+            {
+                _disk = value;
+                if (IsActive)
+                {
+                    window_Activated(null, null);
+                }
+            }
+        }
+
+        Checksum checksum
+        {
+            get
+            {
+                return _checksum;
+            }
+            set
+            {
+                _checksum = value;
+                if (IsActive)
+                {
+                    window_Activated(null, null);
+                }
+            }
+        }
+
         bool verifyingAfterOperation = false;
-        bool closed = false;
         bool windowContextMenuShown;
 
         bool acceleratorsVisible = false;
@@ -170,14 +201,15 @@ namespace dotNetDiskImager
                     checksum.Cancel();
                 }
 
-                closed = true;
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
                 AppSettings.Settings.IsTopMost = Topmost;
+
                 if (AppSettings.Settings.LastWindowPosition == null)
                 {
                     AppSettings.Settings.LastWindowPosition = new LastWindowPosition();
                 }
+
                 AppSettings.Settings.LastWindowPosition.Left = (int)Left;
                 AppSettings.Settings.LastWindowPosition.Top = (int)Top;
                 AppSettings.SaveSettings();
@@ -461,7 +493,7 @@ namespace dotNetDiskImager
         }
 
         private void cancelButton_Click(object sender, RoutedEventArgs e)
-        {
+        {            
             if (disk != null)
             {
                 if (MessageBox.Show(this, "Canceling current operation will result in corruption at the target.\nDo you really want to cancel current operation ?",
@@ -519,7 +551,7 @@ namespace dotNetDiskImager
         {
             return fileSelectDialogButton.IsFocused || driveSelectComboBox.IsFocused || checksumTextBox.IsFocused || checksumComboBox.IsFocused || calculateChecksumButton.IsFocused ||
                 readOnlyAllocatedCheckBox.IsFocused || verifyCheckBox.IsFocused || onTheFlyZipCheckBox.IsFocused || readButton.IsFocused || writeButton.IsFocused ||
-                verifyImageButton.IsFocused || wipeDeviceButton.IsFocused || cancelButton.IsFocused;
+                verifyImageButton.IsFocused || wipeDeviceButton.IsFocused || cancelButton.IsFocused || encryptDecryptCheckBox.IsFocused;
         }
 
         private void window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -632,6 +664,12 @@ namespace dotNetDiskImager
                                 verifyCheckBox.IsChecked = !verifyCheckBox.IsChecked.Value;
                             }
                             break;
+                        case Key.E:
+                            if (disk == null && checksum == null)
+                            {
+                                encryptDecryptCheckBox.IsChecked = !encryptDecryptCheckBox.IsChecked.Value;
+                            }
+                            break;
                         case Key.H:
                             if (disk == null && checksum == null)
                             {
@@ -728,10 +766,28 @@ namespace dotNetDiskImager
                     if (fileInfo.Extension == ".zip")
                     {
                         onTheFlyZipCheckBox.IsChecked = true;
+
+                        if (Disk.CheckZipFileEncryption(imagePathTextBox.Text))
+                        {
+                            encryptDecryptCheckBox.IsChecked = true;
+                        }
+                        else
+                        {
+                            encryptDecryptCheckBox.IsChecked = false;
+                        }
                     }
                     else
                     {
                         onTheFlyZipCheckBox.IsChecked = false;
+
+                        if (Disk.CheckRawFileEncryption(imagePathTextBox.Text))
+                        {
+                            encryptDecryptCheckBox.IsChecked = true;
+                        }
+                        else
+                        {
+                            encryptDecryptCheckBox.IsChecked = false;
+                        }
                     }
                 }
             }
@@ -916,6 +972,21 @@ namespace dotNetDiskImager
                 {
                     disk = new DiskRaw(GetSelectedDevices());
                 }
+
+                if (encryptDecryptCheckBox.IsChecked.Value)
+                {
+                    var passwordWindow = new PasswordWindow("", onTheFlyZipCheckBox.IsChecked.Value);
+
+                    if (!passwordWindow.ShowDialogAndVerify(this))
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        return;
+                    }
+
+                    disk.EnableEncryption(passwordWindow.Password);
+                }
+
                 result = disk.InitReadImageFromDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
             catch (Exception ex)
@@ -1025,6 +1096,21 @@ namespace dotNetDiskImager
                 {
                     disk = new DiskRaw(GetSelectedDevices());
                 }
+
+                if (encryptDecryptCheckBox.IsChecked.Value)
+                {
+                    var passwordWindow = new PasswordWindow(imagePathTextBox.Text, onTheFlyZipCheckBox.IsChecked.Value);
+
+                    if (!passwordWindow.ShowDialogAndVerify(this))
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        return;
+                    }
+
+                    disk.EnableEncryption(passwordWindow.Password);
+                }
+
                 result = disk.InitWriteImageToDevice(imagePathTextBox.Text);
             }
             catch (Exception ex)
@@ -1175,6 +1261,21 @@ namespace dotNetDiskImager
                 {
                     disk = new DiskRaw(GetSelectedDevices());
                 }
+
+                if (encryptDecryptCheckBox.IsChecked.Value)
+                {
+                    var passwordWindow = new PasswordWindow(imagePathTextBox.Text, onTheFlyZipCheckBox.IsChecked.Value);
+
+                    if (!passwordWindow.ShowDialogAndVerify(this))
+                    {
+                        disk?.Dispose();
+                        disk = null;
+                        return;
+                    }
+
+                    disk.EnableEncryption(passwordWindow.Password);
+                }
+
                 result = disk.InitVerifyImageAndDevice(imagePathTextBox.Text, readOnlyAllocatedCheckBox.IsChecked.Value);
             }
             catch (Exception ex)
@@ -1288,6 +1389,7 @@ namespace dotNetDiskImager
             fileSelectDialogButton.IsEnabled = enabled;
             calculateChecksumButton.IsEnabled = enabled;
             checksumComboBox.IsEnabled = enabled;
+            encryptDecryptCheckBox.IsEnabled = enabled;
 
             foreach (var accelerator in accelerators)
             {
@@ -1976,6 +2078,7 @@ namespace dotNetDiskImager
             accelerators.Add(acceleratorLabel_allocatedPartitons);
             accelerators.Add(acceleratorLabel_compression);
             accelerators.Add(acceleratorLabel_verifyWhenFinished);
+            accelerators.Add(acceleratorLabel_encryption);
             accelerators.Add(acceleratorLabel_hash);
             accelerators.Add(acceleratorLabel_devices);
             accelerators.Add(acceleratorLabel_image);
@@ -2010,7 +2113,7 @@ namespace dotNetDiskImager
 
         private void window_Activated(object sender, EventArgs e)
         {
-            if (disk == null)
+            if (disk == null && checksum == null)
             {
                 windowBorderEffect.Color = ActivatedColor;
                 windowBorder.BorderBrush = ActivatedBrush;
