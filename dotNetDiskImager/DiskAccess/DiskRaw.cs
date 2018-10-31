@@ -92,9 +92,11 @@ namespace dotNetDiskImager.DiskAccess
                     {
                         result = ReadImageFromDeviceWorker(sectorSize, numSectors);
                     }
+
                     if (verify && !cancelPending)
                     {
                         OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation, null));
+
                         if (useEncryption)
                         {
                             result = await VerifyImageAndDeviceCryptoWorkerAsync(fileHandle, sectorSize, numSectors);
@@ -104,6 +106,7 @@ namespace dotNetDiskImager.DiskAccess
                             result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                         }
                     }
+
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
@@ -144,6 +147,7 @@ namespace dotNetDiskImager.DiskAccess
             }
 
             fileHandle = NativeDiskWrapper.GetHandleOnFile(imagePath, NativeDisk.GENERIC_READ);
+
             for (int i = 0; i < volumeHandles.Length; i++)
             {
                 deviceHandles[i] = NativeDiskWrapper.GetHandleOnDevice(deviceIDs[i], NativeDisk.GENERIC_WRITE | NativeDisk.GENERIC_READ);
@@ -154,6 +158,7 @@ namespace dotNetDiskImager.DiskAccess
             for (int i = 1; i < deviceHandles.Length; i++)
             {
                 var sectors = NativeDiskWrapper.GetNumberOfSectors(deviceHandles[i], ref sectorSize);
+
                 if (sectors < availibleSectors)
                 {
                     availibleSectors = sectors;
@@ -161,7 +166,15 @@ namespace dotNetDiskImager.DiskAccess
                 }
             }
 
-            numSectors = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
+            if (useEncryption)
+            {
+                int paddingSize = 16 - ((1 + password.Length) % 16);
+                numSectors = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize, encryptionSignature.Length + 33 + password.Length + paddingSize);
+            }
+            else
+            {
+                numSectors = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
+            }
 
             _imagePath = imagePath;
 
@@ -172,20 +185,73 @@ namespace dotNetDiskImager.DiskAccess
                 ulong nextChunkSize = 0;
                 byte[] sectorData = new byte[1024 * sectorSize];
 
-                while (i < numSectors && !dataFound)
+                if (useEncryption)
                 {
-                    nextChunkSize = ((numSectors - i) >= 1024) ? 1024 : (numSectors - i);
-                    int dataLength = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, sectorData, i, nextChunkSize, sectorSize);
-                    for (int x = 0; x < dataLength; x++)
+                    using (FileStream fs = new FileStream(new SafeFileHandle(fileHandle, false), FileAccess.Read))
+                    using (RijndaelManaged rijndael = new RijndaelManaged())
                     {
-                        if (sectorData[x] != 0)
+                        byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+                        byte[] salt = new byte[32];
+
+                        fs.Read(salt, 0, encryptionSignature.Length);
+                        fs.Read(salt, 0, salt.Length);
+
+                        rijndael.KeySize = 256;
+                        rijndael.BlockSize = 128;
+
+                        using (var key = new Rfc2898DeriveBytes(passwordBytes, salt, 1000))
                         {
-                            dataFound = true;
-                            break;
+                            rijndael.Key = key.GetBytes(rijndael.KeySize / 8);
+                            rijndael.IV = key.GetBytes(rijndael.BlockSize / 8);
+                        }
+
+                        rijndael.Padding = PaddingMode.Zeros;
+                        rijndael.Mode = CipherMode.CFB;
+
+                        using (CryptoStream cs = new CryptoStream(fs, rijndael.CreateDecryptor(), CryptoStreamMode.Read))
+                        {
+                            int passLen = cs.ReadByte();
+                            cs.Read(sectorData, 0, passLen);
+
+                            {
+                                while (i < numSectors && !dataFound)
+                                {
+                                    nextChunkSize = ((numSectors - i) >= 1024) ? 1024 : (numSectors - i);
+                                    int dataLength = cs.Read(sectorData, 0, (int)(nextChunkSize * sectorSize));
+
+                                    for (int x = 0; x < dataLength; x++)
+                                    {
+                                        if (sectorData[x] != 0)
+                                        {
+                                            dataFound = true;
+                                            break;
+                                        }
+                                    }
+
+                                    i += nextChunkSize;
+                                }
+                            }
                         }
                     }
+                }
+                else
+                {
+                    while (i < numSectors && !dataFound)
+                    {
+                        nextChunkSize = ((numSectors - i) >= 1024) ? 1024 : (numSectors - i);
+                        int dataLength = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, sectorData, i, nextChunkSize, sectorSize);
 
-                    i += nextChunkSize;
+                        for (int x = 0; x < dataLength; x++)
+                        {
+                            if (sectorData[x] != 0)
+                            {
+                                dataFound = true;
+                                break;
+                            }
+                        }
+
+                        i += nextChunkSize;
+                    }
                 }
 
                 return new InitOperationResult(false, numSectors * sectorSize, availibleSectors * sectorSize, dataFound, DriveLetters[smallestDeviceIndex]);
@@ -225,6 +291,7 @@ namespace dotNetDiskImager.DiskAccess
                     if (verify && !cancelPending)
                     {
                         OperationFinished?.Invoke(this, new OperationFinishedEventArgs(false, result && !cancelPending, state, currentDiskOperation, null));
+
                         if (useEncryption)
                         {
                             result = await VerifyImageAndDeviceCryptoWorkerAsync(fileHandle, sectorSize, numSectors);
@@ -300,7 +367,16 @@ namespace dotNetDiskImager.DiskAccess
                 }
             }
 
-            fileSize = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
+            if (useEncryption)
+            {
+                int paddingSize = 16 - ((1 + password.Length) % 16);
+                fileSize = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize, encryptionSignature.Length + 33 + password.Length + paddingSize);
+            }
+            else
+            {
+                fileSize = NativeDiskWrapper.GetFilesizeInSectors(fileHandle, sectorSize);
+            }
+
             if (fileSize == numSectors)
             {
                 return new VerifyInitOperationResult(true, fileSize * sectorSize, numSectors * sectorSize);
@@ -334,6 +410,7 @@ namespace dotNetDiskImager.DiskAccess
                     {
                         result = await VerifyImageAndDeviceWorkerAsync(fileHandle, sectorSize, numSectors);
                     }
+
                     Dispose();
                     state = OperationFinishedState.Success;
                 }
@@ -582,11 +659,13 @@ namespace dotNetDiskImager.DiskAccess
 
                 rijndael.KeySize = 256;
                 rijndael.BlockSize = 128;
+
                 using (var key = new Rfc2898DeriveBytes(passwordBytes, salt, 1000))
                 {
                     rijndael.Key = key.GetBytes(rijndael.KeySize / 8);
                     rijndael.IV = key.GetBytes(rijndael.BlockSize / 8);
                 }
+
                 rijndael.Padding = PaddingMode.Zeros;
                 rijndael.Mode = CipherMode.CFB;
 
@@ -603,8 +682,6 @@ namespace dotNetDiskImager.DiskAccess
                         {
                             return false;
                         }
-
-                        //readed = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, imageData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
 
                         readed = cs.Read(imageData, 0, imageData.Length);
 
@@ -769,16 +846,19 @@ namespace dotNetDiskImager.DiskAccess
             using (FileStream inputFile = new FileStream(new SafeFileHandle(fileHandle, false), FileAccess.Read))
             using (RijndaelManaged rijndael = new RijndaelManaged())
             {
+                inputFile.Seek(0, SeekOrigin.Begin);
                 inputFile.Read(salt, 0, encryptionSignature.Length);
                 inputFile.Read(salt, 0, salt.Length);
 
                 rijndael.KeySize = 256;
                 rijndael.BlockSize = 128;
+
                 using (var key = new Rfc2898DeriveBytes(passwordBytes, salt, 1000))
                 {
                     rijndael.Key = key.GetBytes(rijndael.KeySize / 8);
                     rijndael.IV = key.GetBytes(rijndael.BlockSize / 8);
                 }
+
                 rijndael.Padding = PaddingMode.Zeros;
                 rijndael.Mode = CipherMode.CFB;
 
@@ -794,7 +874,6 @@ namespace dotNetDiskImager.DiskAccess
                         if (cancelPending)
                             return false;
 
-                        //readed = NativeDiskWrapper.ReadSectorDataFromHandle(fileHandle, fileData, i, (numSectors - i >= 1024) ? 1024 : (numSectors - i), sectorSize);
                         readed = cs.Read(fileData, 0, fileData.Length);
 
                         for (int x = 0; x < deviceHandles.Length; x++)
