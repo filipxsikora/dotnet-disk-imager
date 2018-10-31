@@ -441,6 +441,34 @@
         </Setter>
     </Style>
 
+    <Style x:Key="standardPasswordBox" TargetType="PasswordBox">
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushNormal}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
+        <Setter Property="Background" Value="{DynamicResource WindowPlaceholderColor}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border x:Name="Bd"
+                        BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        SnapsToDevicePixels="True"
+                        Background="{TemplateBinding Background}">
+                        <ScrollViewer Name="PART_ContentHost"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BorderBrushHighlighted}"/>
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BorderBrushSelected}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="standardCheckBox" TargetType="{x:Type CheckBox}">
         <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
