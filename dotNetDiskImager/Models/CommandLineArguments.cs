@@ -17,6 +17,7 @@ namespace dotNetDiskImager.Models
         public bool Read { get; set; } = false;
         public bool Write { get; set; } = false;
         public bool? Zip { get; set; } = null;
+        public bool? Encryption { get; set; } = null;
 
         public static CommandLineArguments Parse(string[] args)
         {
@@ -74,6 +75,20 @@ namespace dotNetDiskImager.Models
                         case "-oa":
                         case "-onlyallocated":
                             arguments.ReadOnlyAllocated = true;
+                            break;
+                        case "-e":
+                        case "-encryption":
+                            if (i + 1 < args.Length)
+                            {
+                                if (args[i + 1].ToLower() == "on")
+                                {
+                                    arguments.Encryption = true;
+                                }
+                                else if (args[i + 1].ToLower() == "off")
+                                {
+                                    arguments.Encryption = false;
+                                }
+                            }
                             break;
                         case "-z":
                         case "-zip":
