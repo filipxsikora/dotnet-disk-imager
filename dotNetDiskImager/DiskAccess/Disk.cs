@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -318,24 +319,64 @@ namespace dotNetDiskImager.DiskAccess
             return length;
         }
 
-        public static bool CheckFileEncryption(string path)
+        public static bool CheckRawFileEncryption(string path)
         {
-            using (FileStream fs = new FileStream(path, FileMode.Open))
+            if (File.Exists(path))
             {
-                byte[] buffer = new byte[encryptionSignature.Length];
-                fs.Read(buffer, 0, encryptionSignature.Length);
-                if (NativeDiskWrapper.ByteArrayCompare(buffer, encryptionSignature))
+                using (FileStream fs = new FileStream(path, FileMode.Open))
                 {
-                    return true;
+                    byte[] buffer = new byte[encryptionSignature.Length];
+
+                    fs.Read(buffer, 0, encryptionSignature.Length);
+
+                    if (NativeDiskWrapper.ByteArrayCompare(buffer, encryptionSignature))
+                    {
+                        return true;
+                    }
                 }
             }
 
             return false;
         }
 
-        public static bool CheckFilePassword(string path, string password)
+        public static bool CheckZipFileEncryption(string path)
         {
-            bool result = false;
+            if (File.Exists(path))
+            {
+                using (FileStream fileStream = new FileStream(path, FileMode.Open))
+                using (ZipArchive archive = new ZipArchive(fileStream, ZipArchiveMode.Read))
+                {
+                    ZipArchiveEntry zipEntry = null;
+                    byte[] buffer = new byte[encryptionSignature.Length];
+
+                    foreach (var entry in archive.Entries)
+                    {
+                        if (entry.FullName.EndsWith(".eimg"))
+                        {
+                            zipEntry = entry;
+                            break;
+                        }
+                    }
+
+                    if (zipEntry != null)
+                    {
+                        using (var zipEntryStream = zipEntry.Open())
+                        {
+                            zipEntryStream.Read(buffer, 0, encryptionSignature.Length);
+                        }
+
+                        if (NativeDiskWrapper.ByteArrayCompare(buffer, encryptionSignature))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static bool CheckRawFilePassword(string path, string password)
+        {
             byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
             byte[] salt = new byte[32];
 
@@ -369,7 +410,7 @@ namespace dotNetDiskImager.DiskAccess
 
                             byte[] buff = new byte[passwordLength];
                             cryptoStream.Read(buff, 0, passwordLength);
-                            result = NativeDiskWrapper.ByteArrayCompare(buff, passwordBytes);
+                            return NativeDiskWrapper.ByteArrayCompare(buff, passwordBytes);
                         }
                     }
                     catch (CryptographicException)
@@ -378,8 +419,63 @@ namespace dotNetDiskImager.DiskAccess
                     }
                 }
             }
+        }
 
-            return result;
+        public static bool CheckZipFilePassword(string path, string password)
+        {
+            using (FileStream fileStream = new FileStream(path, FileMode.Open))
+            using (ZipArchive archive = new ZipArchive(fileStream, ZipArchiveMode.Read))
+            {
+                Stream zipEntryStream = null;
+                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+                byte[] salt = new byte[32];
+
+                foreach (var entry in archive.Entries)
+                {
+                    if (entry.FullName.EndsWith(".eimg"))
+                    {
+                        zipEntryStream = entry.Open();
+                        break;
+                    }
+                }
+
+                zipEntryStream.Read(salt, 0, encryptionSignature.Length);
+                zipEntryStream.Read(salt, 0, salt.Length);
+
+                using (RijndaelManaged rijndael = new RijndaelManaged())
+                {
+                    rijndael.KeySize = 256;
+                    rijndael.BlockSize = 128;
+                    using (var key = new Rfc2898DeriveBytes(passwordBytes, salt, Crypto_Iterations))
+                    {
+                        rijndael.Key = key.GetBytes(rijndael.KeySize / 8);
+                        rijndael.IV = key.GetBytes(rijndael.BlockSize / 8);
+                    }
+                    rijndael.Padding = PaddingMode.Zeros;
+                    rijndael.Mode = CipherMode.CFB;
+
+                    try
+                    {
+                        using (CryptoStream cryptoStream = new CryptoStream(zipEntryStream, rijndael.CreateDecryptor(), CryptoStreamMode.Read))
+                        {
+                            int passwordLength = cryptoStream.ReadByte();
+
+                            if (passwordBytes.Length != passwordLength)
+                            {
+                                return false;
+                            }
+
+                            byte[] buff = new byte[passwordLength];
+                            cryptoStream.Read(buff, 0, passwordLength);
+                            return NativeDiskWrapper.ByteArrayCompare(buff, passwordBytes);
+                        }
+                    }
+                    catch (CryptographicException)
+                    {
+                        return false;
+                    }
+                }
+            }
         }
 
         protected static byte[] GenerateRandomSalt()
