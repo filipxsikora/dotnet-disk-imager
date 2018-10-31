@@ -289,7 +289,7 @@ namespace dotNetDiskImager.DiskAccess
             return (ulong)(diskGeometry.DiskSize / diskGeometry.Geometry.BytesPerSector);
         }
 
-        internal static ulong GetFilesizeInSectors(IntPtr handle, ulong sectorSize)
+        internal static ulong GetFilesizeInSectors(IntPtr handle, ulong sectorSize, int offset = 0)
         {
             ulong retVal = 0;
             long fileSize = 0;
@@ -299,6 +299,8 @@ namespace dotNetDiskImager.DiskAccess
                 var exception = new Win32Exception(Marshal.GetLastWin32Error());
                 throw new Exception(string.Format("Error occured when trying to get file size in sectors.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
             }
+
+            fileSize -= offset;
 
             retVal = (ulong)((fileSize / (long)sectorSize) + ((fileSize % (long)sectorSize) > 0 ? 1 : 0));
 
