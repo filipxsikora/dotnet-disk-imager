@@ -110,6 +110,7 @@ namespace dotNetDiskImager
 
         bool verifyingAfterOperation = false;
         bool windowContextMenuShown;
+        bool closed = false;
 
         bool acceleratorsVisible = false;
         List<Label> accelerators;
@@ -200,6 +201,8 @@ namespace dotNetDiskImager
                     }
                     checksum.Cancel();
                 }
+
+                closed = true;
 
                 HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
                 source.RemoveHook(WndProc);
@@ -681,6 +684,12 @@ namespace dotNetDiskImager
                             {
                                 driveSelectComboBox.IsDropDownOpen = true;
                                 driveSelectComboBox.Focus();
+                            }
+                            break;
+                        case Key.G:
+                            if (disk == null && checksum == null)
+                            {
+                                HandleRefreshButton();
                             }
                             break;
                         case Key.I:
@@ -1390,6 +1399,7 @@ namespace dotNetDiskImager
             calculateChecksumButton.IsEnabled = enabled;
             checksumComboBox.IsEnabled = enabled;
             encryptDecryptCheckBox.IsEnabled = enabled;
+            refreshDevicesButton.IsEnabled = enabled;
 
             foreach (var accelerator in accelerators)
             {
@@ -2081,6 +2091,7 @@ namespace dotNetDiskImager
             accelerators.Add(acceleratorLabel_encryption);
             accelerators.Add(acceleratorLabel_hash);
             accelerators.Add(acceleratorLabel_devices);
+            accelerators.Add(acceleratorLabel_refreshDevices);
             accelerators.Add(acceleratorLabel_image);
             accelerators.Add(acceleratorLabel_checksum);
             accelerators.Add(acceleratorLabel_checksumType);
@@ -2347,6 +2358,16 @@ namespace dotNetDiskImager
         private void visitWebsiteButton_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo("http://dotnetdiskimager.sourceforge.net/"));
+        }
+
+        private void refreshDevicesButton_Click(object sender, RoutedEventArgs e)
+        {
+            HandleRefreshButton();
+        }
+
+        void HandleRefreshButton()
+        {
+            LoadDriveSelectItems(false);
         }
     }
 }
