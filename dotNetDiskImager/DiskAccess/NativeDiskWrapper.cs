@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿using dotNetDiskImager.Models;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -433,7 +434,17 @@ namespace dotNetDiskImager.DiskAccess
                             else
                             {
                                 NativeDisk.CloseHandle(handle);
-                                handle = NativeDisk.CreateFile(name, NativeDisk.FILE_READ_DATA, NativeDisk.FILE_SHARE_READ | NativeDisk.FILE_SHARE_WRITE, IntPtr.Zero, NativeDisk.OPEN_EXISTING, 0, IntPtr.Zero);
+                                Utils.SetErrorMode(Utils.ErrorModes.SEM_FAILCRITICALERRORS);
+
+                                try
+                                {
+                                    handle = NativeDisk.CreateFile(name, NativeDisk.FILE_READ_DATA, NativeDisk.FILE_SHARE_READ | NativeDisk.FILE_SHARE_WRITE, IntPtr.Zero, NativeDisk.OPEN_EXISTING, 0, IntPtr.Zero);
+                                }
+                                finally
+                                {
+                                    Utils.SetErrorMode(Utils.ErrorModes.SYSTEM_DEFAULT);
+                                }
+
                                 if (handle == NativeDisk.INVALID_HANDLE_VALUE)
                                 {
                                     var exception = new Win32Exception(Marshal.GetLastWin32Error());
