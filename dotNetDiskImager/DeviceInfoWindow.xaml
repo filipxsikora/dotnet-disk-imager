@@ -6,14 +6,14 @@
         xmlns:local="clr-namespace:dotNetDiskImager"
         mc:Ignorable="d"
         Title="Device Info - dotNet Disk Imager" Height="230" Width="525" ResizeMode="CanMinimize" WindowStartupLocation="CenterOwner" Icon="icon.ico" PreviewKeyDown="Window_PreviewKeyDown">
-    <Grid>
-        <Border BorderBrush="Black" BorderThickness="1" Height="50" Margin="10,70,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="489">
+    <Grid Background="{StaticResource WindowPlaceholderColor}">
+        <Border BorderBrush="{DynamicResource BorderBrushNormal}" BorderThickness="1" Height="50" Margin="10,70,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="489">
             <StackPanel x:Name="partitionsHolder" Orientation="Horizontal"/>
         </Border>
         <StackPanel x:Name="partitionsInfoHolder" Orientation="Horizontal" Margin="10,125,0,0" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" Width="489">
 
         </StackPanel>
-        <TextBlock x:Name="deviceNameTextBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Height="30" FontSize="20"/>
-        <TextBlock x:Name="deviceSizeAndInfoTextBlock" HorizontalAlignment="Left" Margin="10,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock x:Name="deviceNameTextBlock" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Height="30" FontSize="20"/>
+        <TextBlock x:Name="deviceSizeAndInfoTextBlock" Foreground="{DynamicResource Foreground}" HorizontalAlignment="Left" Margin="10,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
     </Grid>
 </Window>

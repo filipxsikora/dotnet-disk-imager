@@ -1,9 +1,12 @@
 ﻿using dotNetDiskImager.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,6 +38,11 @@ namespace dotNetDiskImager.DiskAccess
         protected ulong availibleSectors = 0;
         protected volatile bool cancelPending = false;
         protected string _imagePath;
+        protected bool useEncryption = false;
+        protected string password = null;
+
+        protected static readonly byte[] encryptionSignature = { 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55 };
+        protected const int Crypto_Iterations = 1000;
 
         public Disk(char[] driveLetters)
         {
@@ -53,6 +61,12 @@ namespace dotNetDiskImager.DiskAccess
             }
 
             Utils.PreventComputerSleep();
+        }
+
+        public void EnableEncryption(string password)
+        {
+            useEncryption = true;
+            this.password = password;
         }
 
         public void Dispose()
@@ -303,6 +317,180 @@ namespace dotNetDiskImager.DiskAccess
             }
 
             return length;
+        }
+
+        public static bool CheckRawFileEncryption(string path)
+        {
+            if (File.Exists(path))
+            {
+                using (FileStream fs = new FileStream(path, FileMode.Open))
+                {
+                    byte[] buffer = new byte[encryptionSignature.Length];
+
+                    fs.Read(buffer, 0, encryptionSignature.Length);
+
+                    if (NativeDiskWrapper.ByteArrayCompare(buffer, encryptionSignature))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool CheckZipFileEncryption(string path)
+        {
+            if (File.Exists(path))
+            {
+                using (FileStream fileStream = new FileStream(path, FileMode.Open))
+                using (ZipArchive archive = new ZipArchive(fileStream, ZipArchiveMode.Read))
+                {
+                    ZipArchiveEntry zipEntry = null;
+                    byte[] buffer = new byte[encryptionSignature.Length];
+
+                    foreach (var entry in archive.Entries)
+                    {
+                        if (entry.FullName.EndsWith(".eimg"))
+                        {
+                            zipEntry = entry;
+                            break;
+                        }
+                    }
+
+                    if (zipEntry != null)
+                    {
+                        using (var zipEntryStream = zipEntry.Open())
+                        {
+                            zipEntryStream.Read(buffer, 0, encryptionSignature.Length);
+                        }
+
+                        if (NativeDiskWrapper.ByteArrayCompare(buffer, encryptionSignature))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static bool CheckRawFilePassword(string path, string password)
+        {
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+            byte[] salt = new byte[32];
+
+            using (FileStream fsCrypt = new FileStream(path, FileMode.Open))
+            {
+                fsCrypt.Read(salt, 0, encryptionSignature.Length);
+                fsCrypt.Read(salt, 0, salt.Length);
+
+                using (RijndaelManaged rijndael = new RijndaelManaged())
+                {
+                    rijndael.KeySize = 256;
+                    rijndael.BlockSize = 128;
+                    using (var key = new Rfc2898DeriveBytes(passwordBytes, salt, Crypto_Iterations))
+                    {
+                        rijndael.Key = key.GetBytes(rijndael.KeySize / 8);
+                        rijndael.IV = key.GetBytes(rijndael.BlockSize / 8);
+                    }
+                    rijndael.Padding = PaddingMode.Zeros;
+                    rijndael.Mode = CipherMode.CFB;
+
+                    try
+                    {
+                        using (CryptoStream cryptoStream = new CryptoStream(fsCrypt, rijndael.CreateDecryptor(), CryptoStreamMode.Read))
+                        {
+                            int passwordLength = cryptoStream.ReadByte();
+
+                            if (passwordBytes.Length != passwordLength)
+                            {
+                                return false;
+                            }
+
+                            byte[] buff = new byte[passwordLength];
+                            cryptoStream.Read(buff, 0, passwordLength);
+                            return NativeDiskWrapper.ByteArrayCompare(buff, passwordBytes);
+                        }
+                    }
+                    catch (CryptographicException)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        public static bool CheckZipFilePassword(string path, string password)
+        {
+            using (FileStream fileStream = new FileStream(path, FileMode.Open))
+            using (ZipArchive archive = new ZipArchive(fileStream, ZipArchiveMode.Read))
+            {
+                Stream zipEntryStream = null;
+                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+                byte[] salt = new byte[32];
+
+                foreach (var entry in archive.Entries)
+                {
+                    if (entry.FullName.EndsWith(".eimg"))
+                    {
+                        zipEntryStream = entry.Open();
+                        break;
+                    }
+                }
+
+                zipEntryStream.Read(salt, 0, encryptionSignature.Length);
+                zipEntryStream.Read(salt, 0, salt.Length);
+
+                using (RijndaelManaged rijndael = new RijndaelManaged())
+                {
+                    rijndael.KeySize = 256;
+                    rijndael.BlockSize = 128;
+                    using (var key = new Rfc2898DeriveBytes(passwordBytes, salt, Crypto_Iterations))
+                    {
+                        rijndael.Key = key.GetBytes(rijndael.KeySize / 8);
+                        rijndael.IV = key.GetBytes(rijndael.BlockSize / 8);
+                    }
+                    rijndael.Padding = PaddingMode.Zeros;
+                    rijndael.Mode = CipherMode.CFB;
+
+                    try
+                    {
+                        using (CryptoStream cryptoStream = new CryptoStream(zipEntryStream, rijndael.CreateDecryptor(), CryptoStreamMode.Read))
+                        {
+                            int passwordLength = cryptoStream.ReadByte();
+
+                            if (passwordBytes.Length != passwordLength)
+                            {
+                                return false;
+                            }
+
+                            byte[] buff = new byte[passwordLength];
+                            cryptoStream.Read(buff, 0, passwordLength);
+                            return NativeDiskWrapper.ByteArrayCompare(buff, passwordBytes);
+                        }
+                    }
+                    catch (CryptographicException)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        protected static byte[] GenerateRandomSalt()
+        {
+            byte[] data = new byte[32];
+
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    rng.GetBytes(data);
+                }
+            }
+
+            return data;
         }
 
         public async Task WipeFileSystemAndPartitions()

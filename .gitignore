@@ -2,3 +2,4 @@ libs/
 dotNetDiskImager/bin/
 dotNetDiskImager/obj/
 dotNetDiskImager/Properties/Settings.Designer.cs
+.vs/

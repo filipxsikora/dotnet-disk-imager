@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace dotNetDiskImager.Models
@@ -28,6 +29,7 @@ namespace dotNetDiskImager.Models
 
         public CheckBoxDeviceItem(char driveLetter, bool getImmediate = false) : base()
         {
+            Style = FindResource("standardCheckBox") as Style;
             DriveLetter = driveLetter;
             int deviceID = NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", DriveLetter));
             DeviceLength = Disk.GetDeviceLength(deviceID);

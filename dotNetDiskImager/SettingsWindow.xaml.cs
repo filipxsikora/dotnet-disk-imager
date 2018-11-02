@@ -20,6 +20,9 @@ namespace dotNetDiskImager
     /// </summary>
     public partial class SettingsWindow : Window
     {
+        public delegate void OnAppearanceChanged(Appearance appearance);
+        public event OnAppearanceChanged AppearanceChanged;
+
         CustomPlacesWindow customPlacesWindow = null;
 
         public SettingsWindow(Window owner)
@@ -57,6 +60,7 @@ namespace dotNetDiskImager
             soundNotifyCheckBox.IsChecked = AppSettings.Settings.EnableSoundNotify;
             autoSelectSingleDeviceCheckBox.IsChecked = AppSettings.Settings.AutoSelectSingleDevice;
             autoCloseAppCheckBox.IsChecked = AppSettings.Settings.AutoClose;
+            appearaceComboBox.SelectedIndex = AppSettings.Settings.Appearance == Appearance.Light ? 0 : 1;
 
             switch (AppSettings.Settings.TaskbarExtraInfo)
             {
@@ -157,6 +161,8 @@ namespace dotNetDiskImager
                     break;
             }
 
+            AppSettings.Settings.Appearance = appearaceComboBox.SelectedIndex == 0 ? Appearance.Light : Appearance.Dark;
+
             AppSettings.SaveSettings();
             Close();
         }
@@ -203,6 +209,23 @@ namespace dotNetDiskImager
                 };
             }
             customPlacesWindow.ShowDialog();
+        }
+
+        private void appearaceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ResourceDictionary dict = new ResourceDictionary();
+            if (appearaceComboBox.SelectedIndex == 0)
+            {
+                dict.Source = new Uri("Resources/LightColor.xaml", UriKind.Relative);
+            }
+            else
+            {
+                dict.Source = new Uri("Resources/DarkColor.xaml", UriKind.Relative);
+            }
+            Application.Current.Resources.Clear();
+            Application.Current.Resources.MergedDictionaries.Add(dict);
+
+            AppearanceChanged?.Invoke(appearaceComboBox.SelectedIndex == 0 ? Appearance.Light : Appearance.Dark);
         }
     }
 }

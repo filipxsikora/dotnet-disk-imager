@@ -78,13 +78,24 @@ namespace dotNetDiskImager
             Grid.SetColumn(rect, 0);
             grid.Children.Add(rect);
 
-            var label = new Label() { Content = textLabel, HorizontalAlignment = HorizontalAlignment.Left, Padding = new Thickness(5), VerticalContentAlignment = VerticalAlignment.Center };
+            var label = new Label()
+            {
+                Content = textLabel,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Padding = new Thickness(5),
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Foreground = FindResource("Foreground") as Brush
+            };
             Grid.SetColumn(label, 1);
             grid.Children.Add(label);
 
             sp.Children.Add(grid);
 
-            sp.Children.Add(new Label() { Content = Helpers.BytesToXbytes(partitionSize) });
+            sp.Children.Add(new Label()
+            {
+                Content = Helpers.BytesToXbytes(partitionSize),
+                Foreground = FindResource("Foreground") as Brush
+            });
 
             partitionsInfoHolder.Children.Add(sp);
 
@@ -96,7 +107,6 @@ namespace dotNetDiskImager
         {
             if (e.Key == Key.Escape)
             {
-                DialogResult = false;
                 e.Handled = true;
                 Close();
             }

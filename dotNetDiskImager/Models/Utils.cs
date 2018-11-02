@@ -15,6 +15,19 @@ namespace dotNetDiskImager.Models
         const uint ES_CONTINUOUS = 0x80000000;
         const uint ES_SYSTEM_REQUIRED = 0x00000001;
 
+        [Flags]
+        public enum ErrorModes : uint
+        {
+            SYSTEM_DEFAULT = 0x0,
+            SEM_FAILCRITICALERRORS = 0x0001,
+            SEM_NOALIGNMENTFAULTEXCEPT = 0x0004,
+            SEM_NOGPFAULTERRORBOX = 0x0002,
+            SEM_NOOPENFILEERRORBOX = 0x8000
+        }
+
+        [DllImport("kernel32.dll")]
+        public static extern ErrorModes SetErrorMode(ErrorModes uMode);
+
         public static bool CheckMappedDrivesEnable()
         {
             try

@@ -6,16 +6,16 @@
         xmlns:local="clr-namespace:dotNetDiskImager"
         mc:Ignorable="d"
         Title="Custom Places - dotNet Disk Imager" Height="200" Width="350" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Icon="icon.ico" PreviewKeyDown="Window_PreviewKeyDown">
-    <Grid>
-        <Border BorderBrush="#FFBBBBBB" BorderThickness="1" Margin="10,40,10,10">
+    <Grid Background="{DynamicResource WindowPlaceholderColor}">
+        <Border BorderBrush="{DynamicResource BorderBrushNormal}" BorderThickness="1" Margin="10,40,10,10">
             <ScrollViewer>
-                <ListBox x:Name="customPlacesListBox" BorderBrush="{x:Null}"/>
+                <ListBox x:Name="customPlacesListBox" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}" BorderBrush="{x:Null}"/>
             </ScrollViewer>
         </Border>
-        <Button x:Name="addButton" Content="{StaticResource addIcon}" ToolTip="Add new custom place" HorizontalAlignment="Left" Padding="4" Margin="12,8,0,0" VerticalAlignment="Top" Click="addButton_Click"/>
-        <Button x:Name="editButton" Content="{StaticResource editIcon}" ToolTip="Edit selected" HorizontalAlignment="Left" Padding="4" Margin="39,8,0,0" VerticalAlignment="Top" Click="editButton_Click"/>
-        <Button x:Name="removeButton" Content="{StaticResource removeIcon}" ToolTip="Remove selected" HorizontalAlignment="Left" Padding="4" Margin="66,8,0,0" VerticalAlignment="Top" Click="removeButton_Click"/>
-        <Button x:Name="downButton" Content="{StaticResource downIcon}" ToolTip="Move down" HorizontalAlignment="Left" Padding="4" Margin="93,8,0,0" VerticalAlignment="Top" Click="downButton_Click"/>
-        <Button x:Name="upButton" Content="{StaticResource upIcon}" ToolTip="Move up" HorizontalAlignment="Left" Padding="4" Margin="120,8,0,0" VerticalAlignment="Top" Click="upButton_Click"/>
+        <Button x:Name="addButton" Content="{StaticResource addIcon}" Style="{StaticResource MetroButtonBorder}" ToolTip="Add new custom place" HorizontalAlignment="Left" Padding="4" Margin="12,8,0,0" VerticalAlignment="Top" Click="addButton_Click"/>
+        <Button x:Name="editButton" Content="{StaticResource editIcon}" Style="{StaticResource MetroButtonBorder}" ToolTip="Edit selected" HorizontalAlignment="Left" Padding="4" Margin="39,8,0,0" VerticalAlignment="Top" Click="editButton_Click"/>
+        <Button x:Name="removeButton" Content="{StaticResource removeIcon}" Style="{StaticResource MetroButtonBorder}" ToolTip="Remove selected" HorizontalAlignment="Left" Padding="4" Margin="66,8,0,0" VerticalAlignment="Top" Click="removeButton_Click"/>
+        <Button x:Name="downButton" Content="{StaticResource downIcon}" Style="{StaticResource MetroButtonBorder}" ToolTip="Move down" HorizontalAlignment="Left" Padding="4" Margin="93,8,0,0" VerticalAlignment="Top" Click="downButton_Click"/>
+        <Button x:Name="upButton" Content="{StaticResource upIcon}" Style="{StaticResource MetroButtonBorder}" ToolTip="Move up" HorizontalAlignment="Left" Padding="4" Margin="120,8,0,0" VerticalAlignment="Top" Click="upButton_Click"/>
     </Grid>
 </Window>
