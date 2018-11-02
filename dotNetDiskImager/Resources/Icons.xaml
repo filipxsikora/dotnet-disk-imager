@@ -608,4 +608,22 @@
             </Rectangle.Fill>
         </Rectangle>
     </Viewbox>
+
+    <Viewbox x:Shared="false" x:Key="refresh_icon" Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Rectangle Width="16" Height="16">
+            <Rectangle.Fill>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M8.25,15.75C6.18,15.75 4.234,14.944 2.77,13.48 1.306,12.017 0.5,10.07 0.5,8 0.5,6.29 1.046,4.668 2.08,3.31 2.16,3.205 2.243,3.101 2.329,3L1,3 1,0 8,0 8,7 5,7 5,4.547C4.067,5.435 3.5,6.688 3.5,8 3.5,10.619 5.631,12.75 8.25,12.75 10.869,12.75 13,10.619 13,8 13,6.492 12.308,5.106 11.1,4.199L10.3,3.599 12.102,1.201 12.901,1.801C13.842,2.507 14.622,3.434 15.155,4.479 15.716,5.575 16,6.76 16,8 16,10.069 15.194,12.016 13.73,13.48 12.266,14.944 10.319,15.75 8.25,15.75" />
+                                <GeometryDrawing Brush="#FF424242" Geometry="F1M15,8C15,9.803 14.298,11.498 13.023,12.773 11.748,14.048 10.053,14.75 8.25,14.75 6.447,14.75 4.752,14.048 3.477,12.773 2.202,11.498 1.5,9.803 1.5,8 1.5,6.51 1.976,5.098 2.875,3.916 3.484,3.116 4.271,2.459 5.159,2L2,2 2,1 7,1 7,6 6,6 6,2.708C3.91,3.599 2.5,5.688 2.5,8 2.5,11.171 5.08,13.75 8.25,13.75 11.421,13.75 14,11.171 14,8 14,6.174 13.162,4.498 11.7,3.4L12.301,2.601C13.12,3.216 13.8,4.023 14.265,4.934 14.753,5.889 15,6.92 15,8" />
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Viewbox>
 </ResourceDictionary>
