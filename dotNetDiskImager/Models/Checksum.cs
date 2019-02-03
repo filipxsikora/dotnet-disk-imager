@@ -23,6 +23,11 @@ namespace dotNetDiskImager.Models
         HashAlgorithm checksum = null;
         volatile bool cancelPending = false;
 
+        public Checksum()
+        {
+            Utils.PreventComputerSleepAndShutdown();
+        }
+
         public bool BeginChecksumCalculation(string filePath, ChecksumType checksumType)
         {
             try
@@ -115,6 +120,7 @@ namespace dotNetDiskImager.Models
         {
             checksumStream?.Dispose();
             checksum?.Dispose();
+            Utils.AllowComputerSleepAndShutdown();
         }
     }
 
