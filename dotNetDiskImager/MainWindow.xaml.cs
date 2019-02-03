@@ -42,6 +42,8 @@ namespace dotNetDiskImager
         const int DBT_DEVTYP_VOLUME = 0x02;
         const int WM_SYSTEMMENU = 0xA4;
         const int WP_SYSTEMMENU = 0x02;
+        const int WM_QUERYENDSESSION = 0x0011;
+        const int WM_ENDSESSION = 0x0016;
         #endregion
 
         const int windowHeight = 290;
@@ -204,7 +206,7 @@ namespace dotNetDiskImager
 
                 closed = true;
 
-                HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+                HwndSource source = HwndSource.FromHwnd(Handle);
                 source.RemoveHook(WndProc);
                 AppSettings.Settings.IsTopMost = Topmost;
 
@@ -222,6 +224,14 @@ namespace dotNetDiskImager
             {
                 CheckUpdates();
             }
+
+            Application.Current.SessionEnding += (s, e) =>
+            {
+                if (!Utils.CanComputerShutdown)
+                {
+                    e.Cancel = true;
+                }
+            };
 
             windowBorderEffect.Color = ActivatedColor;
             windowBorder.BorderBrush = ActivatedBrush;
@@ -273,6 +283,14 @@ namespace dotNetDiskImager
             {
                 ShowContextMenu(false);
                 handled = true;
+            }
+
+            if (msg == WM_ENDSESSION || msg == WM_QUERYENDSESSION)
+            {
+                if (!Utils.CanComputerShutdown)
+                {
+
+                }
             }
 
             return IntPtr.Zero;

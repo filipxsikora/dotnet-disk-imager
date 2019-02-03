@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Interop;
 
 namespace dotNetDiskImager.Models
 {
@@ -27,6 +28,13 @@ namespace dotNetDiskImager.Models
 
         [DllImport("kernel32.dll")]
         public static extern ErrorModes SetErrorMode(ErrorModes uMode);
+
+        [DllImport("user32.dll")]
+        extern static bool ShutdownBlockReasonCreate(IntPtr hWnd, [MarshalAs(UnmanagedType.LPWStr)] string pwszReason);
+        [DllImport("user32.dll")]
+        extern static bool ShutdownBlockReasonDestroy(IntPtr hWnd);
+
+        public static bool CanComputerShutdown { get; set; } = true;
 
         public static bool CheckMappedDrivesEnable()
         {
@@ -54,13 +62,17 @@ namespace dotNetDiskImager.Models
             return false;
         }
 
-        public static bool PreventComputerSleep()
+        public static bool PreventComputerSleepAndShutdown()
         {
+            CanComputerShutdown = false;
+            ShutdownBlockReasonCreate(new WindowInteropHelper(System.Windows.Application.Current.MainWindow).Handle, "Operation is still in progress");
             return (SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED) != 0);
         }
 
-        public static bool AllowComputerSleep()
+        public static bool AllowComputerSleepAndShutdown()
         {
+            CanComputerShutdown = true;
+            ShutdownBlockReasonDestroy(new WindowInteropHelper(System.Windows.Application.Current.MainWindow).Handle);
             return (SetThreadExecutionState(ES_CONTINUOUS) != 0);
         }
     }

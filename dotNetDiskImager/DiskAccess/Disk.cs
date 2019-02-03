@@ -60,7 +60,7 @@ namespace dotNetDiskImager.DiskAccess
                 volumeHandles[i] = deviceHandles[i] = IntPtr.Zero;
             }
 
-            Utils.PreventComputerSleep();
+            Utils.PreventComputerSleepAndShutdown();
         }
 
         public void EnableEncryption(string password)
@@ -100,7 +100,7 @@ namespace dotNetDiskImager.DiskAccess
                 }
             }
 
-            Utils.AllowComputerSleep();
+            Utils.AllowComputerSleepAndShutdown();
         }
 
         public void CancelOperation()
