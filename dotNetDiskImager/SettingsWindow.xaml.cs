@@ -61,6 +61,7 @@ namespace dotNetDiskImager
             autoSelectSingleDeviceCheckBox.IsChecked = AppSettings.Settings.AutoSelectSingleDevice;
             autoCloseAppCheckBox.IsChecked = AppSettings.Settings.AutoClose;
             appearaceComboBox.SelectedIndex = AppSettings.Settings.Appearance == Appearance.Light ? 0 : 1;
+            omitUsbHDDsCheckBox.IsChecked = AppSettings.Settings.OmitUsbHDDs;
 
             switch (AppSettings.Settings.TaskbarExtraInfo)
             {
@@ -128,6 +129,7 @@ namespace dotNetDiskImager
             AppSettings.Settings.EnableSoundNotify = soundNotifyCheckBox.IsChecked.Value;
             AppSettings.Settings.AutoSelectSingleDevice = autoSelectSingleDeviceCheckBox.IsChecked.Value;
             AppSettings.Settings.AutoClose = autoCloseAppCheckBox.IsChecked.Value;
+            AppSettings.Settings.OmitUsbHDDs = omitUsbHDDsCheckBox.IsChecked.Value;
 
             switch (showMoreOptions.SelectedIndex)
             {

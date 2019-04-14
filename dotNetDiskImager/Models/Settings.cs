@@ -83,6 +83,11 @@ namespace dotNetDiskImager.Models
                     {
                         Settings.Appearance = Appearance.Light;
                     }
+
+                    if (Settings.OmitUsbHDDs == null)
+                    {
+                        Settings.OmitUsbHDDs = true;
+                    }
                 }
             }
             catch
@@ -110,6 +115,7 @@ namespace dotNetDiskImager.Models
         public bool? AutoClose { get; set; }
         public LastWindowPosition LastWindowPosition { get; set; }
         public Appearance? Appearance { get; set; }
+        public bool? OmitUsbHDDs { get; set; }
 
         public static SettingsInternal Default
         {
@@ -131,7 +137,8 @@ namespace dotNetDiskImager.Models
                     IsTopMost = false,
                     AutoClose = false,
                     LastWindowPosition = null,
-                    Appearance = null
+                    Appearance = null,
+                    OmitUsbHDDs = true
                 };
             }
         }

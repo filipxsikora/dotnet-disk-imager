@@ -202,7 +202,7 @@ namespace dotNetDiskImager.DiskAccess
                 {
                     try
                     {
-                        if (NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", (char)('A' + i))) != 0)
+                        if (NativeDiskWrapper.CheckDriveType(string.Format(@"\\.\{0}:\", (char)('A' + i)), AppSettings.Settings.OmitUsbHDDs.Value) != 0)
                         {
                             drives.Add((char)('A' + i));
                         }

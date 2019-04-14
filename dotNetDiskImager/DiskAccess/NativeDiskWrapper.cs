@@ -403,7 +403,7 @@ namespace dotNetDiskImager.DiskAccess
             return resultStruct;
         }
 
-        internal static int CheckDriveType(string name)
+        internal static int CheckDriveType(string name, bool omitUsbHDDs = false)
         {
             int retVal = 0;
             int bytesReaded = 0;
@@ -427,7 +427,7 @@ namespace dotNetDiskImager.DiskAccess
                         STORAGE_DEVICE_NUMBER devNumber = GetDiskProperty(handle, ref devDescriptor);
 
                         if ((driveType == DriveType.Removable && devDescriptor.BusType != STORAGE_BUS_TYPE.BusTypeSata) ||
-                            (driveType == DriveType.Fixed && devDescriptor.BusType == STORAGE_BUS_TYPE.BusTypeUsb) ||
+                            (driveType == DriveType.Fixed && devDescriptor.BusType == STORAGE_BUS_TYPE.BusTypeUsb && !omitUsbHDDs) ||
                             (devDescriptor.BusType == STORAGE_BUS_TYPE.BusTypeSd) || (devDescriptor.BusType == STORAGE_BUS_TYPE.BusTypeMmc))
                         {
                             if (NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_STORAGE_CHECK_VERIFY2, IntPtr.Zero, 0, IntPtr.Zero, 0, ref bytesReaded, IntPtr.Zero))
