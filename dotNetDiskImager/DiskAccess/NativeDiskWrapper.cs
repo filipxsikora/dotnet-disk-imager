@@ -370,6 +370,8 @@ namespace dotNetDiskImager.DiskAccess
 
             result = NativeDisk.DeviceIoControl(handle, NativeDisk.IOCTL_STORAGE_QUERY_PROPERTY, queryStructPtr, Marshal.SizeOf(query), devDescriptorStructPtr, Marshal.SizeOf(devDescriptor), ref outBytes, IntPtr.Zero);
 
+            devDescriptor = Marshal.PtrToStructure<STORAGE_DEVICE_DESCRIPTOR>(devDescriptorStructPtr);
+
             Marshal.FreeHGlobal(queryStructPtr);
             Marshal.FreeHGlobal(devDescriptorStructPtr);
 
@@ -394,6 +396,7 @@ namespace dotNetDiskImager.DiskAccess
                     throw new Exception(string.Format("Error occured when trying to get disk property IOCTL_STORAGE_CHECK_VERIFY2.\nError code: {0}\nMessage: {1}", exception.NativeErrorCode, exception.Message));
                 }
             }
+
             var resultStruct = Marshal.PtrToStructure<STORAGE_DEVICE_NUMBER>(devInfoStructPtr);
             Marshal.FreeHGlobal(devInfoStructPtr);
 

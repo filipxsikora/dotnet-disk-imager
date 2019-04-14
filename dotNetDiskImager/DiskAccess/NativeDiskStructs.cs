@@ -116,7 +116,11 @@ namespace dotNetDiskImager.DiskAccess
         BusTypeMmc = 0xD,
         BusTypeVirtual = 0xE,
         BusTypeFileBackedVirtual = 0xF,
-        BusTypeMax = 0x10,
+        BusTypeSpaces = 0x10,
+        BusTypeNvme = 0x11,
+        BusTypeSCM = 0x12,
+        BusTypeUfs = 0x13,
+        BusTypeMax = 0x14,
         BusTypeMaxReserved = 0x7F
     }
 
