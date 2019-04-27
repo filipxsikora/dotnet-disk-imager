@@ -402,7 +402,7 @@
                 <Setter TargetName="Border" Property="BorderThickness" Value="1"/>
             </Trigger>
             <Trigger Property="ToggleButton.IsChecked" Value="true">
-                <Setter TargetName="Arrow" Property="Fill" Value="White"/>
+                <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Foreground}"/>
                 <Setter TargetName="Border" Property="BorderThickness" Value="1"/>
             </Trigger>
             <Trigger Property="ToggleButton.IsEnabled" Value="false">
