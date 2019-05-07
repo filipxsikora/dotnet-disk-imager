@@ -25,7 +25,7 @@
     <SolidColorBrush x:Key="MenuItemHighlightedBackground" Color="#FF3F3F3F"/>
     <SolidColorBrush x:Key="SubmenuItemBackground" Color="#FF1B1B1C"/>
     <SolidColorBrush x:Key="SubmenuItemBackgroundHighlighted" Color="#FF333334"/>
-    <SolidColorBrush x:Key="MenuDisabledForeground" Color="#656565"/>
+    <SolidColorBrush x:Key="MenuDisabledForeground" Color="#FFA0A0A0"/>
     <SolidColorBrush x:Key="BackgroundSelected" Color="#007ACC"/>
     <SolidColorBrush x:Key="LightBackground" Color="#FFADADB4"/>
 
