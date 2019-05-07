@@ -55,14 +55,15 @@ namespace dotNetDiskImager.Models
 
             IsEnabled = false;
 
-            new Thread(() =>
+            Task.Run(() =>
             {
-                int maxTries = 10;
+                int maxTries = 20;
                 string model = "";
 
                 while (maxTries-- > 0)
                 {
-                    Thread.Sleep(1000);
+                    Task.Delay(500);
+
                     try
                     {
                         model = Disk.GetModelFromDrive(DriveLetter);
@@ -90,8 +91,7 @@ namespace dotNetDiskImager.Models
                     IsEnabled = true;
                     ModelAcquired?.Invoke(this, new EventArgs());
                 });
-            })
-            { IsBackground = true }.Start();
+            });
         }
     }
 }
