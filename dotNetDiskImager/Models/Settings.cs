@@ -88,6 +88,16 @@ namespace dotNetDiskImager.Models
                     {
                         Settings.OmitUsbHDDs = true;
                     }
+
+                    if (Settings.OmitDrivesOverSize == null)
+                    {
+                        Settings.OmitDrivesOverSize = false;
+                    }
+
+                    if (Settings.OmitDrivesThreshold == null)
+                    {
+                        Settings.OmitDrivesThreshold = 128;
+                    }
                 }
             }
             catch
@@ -116,6 +126,8 @@ namespace dotNetDiskImager.Models
         public LastWindowPosition LastWindowPosition { get; set; }
         public Appearance? Appearance { get; set; }
         public bool? OmitUsbHDDs { get; set; }
+        public bool? OmitDrivesOverSize { get; set; }
+        public double? OmitDrivesThreshold { get; set; }
 
         public static SettingsInternal Default
         {
@@ -138,7 +150,9 @@ namespace dotNetDiskImager.Models
                     AutoClose = false,
                     LastWindowPosition = null,
                     Appearance = null,
-                    OmitUsbHDDs = true
+                    OmitUsbHDDs = true,
+                    OmitDrivesOverSize = false,
+                    OmitDrivesThreshold = 128
                 };
             }
         }

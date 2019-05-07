@@ -1677,6 +1677,7 @@ namespace dotNetDiskImager
         {
             var drives = Disk.GetLogicalDrives();
             driveSelectComboBox.Items.Clear();
+
             if (drives.Length > 0)
             {
                 driveSelectComboBox.Items.Add(new ComboBoxItem() { Visibility = Visibility.Collapsed });
@@ -1691,50 +1692,61 @@ namespace dotNetDiskImager
                         Margin = new Thickness(5, 0, 0, 0)
                     };
 
-                    if (!getImmediate && drives.Length == 1)
+                    if (AppSettings.Settings.OmitDrivesOverSize.Value)
                     {
-                        deviceCheckBox.ModelAcquired += (s, e) =>
+                        if (deviceCheckBox.DeviceLength <= AppSettings.Settings.OmitDrivesThreshold.Value * 1073741824) // conversion from GB to B
                         {
-                            DeviceCheckBoxClickHandler();
-                        };
-                    }
+                            if (!getImmediate && drives.Length == 1)
+                            {
+                                deviceCheckBox.ModelAcquired += (s, e) =>
+                                {
+                                    DeviceCheckBoxClickHandler();
+                                };
+                            }
 
-                    deviceCheckBox.Click += DeviceCheckBox_Click;
+                            deviceCheckBox.Click += DeviceCheckBox_Click;
 
-                    var deviceInfoButton = new DeviceButton(drive)
-                    {
-                        BorderThickness = new Thickness(0),
-                        Width = 20,
-                        Height = 20,
-                        Content = FindResource("infoIcon") as Viewbox,
-                        ToolTip = "Displays device info"
-                    };
+                            var deviceInfoButton = new DeviceButton(drive)
+                            {
+                                BorderThickness = new Thickness(0),
+                                Width = 20,
+                                Height = 20,
+                                Content = FindResource("infoIcon") as Viewbox,
+                                ToolTip = "Displays device info"
+                            };
 
-                    deviceInfoButton.Click += DeviceInfoButton_Click;
+                            deviceInfoButton.Click += DeviceInfoButton_Click;
 
-                    var stackPanel = new StackPanel() { Orientation = Orientation.Horizontal };
-                    stackPanel.Children.Add(deviceCheckBox);
-                    stackPanel.Children.Add(deviceInfoButton);
+                            var stackPanel = new StackPanel() { Orientation = Orientation.Horizontal };
+                            stackPanel.Children.Add(deviceCheckBox);
+                            stackPanel.Children.Add(deviceInfoButton);
 
-                    var comboBoxItem = new ComboBoxItem()
-                    {
-                        Padding = new Thickness(0),
-                        Content = stackPanel
-                    };
+                            var comboBoxItem = new ComboBoxItem()
+                            {
+                                Padding = new Thickness(0),
+                                Content = stackPanel
+                            };
 
-                    comboBoxItem.PreviewKeyDown += (s, e) =>
-                    {
-                        if (e.Key == Key.Space && Keyboard.Modifiers == ModifierKeys.None)
-                        {
-                            deviceCheckBox.IsChecked = !deviceCheckBox.IsChecked;
-                            DeviceCheckBoxClickHandler();
+                            comboBoxItem.PreviewKeyDown += (s, e) =>
+                            {
+                                if (e.Key == Key.Space && Keyboard.Modifiers == ModifierKeys.None)
+                                {
+                                    deviceCheckBox.IsChecked = !deviceCheckBox.IsChecked;
+                                    DeviceCheckBoxClickHandler();
+                                }
+                            };
+
+                            driveSelectComboBox.Items.Add(comboBoxItem);
                         }
-                    };
-
-                    driveSelectComboBox.Items.Add(comboBoxItem);
+                    }
                 }
 
                 driveSelectComboBox.SelectedIndex = 0;
+            }
+
+            if (driveSelectComboBox.Items.Count == 1)
+            {
+                driveSelectComboBox.Items.Clear();
             }
         }
 

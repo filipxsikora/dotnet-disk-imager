@@ -62,6 +62,8 @@ namespace dotNetDiskImager
             autoCloseAppCheckBox.IsChecked = AppSettings.Settings.AutoClose;
             appearaceComboBox.SelectedIndex = AppSettings.Settings.Appearance == Appearance.Light ? 0 : 1;
             omitUsbHDDsCheckBox.IsChecked = AppSettings.Settings.OmitUsbHDDs;
+            omitDrivesMoreThanCheckBox.IsChecked = AppSettings.Settings.OmitDrivesOverSize;
+            omitDrivesMoreThanTextBox.Text = AppSettings.Settings.OmitDrivesThreshold.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
             switch (AppSettings.Settings.TaskbarExtraInfo)
             {
@@ -110,6 +112,21 @@ namespace dotNetDiskImager
 
         private void saveButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                double threshold = double.Parse(omitDrivesMoreThanTextBox.Text.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture);
+                if (threshold < 0)
+                {
+                    throw new Exception();
+                }
+                AppSettings.Settings.OmitDrivesThreshold = threshold;
+            }
+            catch
+            {
+                MessageBox.Show("Invalid number format. Only positive numbers allowed.");
+                return;
+            }
+
             AppSettings.Settings.DisplayWriteWarnings = displayPreWriteWarnings.IsChecked.Value;
 
             if (defaultFolder_lastUsed.IsChecked.Value)
@@ -130,6 +147,7 @@ namespace dotNetDiskImager
             AppSettings.Settings.AutoSelectSingleDevice = autoSelectSingleDeviceCheckBox.IsChecked.Value;
             AppSettings.Settings.AutoClose = autoCloseAppCheckBox.IsChecked.Value;
             AppSettings.Settings.OmitUsbHDDs = omitUsbHDDsCheckBox.IsChecked.Value;
+            AppSettings.Settings.OmitDrivesOverSize = omitDrivesMoreThanCheckBox.IsChecked.Value;
 
             switch (showMoreOptions.SelectedIndex)
             {
